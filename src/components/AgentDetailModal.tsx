@@ -3,24 +3,7 @@
 import { useEffect, useState } from "react";
 import { X, KeyRound } from "lucide-react";
 import GradeSelect from "./GradeSelect";
-
-const NAV_LABELS: Record<string, string> = {
-  "/dashboard": "Tableau de bord",
-  "/carte-biens-reserves": "Carte des biens réservés",
-  "/carte-prix-villas": "Carte des prix des villas",
-  "/prix-fixe": "Prix fixe",
-  "/tarifs": "Tarifs",
-  "/interieurs-possibles": "Intérieurs possibles",
-  "/guide-coherences": "Guide des cohérences",
-  "/guide-coherences-cayo": "Guide des cohérences — Cayo",
-  "/guide-debutant": "Guide du débutant",
-  "/estimation": "Estimation",
-  "/formulaires": "Formulaires",
-  "/mes-messages-prefaits": "Mes messages préfaits",
-  "/comptabilite/mes-ventes": "Mes ventes",
-  "/comptabilite": "Comptabilité",
-  "/administration": "Administration",
-};
+import { NAV_LABELS } from "@/lib/nav-pages";
 
 type Agent = {
   id: string;

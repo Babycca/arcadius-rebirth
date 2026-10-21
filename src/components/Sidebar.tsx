@@ -48,6 +48,8 @@ const NAV = [
   { href: "/mes-messages-prefaits", icon: MessageSquareText, label: "Mes messages préfaits" },
   { href: "/comptabilite/mes-ventes", icon: Receipt, label: "Mes ventes" },
   { href: "/comptabilite", icon: Wallet, label: "Comptabilité" },
+  { href: "/comptabilite/depenses", icon: Receipt, label: "Dépenses" },
+  { href: "/comptabilite/archive", icon: Archive, label: "Archive Comptabilité" },
   { href: "/administration", icon: Settings, label: "Administration" },
 ];
 
@@ -162,7 +164,8 @@ export function Sidebar() {
 
       <div className="flex-1 flex flex-col gap-1">
         {orderedNav.map(({ href, icon: Icon, label }, i) => {
-          const active = pathname === href;
+          const active =
+            href === "/comptabilite/archive" ? pathname.startsWith(href) : pathname === href;
           return (
             <div key={href} className="flex items-center gap-1">
               {canEdit && (
@@ -197,32 +200,6 @@ export function Sidebar() {
             </div>
           );
         })}
-        {isAdmin && (
-          <Link
-            href="/comptabilite/depenses"
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors ${
-              pathname === "/comptabilite/depenses"
-                ? "bg-[rgb(var(--brand-500)/0.18)] text-[rgb(var(--brand-400))] font-medium"
-                : "text-[rgb(var(--muted))] hover:bg-white/[0.04] hover:text-[rgb(var(--foreground))]"
-            }`}
-          >
-            <Receipt size={17} />
-            Dépenses
-          </Link>
-        )}
-        {isAdmin && (
-          <Link
-            href="/comptabilite/archive"
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors ${
-              pathname.startsWith("/comptabilite/archive")
-                ? "bg-[rgb(var(--brand-500)/0.18)] text-[rgb(var(--brand-400))] font-medium"
-                : "text-[rgb(var(--muted))] hover:bg-white/[0.04] hover:text-[rgb(var(--foreground))]"
-            }`}
-          >
-            <Archive size={17} />
-            Archive Comptabilité
-          </Link>
-        )}
       </div>
 
       {user && (

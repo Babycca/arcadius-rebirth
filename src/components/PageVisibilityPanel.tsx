@@ -2,24 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { ChevronUp, ChevronDown } from "lucide-react";
-
-const NAV_LABELS: Record<string, string> = {
-  "/dashboard": "Tableau de bord",
-  "/carte-biens-reserves": "Carte des biens réservés",
-  "/carte-prix-villas": "Carte des prix des villas",
-  "/prix-fixe": "Prix fixe",
-  "/tarifs": "Tarifs",
-  "/interieurs-possibles": "Intérieurs possibles",
-  "/guide-coherences": "Guide des cohérences",
-  "/guide-coherences-cayo": "Guide des cohérences — Cayo",
-  "/guide-debutant": "Guide du débutant",
-  "/estimation": "Estimation",
-  "/formulaires": "Formulaires",
-  "/mes-messages-prefaits": "Mes messages préfaits",
-  "/comptabilite/mes-ventes": "Mes ventes",
-  "/comptabilite": "Comptabilité",
-  "/administration": "Administration",
-};
+import { NAV_LABELS } from "@/lib/nav-pages";
 
 type Page = { href: string; hiddenForAll: boolean; order: number };
 
