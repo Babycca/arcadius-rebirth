@@ -1,0 +1,174 @@
+@import "tailwindcss";
+
+:root {
+  --bg-base: 10 8 16;
+  --bg-elevated: 20 16 30;
+  --bg-elevated-2: 28 22 42;
+  --foreground: 237 233 248;
+  --muted: 168 161 196;
+
+  --brand-400: 96 165 250;
+  --brand-500: 59 130 246;
+  --brand-600: 37 99 235;
+  --brand-glow: 59 130 246;
+
+  --border-subtle: 255 255 255;
+  --border-subtle-alpha: 0.08;
+
+  --success: 52 211 153;
+  --danger: 248 113 113;
+  --warning: 251 191 36;
+}
+
+@theme inline {
+  --color-background: rgb(var(--bg-base));
+  --color-foreground: rgb(var(--foreground));
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: rgb(var(--bg-base));
+  color: rgb(var(--foreground));
+  min-height: 100vh;
+}
+
+/* Fond décoratif léger : halos violets très diffus, pas un dégradé plein écran */
+.ambient-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(640px circle at 15% 10%, rgb(var(--brand-glow) / 0.16), transparent 60%),
+    radial-gradient(520px circle at 85% 30%, rgb(var(--brand-glow) / 0.10), transparent 60%),
+    radial-gradient(800px circle at 50% 100%, rgb(var(--brand-glow) / 0.08), transparent 60%);
+}
+
+.glass {
+  background: rgb(var(--bg-elevated) / 0.55);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid rgb(var(--border-subtle) / var(--border-subtle-alpha));
+}
+
+.glass-strong {
+  background: rgb(var(--bg-elevated-2) / 0.75);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  border: 1px solid rgb(var(--border-subtle) / 0.12);
+}
+
+.font-heading {
+  font-family: var(--font-display), sans-serif;
+  letter-spacing: 0.02em;
+  font-weight: 700;
+}
+
+.brand-gradient-text {
+  background: linear-gradient(135deg, rgb(var(--brand-400)), rgb(var(--brand-600)));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.card-hover {
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-2px);
+  border-color: rgb(var(--brand-500) / 0.4);
+  box-shadow: 0 8px 30px rgb(var(--brand-glow) / 0.12);
+}
+
+/* Neutralise le fond blanc/jaune imposé par l'autofill du navigateur sur les
+   champs (login notamment) : on force la même couleur de fond que le reste
+   du champ via un délai de transition de couleur de fond énorme (la seule
+   façon fiable de contourner -webkit-autofill en CSS). */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: rgb(var(--foreground));
+  caret-color: rgb(var(--foreground));
+  transition: background-color 600000s 0s, color 600000s 0s;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--border-subtle) / 0.15);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--border-subtle) / 0.25);
+}
+
+/* Étoile filante : technique standard (rotation fixe appliquée une fois,
+   puis translation le long de l'axe local de l'élément déjà tourné — jamais
+   l'inverse, sinon la trajectoire part en spirale). Invisible la majeure
+   partie du cycle, ne file que sur une portion du début de chaque boucle —
+   portion volontairement plus longue (0 → 14%) pour un passage plus lent et
+   plus visible qu'avant. */
+@keyframes shooting-star-fall {
+  0% { transform: rotate(35deg) translateX(0); opacity: 0; }
+  2% { opacity: 1; }
+  5% { opacity: 1; }
+  16% { opacity: 0; }
+  100% { transform: rotate(35deg) translateX(900px); opacity: 0; }
+}
+.shooting-star {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 2px;
+  height: 2px;
+  border-radius: 999px;
+  background: rgb(var(--brand-400));
+  box-shadow: 0 0 10px 2px rgb(var(--brand-400) / 0.7);
+  animation-name: shooting-star-fall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  /* Sans ça, pendant le animation-delay l'élément reste affiché dans son
+     état CSS "brut" (ni tourné, ni transparent) au lieu d'adopter l'état de
+     départ (0%) de l'animation — on voyait alors un trait droit et fixe
+     tant que le délai n'était pas écoulé. */
+  animation-fill-mode: backwards;
+}
+.shooting-star::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 100%;
+  width: 120px;
+  height: 1px;
+  transform: translateY(-50%);
+  background: linear-gradient(90deg, transparent, rgb(var(--brand-400) / 0.7));
+}
+
+/* Petites étoiles qui scintillent, dispersées sur tout le fond (pas liées au
+   bâtiment). Simple pulsation d'opacité/échelle, décalée par élément via
+   animation-delay/duration inline pour ne pas toutes clignoter en même temps. */
+@keyframes twinkle {
+  0%, 100% { opacity: 0.15; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.15); }
+}
+.twinkle-star {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 999px;
+  background: rgb(var(--foreground));
+  box-shadow: 0 0 4px 1px rgb(var(--foreground) / 0.6);
+  animation-name: twinkle;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}

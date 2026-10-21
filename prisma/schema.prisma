@@ -1,0 +1,319 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Role: "SUPER_ADMIN" | "ADMIN" | "AGENT" (string plutôt qu'enum : SQLite en dev
+// ne supporte pas les enums ; on repassera sur Postgres + enum natif en prod).
+model Agent {
+  id                  String   @id @default(cuid())
+  firstName           String
+  lastName             String
+  loginHandle         String   @unique
+  phone               String?
+  avatarUrl           String?
+  grade               String   @default("AGENT_NOVICE")
+  role                String   @default("AGENT")
+  passwordHash        String
+  mustChangePassword  Boolean  @default(true)
+  order               Int      @default(0)
+  // Un employé qui démissionne est désactivé (ne peut plus se connecter,
+  // sort de la liste active) plutôt que supprimé — ses ventes passées
+  // restent donc toujours visibles dans les anciennes comptas. Il apparaît
+  // dans "Archive Employés" en Administration, réactivable à tout moment.
+  active              Boolean  @default(true)
+
+  accentColor         String?
+  backgroundColor     String?
+  bannerColor         String?
+  backgroundImageUrl  String?
+  editorMode          Boolean  @default(false)
+
+  canAccessAccounting Boolean  @default(false)
+  permissionsJson     String   @default("{}")
+  commissionRateOverride Float?
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+model AppSetting {
+  key   String @id
+  value String
+}
+
+// --- Prix fixe (porté depuis site2-arcadius) --------------------------------
+
+model PriceGroup {
+  id        String      @id @default(cuid())
+  name      String
+  order     Int         @default(0)
+  items     PriceItem[]
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+}
+
+model PriceItem {
+  id        String     @id @default(cuid())
+  name      String
+  price     Float
+  type      String?
+  storageKg Float?
+  order     Int        @default(0)
+  group     PriceGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  groupId   String
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+// --- Tarifs (galerie photos) -------------------------------------------------
+
+model TarifPhoto {
+  id        String   @id @default(cuid())
+  url       String
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+}
+
+// --- Intérieurs possibles / Formulaires (dépliants de messages) -------------
+
+model TextGroup {
+  id        String        @id @default(cuid())
+  section   String // "interieurs" | "formulaires" | "mes-formulaires"
+  name      String
+  order     Int           @default(0)
+  ownerId   String?
+  items     TextSnippet[]
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+}
+
+model TextSnippet {
+  id        String    @id @default(cuid())
+  content   String
+  price     Float?
+  order     Int       @default(0)
+  group     TextGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  groupId   String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+// --- Estimation ---------------------------------------------------------------
+
+model EstimationProfile {
+  id             String   @id @default(cuid())
+  structureType  String
+  zoneName       String
+  region         String?
+  photoUrl       String?
+  basePrice      Float
+  maxPrice       Float?
+  order          Int      @default(0)
+  criteria       EstimationCriterion[]
+  interiorGroups EstimationInteriorGroup[]
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model EstimationCriterion {
+  id        String   @id @default(cuid())
+  label     String
+  type      String
+  order     Int      @default(0)
+  profile   EstimationProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profileId String
+  options   EstimationCriterionOption[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model EstimationCriterionOption {
+  id          String   @id @default(cuid())
+  label       String
+  priceMode   String
+  amount      Float
+  order       Int      @default(0)
+  criterion   EstimationCriterion @relation(fields: [criterionId], references: [id], onDelete: Cascade)
+  criterionId String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model EstimationInteriorGroup {
+  id                         String   @id @default(cuid())
+  label                      String
+  requireSelectedOptionIds   String   @default("[]")
+  requireUnselectedOptionIds String   @default("[]")
+  order                      Int      @default(0)
+  profile   EstimationProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profileId String
+  items     EstimationInteriorItem[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model EstimationInteriorItem {
+  id        String   @id @default(cuid())
+  name      String
+  priceMode String
+  amount    Float
+  type      String?
+  storageKg Float?
+  order     Int      @default(0)
+  group     EstimationInteriorGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  groupId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// --- Carte des biens réservés (portée depuis site2-arcadius) ----------------
+
+model ReservedZone {
+  id          String   @id @default(cuid())
+  name        String
+  categoryId  String
+  geometry    String // GeoJSON sérialisé
+  photoUrl    String?
+  createdById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// --- Carte des prix des villas (NOUVEAU, inspirée de site1-villas) ----------
+
+model PriceMapConfig {
+  id       Int     @id @default(1)
+  imageUrl String?
+}
+
+model PriceMapPin {
+  id        String   @id @default(cuid())
+  x         Float
+  y         Float
+  label     String?
+  price     Float?
+  reserved  Boolean  @default(false)
+  images    PriceMapPinImage[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PriceMapPinImage {
+  id        String      @id @default(cuid())
+  pinId     String
+  pin       PriceMapPin @relation(fields: [pinId], references: [id], onDelete: Cascade)
+  url       String
+  order     Int         @default(0)
+  createdAt DateTime    @default(now())
+}
+
+// --- Comptabilité (NOUVEAU) --------------------------------------------------
+
+model CommissionRule {
+  id             String   @id @default(cuid())
+  grade          String   @unique
+  commissionRate Float
+  bonusAmount    Float    @default(0)
+  formulaJson    String?
+  order          Int      @default(0)
+  updatedAt      DateTime @updatedAt
+}
+
+model Sale {
+  id            String   @id @default(cuid())
+  agentId       String
+  date          DateTime @default(now())
+  houseNumber   String
+  priceAmount   Float
+  clientName    String
+  clientPhone   String?
+  weekId        String
+  companyProfit Float
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([agentId, weekId])
+  @@index([weekId])
+}
+
+// Trace chaque clôture ("archivage") de semaine Comptabilité — weekId est
+// l'identifiant de la semaine qui vient d'être clôturée (archivée), pas la
+// nouvelle qui démarre. Les ventes de cette semaine restent en base (jamais
+// supprimées), donc l'archive est consultable à tout moment via ce weekId.
+model WeeklyReset {
+  id          String   @id @default(cuid())
+  weekId      String   @unique
+  triggeredBy String
+  createdAt   DateTime @default(now())
+  periodStart DateTime?
+  // Copie figée de "Semaine A/B" au moment de l'archivage — les valeurs
+  // globales (AppSetting) continuent d'évoluer librement après coup.
+  semaineA    String?
+  semaineB    String?
+}
+
+// Choix admin, par agent et par semaine, d'appliquer ou non une prime —
+// soit la prime par défaut du grade (amount = null), soit un montant
+// personnalisé (amount renseigné), utile pour les grades dont la prime de
+// base est à 0. Absence de ligne = comportement par défaut du grade.
+model AgentWeekBonus {
+  id      String  @id @default(cuid())
+  agentId String
+  weekId  String
+  enabled Boolean @default(true)
+  amount  Float?
+
+  @@unique([agentId, weekId])
+}
+
+// Archives historiques réimportées depuis d'anciens Google Sheets — pas de
+// calcul de salaire/commission possible (données incomplètes à l'époque),
+// juste un listing brut des ventes group par agent (nom libre, "Inconnu" si
+// l'info n'existait pas).
+model LegacyArchive {
+  id        String       @id @default(cuid())
+  label     String
+  createdAt DateTime     @default(now())
+  sales     LegacySale[]
+}
+
+model LegacySale {
+  id          String        @id @default(cuid())
+  archiveId   String
+  archive     LegacyArchive @relation(fields: [archiveId], references: [id], onDelete: Cascade)
+  agentName   String
+  date        DateTime?
+  houseNumber String?
+  priceAmount Float
+  clientName  String?
+  clientPhone String?
+  order       Int           @default(0)
+}
+
+// --- Catégories de la carte des biens réservés (NOUVEAU, éditables) ---------
+
+model ReservedZoneCategory {
+  id        String   @id
+  name      String
+  color     String
+  emoji     String   @default("📍")
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+}
+
+// --- Visibilité des pages du menu (NOUVEAU) ---------------------------------
+// hiddenForAll : masquée pour tout le monde sauf Admin/Super Admin.
+// hiddenForAgentIds : JSON string[] d'ids d'agents pour qui la page est
+// masquée individuellement (reste accessible par son lien direct).
+
+model PageVisibility {
+  href              String  @id
+  hiddenForAll      Boolean @default(false)
+  hiddenForAgentIds String  @default("[]")
+  order             Int     @default(0)
+}
