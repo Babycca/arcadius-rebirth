@@ -55,11 +55,35 @@ const NAV = [
 
 type PageVisibilityRow = { href: string; hiddenForAll: boolean; hiddenForAgentIds: string; order: number };
 
+const PAGE_VISIBILITY_CACHE_KEY = "arcadius-page-visibility-cache";
+
 // La Sidebar est remontée à chaque navigation (PageShell est appelé par
 // chaque page, pas par un layout partagé) : sans ce cache au niveau du
 // module, l'état repartirait de [] à chaque clic et afficherait brièvement
-// le menu complet, sans filtrage, avant que le fetch ne revienne.
+// le menu complet, sans filtrage, avant que le fetch ne revienne. Le
+// sessionStorage couvre en plus le cas d'un rechargement complet de page
+// (F5), où le module JS lui-même repart de zéro.
 let cachedPageVisibility: PageVisibilityRow[] | null = null;
+
+function readCachedPageVisibility(): PageVisibilityRow[] | null {
+  if (cachedPageVisibility) return cachedPageVisibility;
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = sessionStorage.getItem(PAGE_VISIBILITY_CACHE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeCachedPageVisibility(rows: PageVisibilityRow[]) {
+  cachedPageVisibility = rows;
+  try {
+    sessionStorage.setItem(PAGE_VISIBILITY_CACHE_KEY, JSON.stringify(rows));
+  } catch {
+    // ignore (stockage indisponible/plein)
+  }
+}
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -74,7 +98,7 @@ export function Sidebar() {
   } | undefined;
   const [showPersonalize, setShowPersonalize] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [pageVisibility, setPageVisibility] = useState<PageVisibilityRow[]>(cachedPageVisibility ?? []);
+  const [pageVisibility, setPageVisibility] = useState<PageVisibilityRow[]>(() => readCachedPageVisibility() ?? []);
   const { isAdmin, canEdit } = useCanEdit();
 
   useEffect(() => {
@@ -85,7 +109,7 @@ export function Sidebar() {
     fetch("/api/page-visibility")
       .then((r) => r.json())
       .then((rows: PageVisibilityRow[]) => {
-        cachedPageVisibility = rows;
+        writeCachedPageVisibility(rows);
         setPageVisibility(rows);
       })
       .catch(() => {});
@@ -137,7 +161,7 @@ export function Sidebar() {
         const existing = byHref.get(h);
         return existing ? { ...existing, order } : { href: h, hiddenForAll: false, hiddenForAgentIds: "[]", order };
       });
-      cachedPageVisibility = next;
+      writeCachedPageVisibility(next);
       return next;
     });
     await fetch("/api/page-visibility/reorder", {
