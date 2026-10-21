@@ -53,6 +53,14 @@ const NAV = [
   { href: "/administration", icon: Settings, label: "Administration" },
 ];
 
+type PageVisibilityRow = { href: string; hiddenForAll: boolean; hiddenForAgentIds: string; order: number };
+
+// La Sidebar est remontée à chaque navigation (PageShell est appelé par
+// chaque page, pas par un layout partagé) : sans ce cache au niveau du
+// module, l'état repartirait de [] à chaque clic et afficherait brièvement
+// le menu complet, sans filtrage, avant que le fetch ne revienne.
+let cachedPageVisibility: PageVisibilityRow[] | null = null;
+
 export function Sidebar() {
   const pathname = usePathname();
   const { data: session, update } = useSession();
@@ -66,9 +74,7 @@ export function Sidebar() {
   } | undefined;
   const [showPersonalize, setShowPersonalize] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [pageVisibility, setPageVisibility] = useState<
-    { href: string; hiddenForAll: boolean; hiddenForAgentIds: string; order: number }[]
-  >([]);
+  const [pageVisibility, setPageVisibility] = useState<PageVisibilityRow[]>(cachedPageVisibility ?? []);
   const { isAdmin, canEdit } = useCanEdit();
 
   useEffect(() => {
@@ -78,7 +84,10 @@ export function Sidebar() {
   useEffect(() => {
     fetch("/api/page-visibility")
       .then((r) => r.json())
-      .then(setPageVisibility)
+      .then((rows: PageVisibilityRow[]) => {
+        cachedPageVisibility = rows;
+        setPageVisibility(rows);
+      })
       .catch(() => {});
   }, []);
 
@@ -124,10 +133,12 @@ export function Sidebar() {
 
     setPageVisibility((ps) => {
       const byHref = new Map(ps.map((p) => [p.href, p]));
-      return hrefs.map((h, order) => {
+      const next = hrefs.map((h, order) => {
         const existing = byHref.get(h);
         return existing ? { ...existing, order } : { href: h, hiddenForAll: false, hiddenForAgentIds: "[]", order };
       });
+      cachedPageVisibility = next;
+      return next;
     });
     await fetch("/api/page-visibility/reorder", {
       method: "POST",
