@@ -90,6 +90,7 @@ type AgentSummary = {
 
 export default function ComptabilitePage() {
   const [data, setData] = useState<{ weekId: string; periodStart: string | null; agents: AgentSummary[] } | null>(null);
+  const [totalExpenses, setTotalExpenses] = useState(0);
   const [forbidden, setForbidden] = useState(false);
   const [archiving, setArchiving] = useState(false);
   const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
@@ -105,6 +106,10 @@ export default function ComptabilitePage() {
       }
       setData(await res.json());
     });
+    fetch("/api/accounting/expenses")
+      .then((res) => (res.ok ? res.json() : []))
+      .then((rows: { amount: number }[]) => setTotalExpenses(rows.reduce((s, x) => s + x.amount, 0)))
+      .catch(() => {});
   }
 
   useEffect(() => {
@@ -168,7 +173,7 @@ export default function ComptabilitePage() {
   const totalSales = agents.reduce((s, a) => s + a.totalSales, 0);
   const totalProfit = agents.reduce((s, a) => s + a.companyProfit, 0);
   const totalSalaries = agents.reduce((s, a) => s + a.salary, 0);
-  const netProfit = totalProfit - totalSalaries;
+  const netProfit = totalProfit - totalSalaries - totalExpenses;
   const taxes = netProfit * 0.3;
 
   return (
@@ -203,6 +208,17 @@ export default function ComptabilitePage() {
             <p className="text-xs text-[rgb(var(--muted))]">Salaires</p>
             <p className="text-lg font-semibold">${totalSalaries.toLocaleString("fr-FR")}</p>
           </div>
+          {isAdmin ? (
+            <Link href="/comptabilite/depenses" className="glass-strong rounded-xl px-4 py-2.5 hover:border-[rgb(var(--brand-500)/0.4)] transition-colors">
+              <p className="text-xs text-[rgb(var(--muted))]">Dépenses</p>
+              <p className="text-lg font-semibold text-[rgb(var(--danger))]">-${totalExpenses.toLocaleString("fr-FR")}</p>
+            </Link>
+          ) : (
+            <div className="glass-strong rounded-xl px-4 py-2.5">
+              <p className="text-xs text-[rgb(var(--muted))]">Dépenses</p>
+              <p className="text-lg font-semibold text-[rgb(var(--danger))]">-${totalExpenses.toLocaleString("fr-FR")}</p>
+            </div>
+          )}
           <div className="glass-strong rounded-xl px-4 py-2.5">
             <p className="text-xs text-[rgb(var(--muted))]">Bénéfices net</p>
             <p className="text-lg font-semibold text-[rgb(var(--success))]">

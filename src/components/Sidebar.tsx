@@ -199,6 +199,19 @@ export function Sidebar() {
         })}
         {isAdmin && (
           <Link
+            href="/comptabilite/depenses"
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors ${
+              pathname === "/comptabilite/depenses"
+                ? "bg-[rgb(var(--brand-500)/0.18)] text-[rgb(var(--brand-400))] font-medium"
+                : "text-[rgb(var(--muted))] hover:bg-white/[0.04] hover:text-[rgb(var(--foreground))]"
+            }`}
+          >
+            <Receipt size={17} />
+            Dépenses
+          </Link>
+        )}
+        {isAdmin && (
+          <Link
             href="/comptabilite/archive"
             className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors ${
               pathname.startsWith("/comptabilite/archive")

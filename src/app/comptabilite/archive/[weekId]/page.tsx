@@ -34,6 +34,13 @@ type Sale = {
   clientPhone: string | null;
 };
 
+type Expense = {
+  id: string;
+  reason: string;
+  amount: number;
+  createdAt: string;
+};
+
 function AgentSalesRow({ agentId, weekId, canEdit, onChanged }: { agentId: string; weekId: string; canEdit: boolean; onChanged: () => void }) {
   const { confirm } = useDialog();
   const [sales, setSales] = useState<Sale[] | null>(null);
@@ -173,6 +180,7 @@ export default function ComptabiliteArchiveDetailPage({ params }: { params: Prom
   const [allSales, setAllSales] = useState<
     { id: string; agentName: string; date: string; houseNumber: string; priceAmount: number; clientName: string; clientPhone: string | null }[]
   >([]);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
   const [forbidden, setForbidden] = useState(false);
   const [expandedIds, setExpandedIds] = useState<string[]>([]);
 
@@ -191,6 +199,9 @@ export default function ComptabiliteArchiveDetailPage({ params }: { params: Prom
     fetch(`/api/accounting/archive/${encodeURIComponent(weekId)}/sales`)
       .then((res) => (res.ok ? res.json() : []))
       .then(setAllSales);
+    fetch(`/api/accounting/expenses?weekId=${encodeURIComponent(weekId)}`)
+      .then((res) => (res.ok ? res.json() : []))
+      .then(setExpenses);
   }
 
   useEffect(() => {
@@ -218,7 +229,8 @@ export default function ComptabiliteArchiveDetailPage({ params }: { params: Prom
   const totalSales = agents.reduce((s, a) => s + a.totalSales, 0);
   const totalProfit = agents.reduce((s, a) => s + a.companyProfit, 0);
   const totalSalaries = agents.reduce((s, a) => s + a.salary, 0);
-  const netProfit = totalProfit - totalSalaries;
+  const totalExpenses = expenses.reduce((s, x) => s + x.amount, 0);
+  const netProfit = totalProfit - totalSalaries - totalExpenses;
   const taxes = netProfit * 0.3;
 
   return (
@@ -248,6 +260,10 @@ export default function ComptabiliteArchiveDetailPage({ params }: { params: Prom
                   s.clientPhone ?? "",
                   s.priceAmount,
                 ]),
+                [],
+                ["Dépenses"],
+                ["Raison", "Montant"],
+                ...expenses.map((x) => [x.reason, x.amount]),
               ]}
             />
           )}
@@ -289,6 +305,10 @@ export default function ComptabiliteArchiveDetailPage({ params }: { params: Prom
         <div className="glass-strong rounded-xl px-4 py-2.5">
           <p className="text-xs text-[rgb(var(--muted))]">Salaires</p>
           <p className="text-lg font-semibold">${totalSalaries.toLocaleString("fr-FR")}</p>
+        </div>
+        <div className="glass-strong rounded-xl px-4 py-2.5">
+          <p className="text-xs text-[rgb(var(--muted))]">Dépenses</p>
+          <p className="text-lg font-semibold text-[rgb(var(--danger))]">-${totalExpenses.toLocaleString("fr-FR")}</p>
         </div>
         <div className="glass-strong rounded-xl px-4 py-2.5">
           <p className="text-xs text-[rgb(var(--muted))]">Bénéfices net</p>
@@ -394,6 +414,30 @@ export default function ComptabiliteArchiveDetailPage({ params }: { params: Prom
           </tbody>
         </table>
       </div>
+
+      {expenses.length > 0 && (
+        <div className="glass-strong rounded-xl overflow-hidden mt-5 max-w-2xl">
+          <p className="text-xs text-[rgb(var(--muted))] px-4 py-3 border-b border-white/[0.08]">Dépenses de la semaine</p>
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left text-xs text-[rgb(var(--muted))] border-b border-white/[0.08]">
+                <th className="px-4 py-2 font-normal">Raison</th>
+                <th className="px-4 py-2 font-normal text-right">Montant</th>
+              </tr>
+            </thead>
+            <tbody>
+              {expenses.map((x) => (
+                <tr key={x.id} className="border-b border-white/[0.04] last:border-0">
+                  <td className="px-4 py-2">{x.reason}</td>
+                  <td className="px-4 py-2 text-right font-medium text-[rgb(var(--danger))]">
+                    -${x.amount.toLocaleString("fr-FR")}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </PageShell>
   );
 }

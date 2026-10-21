@@ -241,6 +241,20 @@ model Sale {
   @@index([weekId])
 }
 
+// Dépense d'entreprise (loyer, fournitures, etc.) — même principe que Sale :
+// taguée par weekId, jamais supprimée à l'archivage, donc consultable dans
+// l'archive de la semaine concernée une fois la comptabilité clôturée.
+model Expense {
+  id        String   @id @default(cuid())
+  reason    String
+  amount    Float
+  weekId    String
+  createdBy String
+  createdAt DateTime @default(now())
+
+  @@index([weekId])
+}
+
 // Trace chaque clôture ("archivage") de semaine Comptabilité — weekId est
 // l'identifiant de la semaine qui vient d'être clôturée (archivée), pas la
 // nouvelle qui démarre. Les ventes de cette semaine restent en base (jamais
