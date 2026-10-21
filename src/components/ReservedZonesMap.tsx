@@ -432,7 +432,8 @@ export default function ReservedZonesMap() {
               const cat = getCategoryByIdLocal(zone.categoryId);
               const geoLayer = L.geoJSON(feature, {
                 style: () => styleForCategory(cat),
-                pointToLayer: (_, latlng) => L.marker(latlng, { icon: iconForCategory(cat) }),
+                pointToLayer: (_feature: GeoJSON.Feature, latlng: L.LatLng) =>
+                  L.marker(latlng, { icon: iconForCategory(cat) }),
               }).getLayers()[0];
               if (canEdit) drawnItems.addLayer(geoLayer);
               layers[cat.id].addLayer(geoLayer);

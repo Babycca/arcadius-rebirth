@@ -3,6 +3,15 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 
+type ExtendedUser = {
+  username: string;
+  role: string;
+  mustChangePassword: boolean;
+  accentColor: string | null;
+  editorMode: boolean;
+  avatarUrl: string | null;
+};
+
 export const authOptions: AuthOptions = {
   session: { strategy: "jwt", maxAge: 60 * 60 * 12 },
   pages: { signIn: "/login" },
@@ -40,13 +49,14 @@ export const authOptions: AuthOptions = {
   callbacks: {
     async jwt({ token, user, trigger }) {
       if (user) {
+        const extended = user as unknown as ExtendedUser;
         token.id = user.id;
-        token.username = (user as { username: string }).username;
-        token.role = (user as { role: string }).role;
-        token.mustChangePassword = (user as { mustChangePassword: boolean }).mustChangePassword;
-        token.accentColor = (user as { accentColor: string | null }).accentColor;
-        token.editorMode = (user as { editorMode: boolean }).editorMode;
-        token.avatarUrl = (user as { avatarUrl: string | null }).avatarUrl;
+        token.username = extended.username;
+        token.role = extended.role;
+        token.mustChangePassword = extended.mustChangePassword;
+        token.accentColor = extended.accentColor;
+        token.editorMode = extended.editorMode;
+        token.avatarUrl = extended.avatarUrl;
       }
       if (trigger === "update" && token.id) {
         const fresh = await prisma.agent.findUnique({ where: { id: token.id as string } });
