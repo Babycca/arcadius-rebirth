@@ -50,7 +50,7 @@ export default async function DashboardPage() {
     }
   }
 
-  const recentSalesRaw = await prisma.sale.findMany({ orderBy: { createdAt: "desc" }, take: 15 });
+  const recentSalesRaw = await prisma.sale.findMany({ where: { weekId }, orderBy: { createdAt: "desc" }, take: 15 });
   const visibleAgents = await prisma.agent.findMany({
     where: { id: { in: [...new Set(recentSalesRaw.map((s) => s.agentId))] }, ...HIDDEN_FROM_AGENT_LISTS_WHERE },
   });
