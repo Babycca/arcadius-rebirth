@@ -67,8 +67,15 @@ export default function AdministrationPage() {
     const rulesData: CommissionRule[] = await rulesRes.json();
     setAgents(agentsData);
     setRules(rulesData);
-    if (!grade && rulesData.length > 0) setGrade(rulesData[0].grade);
+    if (!grade && rulesData.length > 0) setGrade(defaultGrade(rulesData));
     setLoading(false);
+    return { agentsData, rulesData };
+  }
+
+  // Grade proposé par défaut pour un nouvel agent : "Secrétaire d'agence" si
+  // ce grade existe, sinon le premier grade de la grille.
+  function defaultGrade(rulesData: CommissionRule[]) {
+    return rulesData.find((r) => r.grade === "Secrétaire d'agence")?.grade ?? rulesData[0]?.grade ?? "";
   }
 
   useEffect(() => {
@@ -96,7 +103,41 @@ export default function AdministrationPage() {
     setFirstName("");
     setLastName("");
     setPhone("");
-    load();
+    const loaded = await load();
+    if (loaded) {
+      setGrade(defaultGrade(loaded.rulesData));
+      await placeAgentByGrade(data.agent.id, data.agent.grade, loaded.agentsData, loaded.rulesData);
+    }
+  }
+
+  // Insère le nouvel agent dans la liste au bon endroit selon la hiérarchie
+  // des grades (ordre de la grille "Grades, commissions & primes"), plutôt
+  // que de le laisser à la position par défaut renvoyée par l'API.
+  async function placeAgentByGrade(
+    newAgentId: string,
+    newAgentGrade: string,
+    agentsData: Agent[],
+    rulesData: CommissionRule[]
+  ) {
+    const rankOf = (g: string) => {
+      const idx = rulesData.findIndex((r) => r.grade === g);
+      return idx === -1 ? rulesData.length : idx;
+    };
+    const active = agentsData.filter((a) => a.active && a.id !== newAgentId);
+    const archived = agentsData.filter((a) => !a.active);
+    const newRank = rankOf(newAgentGrade);
+    const insertAt = active.findIndex((a) => rankOf(a.grade) > newRank);
+    const reordered =
+      insertAt === -1
+        ? [...active, agentsData.find((a) => a.id === newAgentId)!]
+        : [...active.slice(0, insertAt), agentsData.find((a) => a.id === newAgentId)!, ...active.slice(insertAt)];
+
+    setAgents([...reordered, ...archived]);
+    await fetch("/api/agents/reorder", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ids: reordered.map((a) => a.id) }),
+    });
   }
 
   async function updateField(id: string, field: string, value: string) {
