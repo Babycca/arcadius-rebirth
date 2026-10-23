@@ -95,6 +95,14 @@ input:-webkit-autofill:focus {
   transition: background-color 600000s 0s, color 600000s 0s;
 }
 
+/* Le calendrier popup des champs date est dessiné par l'OS/le navigateur,
+   impossible à restyler entièrement en CSS — color-scheme force au moins
+   Chrome à l'afficher en mode sombre natif au lieu d'un popup blanc qui
+   jure avec le reste du site. */
+input[type="date"] {
+  color-scheme: dark;
+}
+
 /* Retire les flèches natives (moches, non thémées) des champs number sur
    tout le site — les contenus restent des nombres, juste sans le stepper
    par défaut du navigateur. */
