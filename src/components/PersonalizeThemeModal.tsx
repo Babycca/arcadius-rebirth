@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { X, Palette } from "lucide-react";
+import { paletteFromAccent } from "@/lib/theme-colors";
 
 const PRESETS = [
   { label: "Bleu (défaut)", value: "#3b82f6" },
@@ -18,6 +19,27 @@ export default function PersonalizeThemeModal({ onClose }: { onClose: () => void
   const current = (session?.user as { accentColor?: string | null } | undefined)?.accentColor ?? "#3b82f6";
   const [color, setColor] = useState(current);
   const [saving, setSaving] = useState(false);
+
+  // Aperçu en direct pendant qu'on choisit une couleur (sinon aucun retour
+  // visuel avant de cliquer "Appliquer", ce qui donnait l'impression que la
+  // couleur perso choisie dans le sélecteur natif ne faisait jamais rien).
+  // On revient à la couleur d'origine si la modale se ferme sans valider.
+  useEffect(() => {
+    const root = document.documentElement;
+    function apply(hex: string) {
+      const palette = paletteFromAccent(hex);
+      if (!palette) return;
+      root.style.setProperty("--brand-400", palette[400]);
+      root.style.setProperty("--brand-500", palette[500]);
+      root.style.setProperty("--brand-600", palette[600]);
+      root.style.setProperty("--brand-glow", palette.glow);
+      root.style.setProperty("--bg-elevated", palette.bgElevated);
+      root.style.setProperty("--bg-elevated-2", palette.bgElevated2);
+    }
+    apply(color);
+    return () => apply(current);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [color]);
 
   async function save(value: string | null) {
     setSaving(true);
