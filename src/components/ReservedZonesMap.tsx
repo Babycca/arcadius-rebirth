@@ -295,8 +295,9 @@ export default function ReservedZonesMap() {
 
       type LeafletWithDraw = typeof L & {
         Control: typeof L.Control & { Draw: new (options: unknown) => L.Control };
-        Draw: { Event: { CREATED: string } };
+        Draw: { Event: { CREATED: string; EDITED: string } };
       };
+      type LayerWithZone = L.Layer & { __zone?: ZoneRecord; toGeoJSON: () => unknown };
       const LD = L as LeafletWithDraw;
 
       if (canEdit) {
@@ -435,6 +436,7 @@ export default function ReservedZonesMap() {
                 pointToLayer: (_feature: GeoJSON.Feature, latlng: L.LatLng) =>
                   L.marker(latlng, { icon: iconForCategory(cat) }),
               }).getLayers()[0];
+              (geoLayer as LayerWithZone).__zone = zone;
               if (canEdit) drawnItems.addLayer(geoLayer);
               layers[cat.id].addLayer(geoLayer);
               buildPopup(geoLayer, zone);
@@ -471,11 +473,39 @@ export default function ReservedZonesMap() {
 
             const finalCat = getCategoryByIdLocal(zone.categoryId);
             applyCategoryLook(layer, finalCat);
+            (layer as LayerWithZone).__zone = zone;
             drawnItems.addLayer(layer);
             layers[finalCat.id].addLayer(layer);
             buildPopup(layer, zone);
           };
           setFormModal({ mode: "create", defaultCategoryId: cat.id });
+        });
+
+        // Déplacer les points d'une zone existante (toolbar d'édition
+        // leaflet-draw) ne persistait jamais rien côté serveur : aucun
+        // écouteur n'était branché sur cet événement, seule la création
+        // d'une nouvelle zone sauvegardait quoi que ce soit.
+        map.on(LD.Draw.Event.EDITED, (e: unknown) => {
+          const editedLayers = (e as { layers: L.FeatureGroup }).layers;
+          editedLayers.eachLayer(async (layer) => {
+            const zone = (layer as LayerWithZone).__zone;
+            if (!zone) return;
+            const geometry = JSON.stringify((layer as LayerWithZone).toGeoJSON());
+            const formData = new FormData();
+            formData.set("name", zone.name);
+            formData.set("categoryId", zone.categoryId);
+            formData.set("geometry", geometry);
+            try {
+              const res = await fetch(`/api/zones/${zone.id}`, { method: "PUT", body: formData });
+              if (res.ok) {
+                const updated: ZoneRecord = await res.json();
+                Object.assign(zone, updated);
+              }
+            } catch {
+              // réseau indisponible : la forme reste modifiée à l'écran mais
+              // pas persistée, un nouveau Save la retentera.
+            }
+          });
         });
       }
     }

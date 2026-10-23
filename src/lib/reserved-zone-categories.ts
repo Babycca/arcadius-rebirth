@@ -17,7 +17,11 @@ export function categoryFor(
 }
 
 export const MAP_CONFIG = {
-  imageUrl: "/images/gta-map.jpg",
+  // Garde les mêmes width/height (coordonnées des 198 zones déjà tracées
+  // dessus) — seule l'image source change, pour un rendu net même très
+  // zoomé ; le ratio d'aspect est quasi identique (8185x11305 vs 3620x5000)
+  // donc aucune distorsion.
+  imageUrl: "https://pub-4d99d9e6c35d4ffd8819126cb4a4881c.r2.dev/map/gta-map-hires.webp",
   width: 3620,
   height: 5000,
 };
