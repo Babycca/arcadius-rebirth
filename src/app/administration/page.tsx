@@ -10,6 +10,7 @@ import ZoneCategoriesPanel from "@/components/ZoneCategoriesPanel";
 import AgentDetailModal from "@/components/AgentDetailModal";
 import { useCanEdit } from "@/lib/use-can-edit";
 import { useDialog } from "@/components/DialogProvider";
+import { useToast } from "@/components/ToastProvider";
 import { Plus, KeyRound, Trash2, ChevronUp, ChevronDown, UserX, UserCheck, Archive } from "lucide-react";
 
 type Agent = {
@@ -34,6 +35,7 @@ type CommissionRule = {
 export default function AdministrationPage() {
   const { canEdit } = useCanEdit();
   const { confirm, alertDialog } = useDialog();
+  const toast = useToast();
   const { data: session } = useSession();
   const sessionUser = session?.user as { id?: string; role?: string } | undefined;
   const isSuperAdmin = sessionUser?.role === "SUPER_ADMIN";
@@ -141,11 +143,13 @@ export default function AdministrationPage() {
   }
 
   async function updateField(id: string, field: string, value: string) {
-    await fetch(`/api/agents/${id}`, {
+    const res = await fetch(`/api/agents/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ [field]: value }),
     });
+    if (res.ok) toast("Modification enregistrée.");
+    else toast("Échec de l'enregistrement.", "error");
     load();
   }
 
@@ -193,8 +197,10 @@ export default function AdministrationPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ active: !agent.active }),
     });
-    if (res.ok) load();
-    else {
+    if (res.ok) {
+      toast(agent.active ? "Compte désactivé." : "Compte réactivé.");
+      load();
+    } else {
       const body = await res.json().catch(() => null);
       await alertDialog(body?.error ?? "Impossible de changer le statut de ce compte.");
     }

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { X, Palette } from "lucide-react";
 import { paletteFromAccent, logoFilter } from "@/lib/theme-colors";
+import { useToast } from "./ToastProvider";
 
 const PRESETS = [
   { label: "Bleu (défaut)", value: "#3b82f6" },
@@ -19,6 +20,7 @@ export default function PersonalizeThemeModal({ onClose }: { onClose: () => void
   const current = (session?.user as { accentColor?: string | null } | undefined)?.accentColor ?? "#3b82f6";
   const [color, setColor] = useState(current);
   const [saving, setSaving] = useState(false);
+  const toast = useToast();
 
   // Aperçu en direct pendant qu'on choisit une couleur (sinon aucun retour
   // visuel avant de cliquer "Appliquer", ce qui donnait l'impression que la
@@ -51,6 +53,7 @@ export default function PersonalizeThemeModal({ onClose }: { onClose: () => void
     });
     await update();
     setSaving(false);
+    toast(value ? "Couleur enregistrée." : "Couleur réinitialisée.");
     onClose();
   }
 

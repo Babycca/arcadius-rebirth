@@ -4,7 +4,7 @@ import UserAvatar from "./UserAvatar";
 
 export function PageShell({ children }: { children: ReactNode }) {
   return (
-    <div className="flex flex-1 min-h-screen">
+    <div className="flex flex-col md:flex-row flex-1 min-h-screen">
       <Sidebar />
       <main className="flex-1 p-4 md:pl-0">
         <div className="glass rounded-2xl p-6 md:p-8 min-h-[calc(100vh-2rem)]">{children}</div>

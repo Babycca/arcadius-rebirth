@@ -6,6 +6,7 @@ import AuthProvider from "@/components/AuthProvider";
 import ThemeAccent from "@/components/ThemeAccent";
 import BackgroundScene from "@/components/BackgroundScene";
 import { DialogProvider } from "@/components/DialogProvider";
+import { ToastProvider } from "@/components/ToastProvider";
 import { authOptions } from "@/lib/auth";
 import { paletteFromAccent, logoFilter } from "@/lib/theme-colors";
 
@@ -58,7 +59,9 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         <AuthProvider>
           <ThemeAccent />
           <BackgroundScene />
-          <DialogProvider>{children}</DialogProvider>
+          <DialogProvider>
+            <ToastProvider>{children}</ToastProvider>
+          </DialogProvider>
         </AuthProvider>
       </body>
     </html>

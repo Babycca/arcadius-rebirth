@@ -9,6 +9,7 @@ import { PageShell, PageHeader } from "@/components/PageShell";
 import { useCanEdit } from "@/lib/use-can-edit";
 import { useDialog } from "@/components/DialogProvider";
 import TranscriptButton from "@/components/TranscriptButton";
+import CsvExportButton from "@/components/CsvExportButton";
 import { weekDateRangeLabel } from "@/lib/accounting/week-client";
 
 type AgentSummary = {
@@ -272,6 +273,26 @@ export default function ComptabiliteArchiveDetailPage({ params }: { params: Prom
   const netProfit = totalProfit - totalSalaries - totalExpenses;
   const taxes = netProfit * 0.3;
 
+  const exportRows: (string | number | null)[][] = [
+    ["Agent", "Téléphone", "Grade", "%", "Nb facture", "CA", "Prime", "Salaire"],
+    ...agents.map((a) => [a.name, a.phone ?? "", a.grade, a.commissionRate, a.invoiceCount, a.totalSales, a.bonusAmount, a.salary]),
+    [],
+    ["Détail des ventes"],
+    ["Agent", "Date", "Habitation", "Client", "Téléphone", "Prix"],
+    ...allSales.map((s) => [
+      s.agentName,
+      new Date(s.date).toLocaleDateString("fr-FR"),
+      s.houseNumber,
+      s.clientName,
+      s.clientPhone ?? "",
+      s.priceAmount,
+    ]),
+    [],
+    ["Dépenses"],
+    ["Raison", "Montant"],
+    ...expenses.map((x) => [x.reason, x.amount]),
+  ];
+
   return (
     <PageShell>
       <div className="flex items-center justify-between mb-3">
@@ -284,27 +305,10 @@ export default function ComptabiliteArchiveDetailPage({ params }: { params: Prom
         </Link>
         <div className="flex items-center gap-2">
           {agents.length > 0 && (
-            <TranscriptButton
-              rows={[
-                ["Agent", "Téléphone", "Grade", "%", "Nb facture", "CA", "Prime", "Salaire"],
-                ...agents.map((a) => [a.name, a.phone ?? "", a.grade, a.commissionRate, a.invoiceCount, a.totalSales, a.bonusAmount, a.salary]),
-                [],
-                ["Détail des ventes"],
-                ["Agent", "Date", "Habitation", "Client", "Téléphone", "Prix"],
-                ...allSales.map((s) => [
-                  s.agentName,
-                  new Date(s.date).toLocaleDateString("fr-FR"),
-                  s.houseNumber,
-                  s.clientName,
-                  s.clientPhone ?? "",
-                  s.priceAmount,
-                ]),
-                [],
-                ["Dépenses"],
-                ["Raison", "Montant"],
-                ...expenses.map((x) => [x.reason, x.amount]),
-              ]}
-            />
+            <>
+              <TranscriptButton rows={exportRows} />
+              <CsvExportButton rows={exportRows} filename={`comptabilite-${weekId}`} />
+            </>
           )}
           {canEdit && (
             <button

@@ -34,6 +34,8 @@ import {
   BookOpen,
   GraduationCap,
   Archive,
+  Menu,
+  X,
 } from "lucide-react";
 import LiveClock from "./LiveClock";
 import PersonalizeThemeModal from "./PersonalizeThemeModal";
@@ -152,12 +154,19 @@ export function Sidebar() {
   } | undefined;
   const [showPersonalize, setShowPersonalize] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [pageVisibility, setPageVisibility] = useState<PageVisibilityRow[]>(() => readCachedPageVisibility() ?? []);
   const { isAdmin, canEdit } = useCanEdit();
 
   useEffect(() => {
     if (user?.mustChangePassword) setShowPassword(true);
   }, [user?.mustChangePassword]);
+
+  // Referme le tiroir mobile automatiquement après un changement de page
+  // (sinon il resterait ouvert par-dessus la nouvelle page après un clic).
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
 
   useEffect(() => {
     fetch("/api/page-visibility")
@@ -237,21 +246,63 @@ export function Sidebar() {
   }
 
   return (
-    <aside className="hidden md:flex w-64 flex-col glass m-4 rounded-2xl p-4 gap-1 shrink-0">
-      <div className="px-2 pb-4 mb-2 border-b border-white/[0.08] flex flex-col items-center text-center">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/images/logo.png"
-          alt="Arcadius"
-          className="w-20 h-20 mb-2 rounded-2xl shrink-0"
-          style={{ filter: "var(--logo-filter, none)" }}
-        />
-        <span className="font-heading text-2xl brand-gradient-text">Arcadius</span>
-        <p className="text-xs text-[rgb(var(--muted))] mt-0.5">Agence immobilière</p>
-        <div className="flex flex-col items-center mt-2">
-          <LiveClock />
+    <>
+      {/* Barre mobile : la sidebar normale est masquée sous md (768px), sans
+          quoi la navigation serait totalement inaccessible en fenêtre
+          réduite/overlay FiveM — seul un bouton pour ouvrir le tiroir. */}
+      <div className="md:hidden flex items-center justify-between glass m-4 rounded-2xl p-3">
+        <div className="flex items-center gap-2">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/images/logo.png"
+            alt="Arcadius"
+            className="w-9 h-9 rounded-xl shrink-0"
+            style={{ filter: "var(--logo-filter, none)" }}
+          />
+          <span className="font-heading text-lg brand-gradient-text">Arcadius</span>
         </div>
+        <button
+          onClick={() => setMobileOpen(true)}
+          className="text-[rgb(var(--muted))] hover:text-[rgb(var(--foreground))] p-1.5"
+          aria-label="Ouvrir le menu"
+        >
+          <Menu size={22} />
+        </button>
       </div>
+
+      {mobileOpen && (
+        <div
+          className="md:hidden fixed inset-0 z-40 bg-black/60"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
+
+      <aside
+        className={`fixed md:static inset-y-0 left-0 z-50 w-72 md:w-64 flex flex-col glass m-4 rounded-2xl p-4 gap-1 shrink-0 overflow-y-auto transition-transform duration-300 md:translate-x-0 ${
+          mobileOpen ? "translate-x-0" : "-translate-x-[120%]"
+        }`}
+      >
+        <button
+          onClick={() => setMobileOpen(false)}
+          className="md:hidden self-end text-[rgb(var(--muted))] hover:text-[rgb(var(--foreground))] p-1 mb-1"
+          aria-label="Fermer le menu"
+        >
+          <X size={18} />
+        </button>
+        <div className="px-2 pb-4 mb-2 border-b border-white/[0.08] flex flex-col items-center text-center">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/images/logo.png"
+            alt="Arcadius"
+            className="w-20 h-20 mb-2 rounded-2xl shrink-0"
+            style={{ filter: "var(--logo-filter, none)" }}
+          />
+          <span className="font-heading text-2xl brand-gradient-text">Arcadius</span>
+          <p className="text-xs text-[rgb(var(--muted))] mt-0.5">Agence immobilière</p>
+          <div className="flex flex-col items-center mt-2">
+            <LiveClock />
+          </div>
+        </div>
 
       <div className="flex-1 flex flex-col gap-1">
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
@@ -310,8 +361,10 @@ export function Sidebar() {
         </div>
       )}
 
+      </aside>
+
       {showPersonalize && <PersonalizeThemeModal onClose={() => setShowPersonalize(false)} />}
       {showPassword && <ChangePasswordModal onClose={() => setShowPassword(false)} />}
-    </aside>
+    </>
   );
 }
