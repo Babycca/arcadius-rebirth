@@ -5,6 +5,7 @@ import { ChevronDown, Plus, Pencil, Trash2, Check, X } from "lucide-react";
 import { PageShell, PageHeader } from "@/components/PageShell";
 import { useDialog } from "@/components/DialogProvider";
 import GradeSelect from "@/components/GradeSelect";
+import { GARAGE_TYPES } from "@/lib/accounting/garage-types";
 
 type Sale = {
   id: string;
@@ -14,8 +15,6 @@ type Sale = {
   clientName: string;
   clientPhone: string | null;
 };
-
-const GARAGE_TYPES = ["Garage Bateaux", "Garage Aéronefs", "Garage Hélicoptères"];
 
 type GarageSale = {
   id: string;
