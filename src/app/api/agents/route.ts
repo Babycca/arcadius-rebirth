@@ -22,7 +22,7 @@ export async function GET() {
     where: { role: { not: "SUPER_ADMIN" } },
     orderBy: { order: "asc" },
     select: {
-      id: true, firstName: true, lastName: true, loginHandle: true, phone: true,
+      id: true, firstName: true, lastName: true, loginHandle: true, phone: true, avatarUrl: true,
       grade: true, role: true, mustChangePassword: true, canAccessAccounting: true, active: true,
     },
   });

@@ -7,7 +7,6 @@ import EditorModeBanner from "@/components/EditorModeBanner";
 import GradeSelect from "@/components/GradeSelect";
 import PageVisibilityPanel from "@/components/PageVisibilityPanel";
 import ZoneCategoriesPanel from "@/components/ZoneCategoriesPanel";
-import AgentDetailModal from "@/components/AgentDetailModal";
 import { useCanEdit } from "@/lib/use-can-edit";
 import { useDialog } from "@/components/DialogProvider";
 import { useToast } from "@/components/ToastProvider";
@@ -40,7 +39,6 @@ export default function AdministrationPage() {
   const { data: session } = useSession();
   const sessionUser = session?.user as { id?: string; role?: string } | undefined;
   const isSuperAdmin = sessionUser?.role === "SUPER_ADMIN";
-  const [openAgent, setOpenAgent] = useState<Agent | null>(null);
   const [agents, setAgents] = useState<Agent[]>([]);
   const [rules, setRules] = useState<CommissionRule[]>([]);
   const [loading, setLoading] = useState(true);
@@ -521,12 +519,12 @@ export default function AdministrationPage() {
                   </div>
                 </td>
                 <td className="px-4 py-2.5">
-                  <button
-                    onClick={() => setOpenAgent(a)}
-                    className="font-medium hover:text-[rgb(var(--brand-400))] transition-colors text-left"
+                  <Link
+                    href={`/administration/agents/${a.id}`}
+                    className="font-medium hover:text-[rgb(var(--brand-400))] transition-colors"
                   >
                     {a.firstName} {a.lastName}
-                  </button>
+                  </Link>
                 </td>
                 <td className="px-4 py-2.5 text-[rgb(var(--muted))] font-mono text-xs">{a.loginHandle}</td>
                 <td className="px-4 py-2.5">
@@ -644,17 +642,6 @@ export default function AdministrationPage() {
       )}
 
       </div>
-
-      {openAgent && (
-        <AgentDetailModal
-          agent={openAgent}
-          gradeNames={gradeNames}
-          isSuperAdmin={isSuperAdmin}
-          isSelf={openAgent.id === sessionUser?.id}
-          onClose={() => setOpenAgent(null)}
-          onChanged={load}
-        />
-      )}
     </PageShell>
   );
 }

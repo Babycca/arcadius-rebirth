@@ -18,11 +18,13 @@ export async function GET(req: NextRequest) {
   const action = req.nextUrl.searchParams.get("action");
   const entityType = req.nextUrl.searchParams.get("entityType");
   const actor = req.nextUrl.searchParams.get("actor")?.trim();
+  const actorId = req.nextUrl.searchParams.get("actorId");
 
   const where: Record<string, unknown> = {};
   if (action) where.action = action;
   if (entityType) where.entityType = entityType;
   if (actor) where.actorName = { contains: actor, mode: "insensitive" };
+  if (actorId) where.actorId = actorId;
 
   const [logs, total, entityTypes] = await Promise.all([
     prisma.auditLog.findMany({
