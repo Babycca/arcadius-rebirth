@@ -67,7 +67,7 @@ export default function AgentWeekDetailPage({
         <UserAvatar />
       </div>
       <div className="flex flex-col items-center text-center mb-10">
-        <span className="w-28 h-28 rounded-full bg-[rgb(var(--brand-500)/0.18)] text-[rgb(var(--brand-400))] flex items-center justify-center text-3xl font-medium overflow-hidden shrink-0 mb-4">
+        <span className="relative w-28 h-28 rounded-full bg-[rgb(var(--brand-500)/0.18)] text-[rgb(var(--brand-400))] flex items-center justify-center text-3xl font-medium overflow-hidden shrink-0 mb-4 ring-4 ring-[rgb(var(--brand-500)/0.25)] shadow-[0_0_40px_rgb(var(--brand-glow)/0.25)]">
           {agentAvatarUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={agentAvatarUrl} alt="" className="w-full h-full object-cover" />
@@ -76,9 +76,14 @@ export default function AgentWeekDetailPage({
           )}
         </span>
         <h1 className="font-heading text-3xl">{agentName || "Agent"}</h1>
-        <p className="text-sm text-[rgb(var(--muted))] mt-1">
+        <p className="inline-flex items-center gap-1.5 text-xs font-medium text-[rgb(var(--brand-400))] bg-[rgb(var(--brand-500)/0.12)] border border-[rgb(var(--brand-500)/0.25)] rounded-full px-3 py-1 mt-3">
           {agentGrade}
-          {agentRole && agentRole !== "SUPER_ADMIN" && ` — ${ROLE_LABELS[agentRole] ?? agentRole}`}
+          {agentRole && agentRole !== "SUPER_ADMIN" && (
+            <>
+              <span className="w-1 h-1 rounded-full bg-[rgb(var(--brand-400))]" />
+              {ROLE_LABELS[agentRole] ?? agentRole}
+            </>
+          )}
         </p>
         <p className="text-xs text-[rgb(var(--muted))] mt-3">
           {loading ? "Chargement…" : `${sales.length} vente(s) cette semaine — $${total.toLocaleString("fr-FR")}`}
