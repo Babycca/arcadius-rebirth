@@ -5,7 +5,18 @@ import { useSession } from "next-auth/react";
 import { PageShell } from "@/components/PageShell";
 import PersonalizeThemeModal from "@/components/PersonalizeThemeModal";
 import ChangePasswordModal from "@/components/ChangePasswordModal";
-import { Palette, KeyRound, Phone, Camera } from "lucide-react";
+import {
+  Palette,
+  KeyRound,
+  Phone,
+  Camera,
+  ChevronRight,
+  Receipt,
+  TrendingUp,
+  Building2,
+  Award,
+  Wallet,
+} from "lucide-react";
 
 type Payroll = {
   totalSales: number;
@@ -96,7 +107,7 @@ export default function ProfilPage() {
         <button
           onClick={() => fileRef.current?.click()}
           disabled={uploading}
-          className="relative w-28 h-28 rounded-full overflow-hidden group shrink-0 mb-4"
+          className="relative w-28 h-28 rounded-full overflow-hidden group shrink-0 mb-4 ring-4 ring-[rgb(var(--brand-500)/0.25)] shadow-[0_0_40px_rgb(var(--brand-glow)/0.25)] transition-shadow hover:shadow-[0_0_55px_rgb(var(--brand-glow)/0.4)]"
         >
           {profile.avatarUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -121,9 +132,14 @@ export default function ProfilPage() {
         <h1 className="font-heading text-3xl">
           {profile.firstName} {profile.lastName}
         </h1>
-        <p className="text-sm text-[rgb(var(--muted))] mt-1">
+        <p className="inline-flex items-center gap-1.5 text-xs font-medium text-[rgb(var(--brand-400))] bg-[rgb(var(--brand-500)/0.12)] border border-[rgb(var(--brand-500)/0.25)] rounded-full px-3 py-1 mt-3">
           {profile.grade}
-          {profile.role !== "SUPER_ADMIN" && ` — ${ROLE_LABELS[profile.role] ?? profile.role}`}
+          {profile.role !== "SUPER_ADMIN" && (
+            <>
+              <span className="w-1 h-1 rounded-full bg-[rgb(var(--brand-400))]" />
+              {ROLE_LABELS[profile.role] ?? profile.role}
+            </>
+          )}
         </p>
       </div>
 
@@ -151,56 +167,80 @@ export default function ProfilPage() {
             </div>
           </div>
 
-          <button
-            onClick={() => fileRef.current?.click()}
-            className="flex items-center gap-2.5 text-sm px-3 py-2.5 rounded-lg hover:bg-white/[0.04] transition-colors text-left"
-          >
-            <Camera size={16} className="text-[rgb(var(--brand-400))]" />
-            Changer ma photo
-          </button>
-          <button
-            onClick={() => setShowPersonalize(true)}
-            className="flex items-center gap-2.5 text-sm px-3 py-2.5 rounded-lg hover:bg-white/[0.04] transition-colors text-left"
-          >
-            <Palette size={16} className="text-[rgb(var(--brand-400))]" />
-            Couleur du site
-          </button>
-          <button
-            onClick={() => setShowPassword(true)}
-            className="flex items-center gap-2.5 text-sm px-3 py-2.5 rounded-lg hover:bg-white/[0.04] transition-colors text-left"
-          >
-            <KeyRound size={16} className="text-[rgb(var(--brand-400))]" />
-            Changer mon mot de passe
-          </button>
+          <div className="flex flex-col gap-1 -mx-1.5">
+            <button
+              onClick={() => fileRef.current?.click()}
+              className="flex items-center gap-3 text-sm px-3 py-2.5 rounded-lg hover:bg-white/[0.04] transition-colors text-left group"
+            >
+              <span className="w-8 h-8 rounded-full bg-[rgb(var(--brand-500)/0.14)] flex items-center justify-center shrink-0">
+                <Camera size={14} className="text-[rgb(var(--brand-400))]" />
+              </span>
+              <span className="flex-1">Changer ma photo</span>
+              <ChevronRight size={14} className="text-[rgb(var(--muted))] opacity-0 group-hover:opacity-100 transition-opacity" />
+            </button>
+            <button
+              onClick={() => setShowPersonalize(true)}
+              className="flex items-center gap-3 text-sm px-3 py-2.5 rounded-lg hover:bg-white/[0.04] transition-colors text-left group"
+            >
+              <span className="w-8 h-8 rounded-full bg-[rgb(var(--brand-500)/0.14)] flex items-center justify-center shrink-0">
+                <Palette size={14} className="text-[rgb(var(--brand-400))]" />
+              </span>
+              <span className="flex-1">Couleur du site</span>
+              <ChevronRight size={14} className="text-[rgb(var(--muted))] opacity-0 group-hover:opacity-100 transition-opacity" />
+            </button>
+            <button
+              onClick={() => setShowPassword(true)}
+              className="flex items-center gap-3 text-sm px-3 py-2.5 rounded-lg hover:bg-white/[0.04] transition-colors text-left group"
+            >
+              <span className="w-8 h-8 rounded-full bg-[rgb(var(--brand-500)/0.14)] flex items-center justify-center shrink-0">
+                <KeyRound size={14} className="text-[rgb(var(--brand-400))]" />
+              </span>
+              <span className="flex-1">Changer mon mot de passe</span>
+              <ChevronRight size={14} className="text-[rgb(var(--muted))] opacity-0 group-hover:opacity-100 transition-opacity" />
+            </button>
+          </div>
         </div>
 
         <div className="glass-strong rounded-xl p-6">
           <h2 className="text-sm font-medium mb-5">Mes performances — semaine en cours</h2>
 
-          <div className="grid grid-cols-2 gap-4 mb-6">
-            <div className="glass rounded-xl p-4">
+          <div className="grid grid-cols-2 gap-4 mb-5">
+            <div className="card-hover glass rounded-xl p-4 border border-transparent">
+              <span className="w-8 h-8 rounded-lg bg-[rgb(var(--brand-500)/0.14)] flex items-center justify-center mb-2.5">
+                <TrendingUp size={15} className="text-[rgb(var(--brand-400))]" />
+              </span>
               <p className="text-xs text-[rgb(var(--muted))] mb-1">Ventes effectuées</p>
               <p className="text-2xl font-semibold">{p.salesCount}</p>
             </div>
-            <div className="glass rounded-xl p-4">
+            <div className="card-hover glass rounded-xl p-4 border border-transparent">
+              <span className="w-8 h-8 rounded-lg bg-[rgb(var(--brand-500)/0.14)] flex items-center justify-center mb-2.5">
+                <Receipt size={15} className="text-[rgb(var(--brand-400))]" />
+              </span>
               <p className="text-xs text-[rgb(var(--muted))] mb-1">Factures (CA total)</p>
               <p className="text-2xl font-semibold">${p.totalSales.toLocaleString("fr-FR")}</p>
             </div>
-            <div className="glass rounded-xl p-4">
+            <div className="card-hover glass rounded-xl p-4 border border-transparent">
+              <span className="w-8 h-8 rounded-lg bg-white/[0.06] flex items-center justify-center mb-2.5">
+                <Building2 size={15} className="text-[rgb(var(--muted))]" />
+              </span>
               <p className="text-xs text-[rgb(var(--muted))] mb-1">Bénéfice entreprise (10%)</p>
               <p className="text-2xl font-semibold text-[rgb(var(--muted))]">
                 ${p.companyProfit.toLocaleString("fr-FR")}
               </p>
             </div>
-            <div className="glass rounded-xl p-4">
+            <div className="card-hover glass rounded-xl p-4 border border-transparent">
+              <span className="w-8 h-8 rounded-lg bg-[rgb(var(--brand-500)/0.14)] flex items-center justify-center mb-2.5">
+                <Award size={15} className="text-[rgb(var(--brand-400))]" />
+              </span>
               <p className="text-xs text-[rgb(var(--muted))] mb-1">Prime de grade</p>
               <p className="text-2xl font-semibold">${p.bonusAmount.toLocaleString("fr-FR")}</p>
             </div>
           </div>
 
-          <div className="glass-strong rounded-xl p-5 border border-[rgb(var(--brand-500)/0.3)]">
+          <div className="relative overflow-hidden rounded-xl p-5 border border-[rgb(var(--brand-500)/0.35)]" style={{ background: "linear-gradient(135deg, rgb(var(--brand-500)/0.14), rgb(var(--brand-600)/0.05))" }}>
+            <Wallet size={72} className="absolute -right-3 -bottom-4 text-[rgb(var(--brand-500)/0.1)]" />
             <p className="text-xs text-[rgb(var(--muted))] mb-1">Salaire final</p>
-            <p className="font-heading text-3xl brand-gradient-text">
+            <p className="font-heading text-4xl brand-gradient-text">
               ${p.salary.toLocaleString("fr-FR")}
             </p>
           </div>
