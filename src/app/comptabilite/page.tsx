@@ -87,6 +87,7 @@ type AgentSummary = {
   salary: number;
   salesCount: number;
   invoiceCount: number;
+  isAbsentToday: boolean;
 };
 
 export default function ComptabilitePage() {
@@ -308,6 +309,15 @@ export default function ComptabilitePage() {
                       )}
                     </span>
                     {a.name}
+                    {a.isAbsentToday && (
+                      <span className="flex items-center gap-1 ml-1">
+                        <span
+                          className="w-1.5 h-1.5 rounded-full bg-[rgb(var(--danger))] shrink-0"
+                          style={{ boxShadow: "0 0 6px 1.5px rgb(var(--danger))" }}
+                        />
+                        <span className="text-[10px] italic text-[rgb(var(--danger)/0.85)]">absence</span>
+                      </span>
+                    )}
                   </Link>
                 </td>
                 <td className="px-4 py-3 text-[rgb(var(--muted))]">{a.phone || "—"}</td>

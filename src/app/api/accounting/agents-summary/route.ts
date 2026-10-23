@@ -27,13 +27,19 @@ export async function GET(req: NextRequest) {
   }
 
   const weekId = requestedWeekId || (await getActiveWeekId());
-  const [agents, rules, bonuses, archiveRecord, liveWeekStart] = await Promise.all([
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const [agents, rules, bonuses, archiveRecord, liveWeekStart, absencesToday] = await Promise.all([
     prisma.agent.findMany({ where: HIDDEN_FROM_AGENT_LISTS_WHERE, orderBy: { order: "asc" } }),
     prisma.commissionRule.findMany(),
     prisma.agentWeekBonus.findMany({ where: { weekId } }),
     requestedWeekId ? prisma.weeklyReset.findUnique({ where: { weekId: requestedWeekId } }) : null,
     requestedWeekId ? null : getActiveWeekStart(),
+    // Pertinent uniquement pour la semaine en cours (une absence est un
+    // statut du jour, pas une donnée historique d'une semaine archivée).
+    requestedWeekId ? [] : prisma.absence.findMany({ where: { startDate: { lte: today }, endDate: { gte: today } } }),
   ]);
+  const absentAgentIds = new Set(absencesToday.map((a) => a.agentId));
 
   let semaineA = archiveRecord?.semaineA ?? null;
   let semaineB = archiveRecord?.semaineB ?? null;
@@ -67,6 +73,7 @@ export async function GET(req: NextRequest) {
         grade: agent.grade,
         phone: agent.phone,
         active: agent.active,
+        isAbsentToday: absentAgentIds.has(agent.id),
         ruleBonusAmount: rule?.bonusAmount ?? 0,
         commissionRate: rule?.commissionRate ?? 0,
         ...payroll,
