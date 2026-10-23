@@ -1,4 +1,4 @@
-import { ChevronRight, Wallet } from "lucide-react";
+import { ChevronRight, Wallet, TrendingUp, Receipt, MapPin } from "lucide-react";
 import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { PageShell, PageHeader } from "@/components/PageShell";
@@ -79,45 +79,57 @@ export default async function DashboardPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <Link
           href="/comptabilite/mes-ventes"
-          className="card-hover glass-strong rounded-xl p-4 flex flex-col gap-2"
+          className="card-hover glass-strong rounded-xl p-4 flex flex-col gap-2.5 border border-transparent"
         >
-          <span className="text-xs text-[rgb(var(--muted))] flex items-center justify-between">
-            Ma comptabilité
-            <ChevronRight size={14} />
+          <span className="flex items-center justify-between">
+            <span className="w-9 h-9 rounded-lg bg-[rgb(var(--brand-500)/0.14)] flex items-center justify-center">
+              <Wallet size={16} className="text-[rgb(var(--brand-400))]" />
+            </span>
+            <ChevronRight size={14} className="text-[rgb(var(--muted))]" />
           </span>
-          <span className="text-2xl font-semibold text-[rgb(var(--brand-400))] flex items-center gap-2">
-            <Wallet size={20} />
-            {mySalesCount}
-          </span>
-          <span className="text-xs text-[rgb(var(--muted))]">mes ventes — semaine en cours</span>
+          <span className="text-2xl font-semibold text-[rgb(var(--brand-400))]">{mySalesCount}</span>
+          <span className="text-xs text-[rgb(var(--muted))]">Ma comptabilité — mes ventes</span>
         </Link>
-        <div className="card-hover glass-strong rounded-xl p-4 flex flex-col gap-2">
-          <span className="text-xs text-[rgb(var(--muted))]">Ventes cette semaine</span>
+        <div className="card-hover glass-strong rounded-xl p-4 flex flex-col gap-2.5 border border-transparent">
+          <span className="w-9 h-9 rounded-lg bg-white/[0.06] flex items-center justify-center">
+            <TrendingUp size={16} className="text-[rgb(var(--muted))]" />
+          </span>
           <span className="text-2xl font-semibold">{salesCount}</span>
-          <span className="text-xs text-[rgb(var(--muted))]">semaine en cours</span>
+          <span className="text-xs text-[rgb(var(--muted))]">Ventes cette semaine</span>
         </div>
-        <div className="card-hover glass-strong rounded-xl p-4 flex flex-col gap-2">
-          <span className="text-xs text-[rgb(var(--muted))]">Chiffre des factures</span>
+        <div className="card-hover glass-strong rounded-xl p-4 flex flex-col gap-2.5 border border-transparent">
+          <span className="w-9 h-9 rounded-lg bg-white/[0.06] flex items-center justify-center">
+            <Receipt size={16} className="text-[rgb(var(--muted))]" />
+          </span>
           <span className="text-2xl font-semibold">${totalInvoices.toLocaleString("fr-FR")}</span>
-          <span className="text-xs text-[rgb(var(--muted))]">semaine en cours</span>
+          <span className="text-xs text-[rgb(var(--muted))]">Chiffre des factures</span>
         </div>
-        <div className="card-hover glass-strong rounded-xl p-4 flex flex-col gap-2">
+        <div
+          className="card-hover rounded-xl p-4 flex flex-col gap-2.5 border border-[rgb(var(--brand-500)/0.3)] relative overflow-hidden"
+          style={{ background: "linear-gradient(135deg, rgb(var(--brand-500)/0.14), rgb(var(--brand-600)/0.05))" }}
+        >
+          <Wallet size={56} className="absolute -right-2 -bottom-3 text-[rgb(var(--brand-500)/0.1)]" />
+          <span className="w-9 h-9 rounded-lg bg-[rgb(var(--brand-500)/0.18)] flex items-center justify-center">
+            <Wallet size={16} className="text-[rgb(var(--brand-400))]" />
+          </span>
+          <span className="text-2xl font-semibold brand-gradient-text">${mySalary.toLocaleString("fr-FR")}</span>
           <span className="text-xs text-[rgb(var(--muted))]">Mon salaire</span>
-          <span className="text-2xl font-semibold text-[rgb(var(--brand-400))]">${mySalary.toLocaleString("fr-FR")}</span>
-          <span className="text-xs text-[rgb(var(--muted))]">semaine en cours</span>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="glass-strong rounded-xl p-5">
           <Link href="/comptabilite" className="flex items-center justify-between mb-4 group">
-            <h2 className="font-medium">Dernières ventes</h2>
+            <h2 className="font-medium flex items-center gap-2">
+              <TrendingUp size={15} className="text-[rgb(var(--brand-400))]" />
+              Dernières ventes
+            </h2>
             <ChevronRight
               size={16}
               className="text-[rgb(var(--muted))] group-hover:text-[rgb(var(--brand-400))] transition-colors"
             />
           </Link>
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-1">
             {DERNIERES_VENTES.length === 0 && (
               <p className="text-sm text-[rgb(var(--muted))] px-3 py-2.5">Aucune vente pour l&apos;instant.</p>
             )}
@@ -135,7 +147,7 @@ export default async function DashboardPage() {
                     <p className="text-xs text-[rgb(var(--muted))]">Habitation #{s.house}</p>
                   </div>
                 </div>
-                <span className="text-sm font-medium">${s.price.toLocaleString("fr-FR")}</span>
+                <span className="text-sm font-medium text-[rgb(var(--brand-400))]">${s.price.toLocaleString("fr-FR")}</span>
               </div>
             ))}
           </div>
@@ -143,21 +155,25 @@ export default async function DashboardPage() {
 
         <Link
           href="/carte-biens-reserves"
-          className="glass-strong rounded-xl p-5 flex flex-col card-hover block"
+          className="glass-strong rounded-xl p-5 flex flex-col card-hover block border border-transparent"
         >
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-medium">Carte des zones réservées</h2>
+            <h2 className="font-medium flex items-center gap-2">
+              <MapPin size={15} className="text-[rgb(var(--brand-400))]" />
+              Carte des zones réservées
+            </h2>
             <ChevronRight size={16} className="text-[rgb(var(--muted))]" />
           </div>
-          <div className="relative flex-1 rounded-lg overflow-hidden border border-white/[0.06] min-h-[180px]">
+          <div className="relative flex-1 rounded-lg overflow-hidden border border-white/[0.08] min-h-[180px]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={MAP_CONFIG.imageUrl} alt="" className="absolute inset-0 w-full h-full object-cover opacity-80" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
             {zonePoints.map((z) => {
               const cat = categoryFor(zoneCategories, z.categoryId);
               return (
                 <span
                   key={z.id}
-                  className="absolute w-1.5 h-1.5 rounded-full -translate-x-1/2 -translate-y-1/2"
+                  className="absolute w-1.5 h-1.5 rounded-full -translate-x-1/2 -translate-y-1/2 ring-2 ring-black/30"
                   style={{ left: `${z.pos.x}%`, top: `${z.pos.y}%`, backgroundColor: cat?.color ?? "#888" }}
                 />
               );
