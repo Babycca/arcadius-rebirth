@@ -128,12 +128,12 @@ export default function PriceDepliantsClient({ initialGroups }: { initialGroups:
         {displayGroups.map((group) => {
           const open = isSearching ? true : openIds.includes(group.id);
           return (
-            <div key={group.id} className="border-b border-white/[0.06] last:border-0">
+            <div key={group.id} className="border-b border-white/[0.06] last:border-0 hover:bg-white/[0.03] transition-colors">
               <div className="flex items-center gap-1 pl-1 pr-2">
                 {canEdit && <GripVertical size={14} className="text-[rgb(var(--muted))] shrink-0" />}
                 <button
                   onClick={() => toggle(group.id)}
-                  className="flex items-center gap-2.5 flex-1 text-left py-3 px-2 hover:bg-white/[0.02] transition-colors"
+                  className="flex items-center gap-2.5 flex-1 text-left py-3 px-2"
                 >
                   <span className="w-1 h-1 rounded-full bg-[rgb(var(--brand-400))] shrink-0" />
                   <span className="flex-1 text-sm">{group.name}</span>

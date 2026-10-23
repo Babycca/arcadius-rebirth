@@ -144,7 +144,7 @@ export default function ProfilPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6 max-w-4xl mx-auto">
-        <div className="glass-strong rounded-xl p-5 flex flex-col gap-4">
+        <div className="card-hover glass-strong rounded-xl p-5 flex flex-col gap-4 border border-transparent">
           <h2 className="text-sm font-medium">Modifier</h2>
 
           <div>
@@ -201,7 +201,7 @@ export default function ProfilPage() {
           </div>
         </div>
 
-        <div className="glass-strong rounded-xl p-6">
+        <div className="card-hover glass-strong rounded-xl p-6 border border-transparent">
           <h2 className="text-sm font-medium mb-5">Mes performances — semaine en cours</h2>
 
           <div className="grid grid-cols-2 gap-4 mb-5">

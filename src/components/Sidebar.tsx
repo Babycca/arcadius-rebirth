@@ -223,10 +223,10 @@ export function Sidebar() {
               )}
               <Link
                 href={href}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors flex-1 min-w-0 ${
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all flex-1 min-w-0 ${
                   active
                     ? "bg-[rgb(var(--brand-500)/0.18)] text-[rgb(var(--brand-400))] font-medium"
-                    : "text-[rgb(var(--muted))] hover:bg-white/[0.04] hover:text-[rgb(var(--foreground))]"
+                    : "text-[rgb(var(--muted))] hover:bg-[rgb(var(--brand-500)/0.1)] hover:text-[rgb(var(--foreground))] hover:shadow-[0_0_16px_rgb(var(--brand-glow)/0.18)]"
                 }`}
               >
                 <Icon size={17} />

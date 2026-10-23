@@ -118,7 +118,7 @@ export default async function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="glass-strong rounded-xl p-5">
+        <div className="card-hover glass-strong rounded-xl p-5 border border-transparent">
           <Link href="/comptabilite" className="flex items-center justify-between mb-4 group">
             <h2 className="font-medium flex items-center gap-2">
               <TrendingUp size={15} className="text-[rgb(var(--brand-400))]" />

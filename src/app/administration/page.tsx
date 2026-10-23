@@ -299,7 +299,7 @@ export default function AdministrationPage() {
       )}
 
       <div className="flex flex-col lg:flex-row gap-6">
-        <form onSubmit={handleCreate} className="glass-strong rounded-xl p-5 flex-1 min-w-0 max-w-lg lg:max-w-none">
+        <form onSubmit={handleCreate} className="card-hover glass-strong rounded-xl p-5 flex-1 min-w-0 max-w-lg lg:max-w-none border border-transparent">
           <h2 className="text-sm font-medium mb-4">Créer un agent</h2>
           {error && (
             <div className="rounded-lg bg-[rgb(var(--danger)/0.12)] text-[rgb(var(--danger))] text-xs px-3 py-2 mb-3">
@@ -344,7 +344,7 @@ export default function AdministrationPage() {
         </form>
 
         {canEdit && (
-          <div className="glass-strong rounded-xl p-5 flex-1 min-w-0 max-w-lg lg:max-w-none">
+          <div className="card-hover glass-strong rounded-xl p-5 flex-1 min-w-0 max-w-lg lg:max-w-none border border-transparent">
             <h2 className="text-sm font-medium mb-1">Grades, commissions &amp; primes</h2>
             <p className="text-xs text-[rgb(var(--muted))] mb-4">
               Utilisés pour le calcul du salaire en Comptabilité.
@@ -432,7 +432,7 @@ export default function AdministrationPage() {
         </div>
       )}
 
-      <div className="glass-strong rounded-xl overflow-hidden mt-6">
+      <div className="card-hover glass-strong rounded-xl overflow-hidden mt-6 border border-transparent">
         <table className="w-full text-sm">
           <thead>
             <tr className="text-left text-xs text-[rgb(var(--muted))] border-b border-white/[0.08]">
@@ -548,7 +548,7 @@ export default function AdministrationPage() {
       </div>
 
       {archivedAgents.length > 0 && (
-        <div className="glass-strong rounded-xl overflow-hidden mt-6">
+        <div className="card-hover glass-strong rounded-xl overflow-hidden mt-6 border border-transparent">
           <div className="px-4 py-3 border-b border-white/[0.08] flex items-center gap-2">
             <Archive size={14} className="text-[rgb(var(--muted))]" />
             <h2 className="text-sm font-medium">Archive Employés</h2>

@@ -90,7 +90,7 @@ export default function AgentWeekDetailPage({
         </p>
       </div>
 
-      <div className="glass-strong rounded-xl overflow-hidden max-w-4xl mx-auto">
+      <div className="card-hover glass-strong rounded-xl overflow-hidden max-w-4xl mx-auto border border-transparent">
         <table className="w-full text-sm">
           <thead>
             <tr className="text-left text-xs text-[rgb(var(--muted))] border-b border-white/[0.08]">
@@ -125,7 +125,7 @@ export default function AgentWeekDetailPage({
       </div>
 
       {garages.length > 0 && (
-        <div className="glass-strong rounded-xl overflow-hidden max-w-4xl mx-auto mt-5">
+        <div className="card-hover glass-strong rounded-xl overflow-hidden max-w-4xl mx-auto mt-5 border border-transparent">
           <p className="text-xs text-[rgb(var(--muted))] px-4 py-3 border-b border-white/[0.08]">
             Garages posés — ne compte pas comme une vente
           </p>

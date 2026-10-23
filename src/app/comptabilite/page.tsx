@@ -36,7 +36,7 @@ function ManualWeekCard({ settingKey, label, isAdmin }: { settingKey: string; la
   }
 
   return (
-    <div className="glass-strong rounded-xl px-4 py-2.5">
+    <div className="card-hover glass-strong rounded-xl px-4 py-2.5 border border-transparent">
       <p className="text-xs text-[rgb(var(--muted))] flex items-center justify-between gap-3">
         {label}
         {isAdmin && !editing && (
@@ -273,7 +273,7 @@ export default function ComptabilitePage() {
         <ManualWeekCard settingKey="comptabilite-semaine-b" label="Semaine B" isAdmin={isAdmin} />
       </div>
 
-      <div className="glass-strong rounded-xl overflow-hidden">
+      <div className="card-hover glass-strong rounded-xl overflow-hidden border border-transparent">
         <table className="w-full text-sm">
           <thead>
             <tr className="text-left text-xs text-[rgb(var(--muted))] border-b border-white/[0.08]">

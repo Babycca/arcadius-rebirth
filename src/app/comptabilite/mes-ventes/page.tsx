@@ -294,7 +294,7 @@ export default function MesVentesPage() {
         subtitle={`Semaine en cours — ${sales.length} vente${sales.length > 1 ? "s" : ""}, $${totalWeek.toLocaleString("fr-FR")}`}
       />
 
-      <form onSubmit={handleSubmit} className="glass-strong rounded-xl p-5 mb-6 max-w-4xl mx-auto">
+      <form onSubmit={handleSubmit} className="card-hover glass-strong rounded-xl p-5 mb-6 max-w-4xl mx-auto border border-transparent">
         <h2 className="text-sm font-medium mb-4 flex items-center gap-2.5">
           <span className="w-8 h-8 rounded-lg bg-[rgb(var(--brand-500)/0.14)] flex items-center justify-center">
             <ReceiptText size={14} className="text-[rgb(var(--brand-400))]" />
@@ -372,7 +372,7 @@ export default function MesVentesPage() {
 
       <GaragesPanel />
 
-      <div className="glass-strong rounded-xl overflow-hidden max-w-4xl mx-auto">
+      <div className="card-hover glass-strong rounded-xl overflow-hidden max-w-4xl mx-auto border border-transparent">
         <table className="w-full text-sm">
           <thead>
             <tr className="text-left text-xs text-[rgb(var(--muted))] border-b border-white/[0.08]">
