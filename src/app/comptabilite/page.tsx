@@ -310,12 +310,12 @@ export default function ComptabilitePage() {
                     </span>
                     {a.name}
                     {a.isAbsentToday && (
-                      <span className="flex items-center gap-1 ml-1">
+                      <span className="flex items-center gap-1.5 ml-2.5">
                         <span
                           className="w-1.5 h-1.5 rounded-full bg-[rgb(var(--danger))] shrink-0"
                           style={{ boxShadow: "0 0 6px 1.5px rgb(var(--danger))" }}
                         />
-                        <span className="text-[10px] italic text-[rgb(var(--danger)/0.85)]">absence</span>
+                        <span className="text-[10px] italic text-[rgb(var(--danger)/0.85)]">Absence</span>
                       </span>
                     )}
                   </Link>
