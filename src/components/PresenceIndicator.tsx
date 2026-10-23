@@ -19,7 +19,7 @@ export default function PresenceIndicator() {
     const rect = wrapRef.current?.getBoundingClientRect();
     if (rect) setPos({ top: rect.bottom + 8, right: window.innerWidth - rect.right });
     setOpen(true);
-    fetch("/api/presence/online")
+    fetch("/api/presence/online", { cache: "no-store" })
       .then((r) => (r.ok ? r.json() : []))
       .then(setAgents)
       .catch(() => setAgents([]));
@@ -43,27 +43,27 @@ export default function PresenceIndicator() {
       {open &&
         createPortal(
           <div
-            className="fixed z-[101] w-64 rounded-xl overflow-hidden border border-white/10 shadow-xl glass-strong"
+            className="fixed z-[101] w-48 rounded-lg overflow-hidden border border-white/[0.08] shadow-lg glass-strong"
             style={{ top: pos.top, right: pos.right }}
             onMouseEnter={openPanel}
             onMouseLeave={() => setOpen(false)}
           >
-              <p className="text-xs text-[rgb(var(--muted))] px-4 py-3 border-b border-white/[0.08] flex items-center gap-1.5">
+              <p className="text-[10px] uppercase tracking-wide text-[rgb(var(--muted))] px-3 py-2 border-b border-white/[0.06] flex items-center gap-1.5">
                 <span
                   className="w-1.5 h-1.5 rounded-full bg-[rgb(var(--success))] shrink-0"
-                  style={{ boxShadow: "0 0 5px 1px rgb(var(--success))" }}
+                  style={{ boxShadow: "0 0 4px 1px rgb(var(--success))" }}
                 />
-                Agents en ligne
+                En ligne{agents !== null && ` · ${agents.length}`}
               </p>
               {agents === null ? (
-                <p className="px-4 py-4 text-xs text-[rgb(var(--muted))]">Chargement…</p>
+                <p className="px-3 py-3 text-xs text-[rgb(var(--muted))]">Chargement…</p>
               ) : agents.length === 0 ? (
-                <p className="px-4 py-4 text-xs text-[rgb(var(--muted))]">Personne d&apos;autre en ligne.</p>
+                <p className="px-3 py-3 text-xs text-[rgb(var(--muted))]">Personne d&apos;autre.</p>
               ) : (
-                <div className="max-h-64 overflow-y-auto">
+                <div className="max-h-56 overflow-y-auto py-1">
                   {agents.map((a) => (
-                    <div key={a.id} className="flex items-center gap-2.5 px-4 py-2.5 hover:bg-white/[0.04]">
-                      <span className="w-7 h-7 rounded-full bg-[rgb(var(--brand-500)/0.18)] text-[rgb(var(--brand-400))] flex items-center justify-center text-xs font-medium overflow-hidden shrink-0">
+                    <div key={a.id} className="flex items-center gap-2 px-3 py-1.5 hover:bg-white/[0.04]">
+                      <span className="w-5 h-5 rounded-full bg-[rgb(var(--brand-500)/0.18)] text-[rgb(var(--brand-400))] flex items-center justify-center text-[10px] font-medium overflow-hidden shrink-0">
                         {a.avatarUrl ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img src={a.avatarUrl} alt="" className="w-full h-full object-cover" />
@@ -71,10 +71,7 @@ export default function PresenceIndicator() {
                           a.name[0]
                         )}
                       </span>
-                      <div className="min-w-0">
-                        <p className="text-sm truncate">{a.name}</p>
-                        <p className="text-[10px] text-[rgb(var(--muted))]">{a.grade}</p>
-                      </div>
+                      <p className="text-xs truncate">{a.name}</p>
                     </div>
                   ))}
                 </div>

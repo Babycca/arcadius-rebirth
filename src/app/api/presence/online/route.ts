@@ -4,7 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { HIDDEN_FROM_AGENT_LISTS_WHERE } from "@/lib/agent-filters";
 
-const ONLINE_THRESHOLD_MS = 3 * 60 * 1000;
+const ONLINE_THRESHOLD_MS = 90 * 1000;
 
 export async function GET() {
   const session = await getServerSession(authOptions);

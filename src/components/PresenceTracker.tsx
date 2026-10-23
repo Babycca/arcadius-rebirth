@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useSession } from "next-auth/react";
 
-const PING_INTERVAL_MS = 60 * 1000;
+const PING_INTERVAL_MS = 30 * 1000;
 
 // Ping discret tant que le site est ouvert (onglet actif ou non) — alimente
 // Agent.lastSeenAt, seule source de la liste "en ligne" affichée via

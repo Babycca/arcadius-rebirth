@@ -352,7 +352,11 @@ export function Sidebar() {
             <Palette size={15} />
           </button>
           <button
-            onClick={() => signOut({ callbackUrl: "/login" })}
+            onClick={() => {
+              fetch("/api/presence/clear", { method: "POST" }).finally(() =>
+                signOut({ callbackUrl: "/login" })
+              );
+            }}
             className="text-[rgb(var(--muted))] hover:text-[rgb(var(--danger))] transition-colors p-1"
             title="Déconnexion"
           >
