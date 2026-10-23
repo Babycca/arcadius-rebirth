@@ -130,7 +130,7 @@ export default function InteriorsByPriceClient({ groups }: { groups: TextGroup[]
   }, [groups, threshold]);
 
   return (
-    <div className="glass-strong rounded-xl p-4 max-w-3xl mb-4">
+    <div className="glass-strong rounded-xl p-4 max-w-4xl mx-auto mb-4">
       <div className="flex flex-wrap items-center gap-3">
         <span className="flex shrink-0 items-center gap-1.5 text-sm font-semibold">
           <Tag size={15} className="text-[rgb(var(--brand-400))]" />

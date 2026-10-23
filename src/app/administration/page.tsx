@@ -278,8 +278,9 @@ export default function AdministrationPage() {
       <PageHeader title="Administration" subtitle={`${agents.length} comptes agents`} />
       <EditorModeBanner />
 
+      <div className="max-w-6xl mx-auto">
       {newCreds && (
-        <div className="glass-strong rounded-xl p-4 mb-6 max-w-lg border border-[rgb(var(--brand-500)/0.4)]">
+        <div className="glass-strong rounded-xl p-4 mb-6 max-w-lg mx-auto border border-[rgb(var(--brand-500)/0.4)]">
           <p className="text-sm font-medium mb-1">
             {newCreds.loginHandle ? "Compte créé" : "Mot de passe régénéré"} — transmets ces identifiants à l&apos;agent :
           </p>
@@ -431,7 +432,7 @@ export default function AdministrationPage() {
         </div>
       )}
 
-      <div className="glass-strong rounded-xl overflow-hidden max-w-3xl mt-6">
+      <div className="glass-strong rounded-xl overflow-hidden mt-6">
         <table className="w-full text-sm">
           <thead>
             <tr className="text-left text-xs text-[rgb(var(--muted))] border-b border-white/[0.08]">
@@ -547,7 +548,7 @@ export default function AdministrationPage() {
       </div>
 
       {archivedAgents.length > 0 && (
-        <div className="glass-strong rounded-xl overflow-hidden max-w-3xl mt-6">
+        <div className="glass-strong rounded-xl overflow-hidden mt-6">
           <div className="px-4 py-3 border-b border-white/[0.08] flex items-center gap-2">
             <Archive size={14} className="text-[rgb(var(--muted))]" />
             <h2 className="text-sm font-medium">Archive Employés</h2>
@@ -585,6 +586,8 @@ export default function AdministrationPage() {
           </table>
         </div>
       )}
+
+      </div>
 
       {openAgent && (
         <AgentDetailModal

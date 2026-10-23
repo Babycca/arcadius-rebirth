@@ -124,7 +124,7 @@ export default function EstimationWizard() {
   if (loading) return <p className="text-sm text-[rgb(var(--muted))]">Chargement…</p>;
 
   return (
-    <div className="mx-auto max-w-2xl flex flex-col gap-4">
+    <div className="mx-auto max-w-4xl flex flex-col gap-4">
       {step !== "structure" && step !== "result" && (
         <button
           type="button"

@@ -36,7 +36,13 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ agen
   if (!agent) return NextResponse.json({ error: "Agent introuvable" }, { status: 404 });
 
   return NextResponse.json({
-    agent: { id: agent.id, name: `${agent.firstName} ${agent.lastName}`, avatarUrl: agent.avatarUrl },
+    agent: {
+      id: agent.id,
+      name: `${agent.firstName} ${agent.lastName}`,
+      avatarUrl: agent.avatarUrl,
+      grade: agent.grade,
+      role: agent.role,
+    },
     sales,
   });
 }

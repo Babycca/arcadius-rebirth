@@ -82,7 +82,7 @@ export default function PriceDepliantsClient({ initialGroups }: { initialGroups:
   }
 
   return (
-    <div className="flex flex-col gap-3 max-w-2xl">
+    <div className="flex flex-col gap-3 max-w-4xl mx-auto">
       {canEdit && (
         <div className="flex gap-2 mb-1">
           <input

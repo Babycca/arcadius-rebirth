@@ -79,7 +79,7 @@ export default function ComptabiliteArchivePage() {
         )}
       </div>
 
-      <div className="glass-strong rounded-xl overflow-hidden max-w-2xl">
+      <div className="glass-strong rounded-xl overflow-hidden max-w-4xl mx-auto">
         {nothing && (
           <p className="px-4 py-6 text-center text-[rgb(var(--muted))] text-sm">Aucune semaine archivée pour l&apos;instant.</p>
         )}

@@ -125,7 +125,7 @@ export default function DepensesPage() {
         subtitle={`Semaine en cours — ${expenses.length} dépense${expenses.length > 1 ? "s" : ""}, $${total.toLocaleString("fr-FR")}`}
       />
 
-      <form onSubmit={handleSubmit} className="glass-strong rounded-xl p-5 mb-6 max-w-2xl">
+      <form onSubmit={handleSubmit} className="glass-strong rounded-xl p-5 mb-6 max-w-4xl mx-auto">
         <h2 className="text-sm font-medium mb-4">Ajouter une dépense</h2>
         {error && (
           <div className="rounded-lg bg-[rgb(var(--danger)/0.12)] text-[rgb(var(--danger))] text-xs px-3 py-2 mb-3">
@@ -166,7 +166,7 @@ export default function DepensesPage() {
         </button>
       </form>
 
-      <div className="glass-strong rounded-xl overflow-hidden max-w-2xl">
+      <div className="glass-strong rounded-xl overflow-hidden max-w-4xl mx-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="text-left text-xs text-[rgb(var(--muted))] border-b border-white/[0.08]">

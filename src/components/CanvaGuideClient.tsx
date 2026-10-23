@@ -37,7 +37,7 @@ export default function CanvaGuideClient({ settingKey }: { settingKey: string })
 
   if (editing) {
     return (
-      <div className="glass-strong rounded-xl p-5 max-w-2xl">
+      <div className="glass-strong rounded-xl p-5 max-w-2xl mx-auto">
         <label className="text-xs text-[rgb(var(--muted))] mb-1 block">
           Lien d&apos;intégration Canva (Partager → Intégrer)
         </label>

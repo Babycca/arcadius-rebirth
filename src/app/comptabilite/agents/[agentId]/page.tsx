@@ -1,7 +1,14 @@
 "use client";
 
 import { use, useEffect, useState } from "react";
-import { PageShell, PageHeader } from "@/components/PageShell";
+import { PageShell } from "@/components/PageShell";
+import UserAvatar from "@/components/UserAvatar";
+
+const ROLE_LABELS: Record<string, string> = {
+  SUPER_ADMIN: "Super Admin",
+  ADMIN: "Admin",
+  AGENT: "Agent",
+};
 
 type Sale = {
   id: string;
@@ -28,6 +35,8 @@ export default function AgentWeekDetailPage({
   const { agentId } = use(params);
   const [agentName, setAgentName] = useState("");
   const [agentAvatarUrl, setAgentAvatarUrl] = useState<string | null>(null);
+  const [agentGrade, setAgentGrade] = useState("");
+  const [agentRole, setAgentRole] = useState("");
   const [sales, setSales] = useState<Sale[]>([]);
   const [garages, setGarages] = useState<GarageSale[]>([]);
   const [loading, setLoading] = useState(true);
@@ -38,6 +47,8 @@ export default function AgentWeekDetailPage({
         const data = await res.json();
         setAgentName(data.agent.name);
         setAgentAvatarUrl(data.agent.avatarUrl);
+        setAgentGrade(data.agent.grade);
+        setAgentRole(data.agent.role);
         setSales(data.sales);
       }
       setLoading(false);
@@ -51,24 +62,29 @@ export default function AgentWeekDetailPage({
 
   return (
     <PageShell>
-      <PageHeader
-        title={
-          <div className="flex items-center gap-3">
-            <span className="w-9 h-9 rounded-full bg-[rgb(var(--brand-500)/0.18)] text-[rgb(var(--brand-400))] flex items-center justify-center text-sm font-medium overflow-hidden shrink-0">
-              {agentAvatarUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={agentAvatarUrl} alt="" className="w-full h-full object-cover" />
-              ) : (
-                (agentName || "?")[0]
-              )}
-            </span>
-            {agentName || "Agent"}
-          </div>
-        }
-        subtitle={loading ? "Chargement…" : `${sales.length} vente(s) cette semaine — $${total.toLocaleString("fr-FR")}`}
-      />
+      <div className="flex justify-end mb-2">
+        <UserAvatar />
+      </div>
+      <div className="flex flex-col items-center text-center mb-10">
+        <span className="w-28 h-28 rounded-full bg-[rgb(var(--brand-500)/0.18)] text-[rgb(var(--brand-400))] flex items-center justify-center text-3xl font-medium overflow-hidden shrink-0 mb-4">
+          {agentAvatarUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={agentAvatarUrl} alt="" className="w-full h-full object-cover" />
+          ) : (
+            (agentName || "?")[0]
+          )}
+        </span>
+        <h1 className="font-heading text-3xl">{agentName || "Agent"}</h1>
+        <p className="text-sm text-[rgb(var(--muted))] mt-1">
+          {agentGrade}
+          {agentRole && agentRole !== "SUPER_ADMIN" && ` — ${ROLE_LABELS[agentRole] ?? agentRole}`}
+        </p>
+        <p className="text-xs text-[rgb(var(--muted))] mt-3">
+          {loading ? "Chargement…" : `${sales.length} vente(s) cette semaine — $${total.toLocaleString("fr-FR")}`}
+        </p>
+      </div>
 
-      <div className="glass-strong rounded-xl overflow-hidden max-w-2xl">
+      <div className="glass-strong rounded-xl overflow-hidden max-w-4xl mx-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="text-left text-xs text-[rgb(var(--muted))] border-b border-white/[0.08]">
@@ -103,7 +119,7 @@ export default function AgentWeekDetailPage({
       </div>
 
       {garages.length > 0 && (
-        <div className="glass-strong rounded-xl overflow-hidden max-w-2xl mt-5">
+        <div className="glass-strong rounded-xl overflow-hidden max-w-4xl mx-auto mt-5">
           <p className="text-xs text-[rgb(var(--muted))] px-4 py-3 border-b border-white/[0.08]">
             Garages posés — ne compte pas comme une vente
           </p>

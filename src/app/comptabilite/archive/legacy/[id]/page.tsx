@@ -108,7 +108,7 @@ export default function LegacyArchiveDetailPage({ params }: { params: Promise<{ 
         }
       />
 
-      <div className="glass-strong rounded-xl overflow-hidden max-w-4xl">
+      <div className="glass-strong rounded-xl overflow-hidden max-w-4xl mx-auto">
         {sales.length === 0 ? (
           <p className="px-4 py-6 text-center text-[rgb(var(--muted))] text-sm">
             {data ? "Aucune vente." : "Chargement…"}

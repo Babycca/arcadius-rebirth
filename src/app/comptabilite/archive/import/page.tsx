@@ -56,7 +56,7 @@ export default function ImportLegacyArchivePage() {
         subtitle="Colle les lignes copiées depuis l'ancien Google Sheets — aucun calcul de salaire, juste un listing des ventes."
       />
 
-      <div className="glass-strong rounded-xl p-5 max-w-2xl flex flex-col gap-4">
+      <div className="glass-strong rounded-xl p-5 max-w-4xl mx-auto flex flex-col gap-4">
         {error && (
           <div className="rounded-lg bg-[rgb(var(--danger)/0.12)] text-[rgb(var(--danger))] text-xs px-3 py-2">
             {error}

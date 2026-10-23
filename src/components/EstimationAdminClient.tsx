@@ -126,7 +126,7 @@ export default function EstimationAdminClient({ initialProfiles }: { initialProf
   }
 
   return (
-    <div className="flex flex-col gap-4 max-w-3xl">
+    <div className="flex flex-col gap-4 max-w-4xl mx-auto">
       <div className="glass-strong rounded-xl p-4 flex flex-wrap gap-2 items-end">
         <div>
           <label className="text-xs text-[rgb(var(--muted))] block mb-1">Type</label>

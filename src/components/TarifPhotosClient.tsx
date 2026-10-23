@@ -56,7 +56,7 @@ export default function TarifPhotosClient({ initialPhotos }: { initialPhotos: Ph
   }
 
   return (
-    <div className="flex flex-col gap-4 max-w-2xl">
+    <div className="flex flex-col gap-4 max-w-4xl mx-auto">
       {photos.length === 0 && (
         <p className="text-sm text-[rgb(var(--muted))]">Aucune photo pour l&apos;instant.</p>
       )}
