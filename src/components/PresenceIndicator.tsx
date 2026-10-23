@@ -15,11 +15,7 @@ export default function PresenceIndicator() {
   const [pos, setPos] = useState({ top: 0, right: 0 });
   const wrapRef = useRef<HTMLDivElement>(null);
 
-  function toggle() {
-    if (open) {
-      setOpen(false);
-      return;
-    }
+  function openPanel() {
     const rect = wrapRef.current?.getBoundingClientRect();
     if (rect) setPos({ top: rect.bottom + 8, right: window.innerWidth - rect.right });
     setOpen(true);
@@ -30,23 +26,28 @@ export default function PresenceIndicator() {
   }
 
   return (
-    <div ref={wrapRef} className="relative">
-      <button onClick={toggle} className="relative block" title="Agents en ligne">
+    <div
+      ref={wrapRef}
+      className="relative"
+      onMouseEnter={openPanel}
+      onMouseLeave={() => setOpen(false)}
+    >
+      <div className="relative" title="Agents en ligne">
         <UserAvatar />
         <span
           className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-[rgb(var(--success))] border-2 border-[rgb(var(--bg-elevated))]"
           style={{ boxShadow: "0 0 6px 1.5px rgb(var(--success))" }}
         />
-      </button>
+      </div>
 
       {open &&
         createPortal(
-          <>
-            <div className="fixed inset-0 z-[100]" onClick={() => setOpen(false)} />
-            <div
-              className="fixed z-[101] w-64 rounded-xl overflow-hidden border border-white/10 shadow-xl glass-strong"
-              style={{ top: pos.top, right: pos.right }}
-            >
+          <div
+            className="fixed z-[101] w-64 rounded-xl overflow-hidden border border-white/10 shadow-xl glass-strong"
+            style={{ top: pos.top, right: pos.right }}
+            onMouseEnter={openPanel}
+            onMouseLeave={() => setOpen(false)}
+          >
               <p className="text-xs text-[rgb(var(--muted))] px-4 py-3 border-b border-white/[0.08] flex items-center gap-1.5">
                 <span
                   className="w-1.5 h-1.5 rounded-full bg-[rgb(var(--success))] shrink-0"
@@ -78,8 +79,7 @@ export default function PresenceIndicator() {
                   ))}
                 </div>
               )}
-            </div>
-          </>,
+            </div>,
           document.body
         )}
     </div>
