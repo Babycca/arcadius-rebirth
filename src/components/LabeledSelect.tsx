@@ -54,10 +54,11 @@ export default function LabeledSelect({
           <>
             <div className="fixed inset-0 z-[100]" onClick={() => setOpen(false)} />
             <div
-              className="fixed z-[101] rounded-lg overflow-hidden border border-white/10 shadow-xl glass-popover"
+              className="fixed z-[101] rounded-lg border border-white/10 shadow-xl glass-popover max-h-64 overflow-x-hidden overflow-y-auto"
               style={{
                 left: pos.left,
                 minWidth: pos.width,
+                maxWidth: 240,
                 ...(pos.openUp ? { bottom: window.innerHeight - pos.top } : { top: pos.top }),
               }}
             >
@@ -69,7 +70,7 @@ export default function LabeledSelect({
                     onChange(o.value);
                     setOpen(false);
                   }}
-                  className={`block w-full text-left px-3 py-2 text-sm transition-colors whitespace-nowrap ${
+                  className={`block w-full text-left px-3 py-2 text-sm transition-colors truncate ${
                     o.value === value
                       ? "bg-[rgb(var(--brand-500)/0.18)] text-[rgb(var(--brand-400))]"
                       : "hover:bg-white/[0.06]"
