@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { GARAGE_TYPES } from "../route";
+import { GARAGE_TYPES } from "@/lib/accounting/garage-types";
 
 function isAdmin(role: string | undefined) {
   return role === "ADMIN" || role === "SUPER_ADMIN";
