@@ -299,7 +299,7 @@ export default function AdministrationPage() {
       )}
 
       <div className="flex flex-col lg:flex-row gap-6">
-        <form onSubmit={handleCreate} className="glass-strong rounded-xl p-5 max-w-lg w-full">
+        <form onSubmit={handleCreate} className="glass-strong rounded-xl p-5 flex-1 min-w-0 max-w-lg lg:max-w-none">
           <h2 className="text-sm font-medium mb-4">Créer un agent</h2>
           {error && (
             <div className="rounded-lg bg-[rgb(var(--danger)/0.12)] text-[rgb(var(--danger))] text-xs px-3 py-2 mb-3">
@@ -344,7 +344,7 @@ export default function AdministrationPage() {
         </form>
 
         {canEdit && (
-          <div className="glass-strong rounded-xl p-5 max-w-lg w-full">
+          <div className="glass-strong rounded-xl p-5 flex-1 min-w-0 max-w-lg lg:max-w-none">
             <h2 className="text-sm font-medium mb-1">Grades, commissions &amp; primes</h2>
             <p className="text-xs text-[rgb(var(--muted))] mb-4">
               Utilisés pour le calcul du salaire en Comptabilité.
