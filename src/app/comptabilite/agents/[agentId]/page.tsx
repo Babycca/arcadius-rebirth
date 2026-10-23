@@ -41,6 +41,7 @@ export default function AgentWeekDetailPage({
   const [sales, setSales] = useState<Sale[]>([]);
   const [garages, setGarages] = useState<GarageSale[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isAbsentToday, setIsAbsentToday] = useState(false);
 
   useEffect(() => {
     fetch(`/api/accounting/agents/${agentId}/sales`).then(async (res) => {
@@ -51,6 +52,7 @@ export default function AgentWeekDetailPage({
         setAgentGrade(data.agent.grade);
         setAgentRole(data.agent.role);
         setSales(data.sales);
+        setIsAbsentToday(!!data.isAbsentToday);
       }
       setLoading(false);
     });
@@ -75,7 +77,18 @@ export default function AgentWeekDetailPage({
             (agentName || "?")[0]
           )}
         </span>
-        <h1 className="font-heading text-3xl">{agentName || "Agent"}</h1>
+        <h1 className="font-heading text-3xl flex items-center gap-2.5">
+          {agentName || "Agent"}
+          {isAbsentToday && (
+            <span className="flex items-center gap-1.5">
+              <span
+                className="w-2 h-2 rounded-full bg-[rgb(var(--danger))] shrink-0"
+                style={{ boxShadow: "0 0 8px 2px rgb(var(--danger))" }}
+              />
+              <span className="text-xs italic text-[rgb(var(--danger)/0.85)]">Absence</span>
+            </span>
+          )}
+        </h1>
         <p className="inline-flex items-center gap-1.5 text-xs font-medium text-[rgb(var(--brand-400))] bg-[rgb(var(--brand-500)/0.12)] border border-[rgb(var(--brand-500)/0.25)] rounded-full px-3 py-1 mt-3">
           {agentGrade}
           {agentRole && agentRole !== "SUPER_ADMIN" && (

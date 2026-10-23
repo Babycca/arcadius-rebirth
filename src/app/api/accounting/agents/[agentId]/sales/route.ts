@@ -35,6 +35,17 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ agen
 
   if (!agent) return NextResponse.json({ error: "Agent introuvable" }, { status: 404 });
 
+  // Absence affichée uniquement sur la semaine en cours (une semaine
+  // archivée reflète une période passée, l'absence actuelle n'a pas de sens).
+  let isAbsentToday = false;
+  if (!requestedWeekId) {
+    const today = new Date();
+    const absence = await prisma.absence.findFirst({
+      where: { agentId, startDate: { lte: today }, endDate: { gte: today } },
+    });
+    isAbsentToday = !!absence;
+  }
+
   return NextResponse.json({
     agent: {
       id: agent.id,
@@ -44,5 +55,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ agen
       role: agent.role,
     },
     sales,
+    isAbsentToday,
   });
 }

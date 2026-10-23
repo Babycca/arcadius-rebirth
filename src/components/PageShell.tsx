@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { Sidebar } from "./Sidebar";
-import UserAvatar from "./UserAvatar";
+import PresenceIndicator from "./PresenceIndicator";
 
 export function PageShell({ children }: { children: ReactNode }) {
   return (
@@ -28,7 +28,7 @@ export function PageHeader({
           <p className="text-sm text-[rgb(var(--muted))] mt-1.5">{subtitle}</p>
         )}
       </div>
-      <UserAvatar />
+      <PresenceIndicator />
     </div>
   );
 }

@@ -5,6 +5,7 @@ import "./globals.css";
 import AuthProvider from "@/components/AuthProvider";
 import ThemeAccent from "@/components/ThemeAccent";
 import BackgroundScene from "@/components/BackgroundScene";
+import PresenceTracker from "@/components/PresenceTracker";
 import { DialogProvider } from "@/components/DialogProvider";
 import { ToastProvider } from "@/components/ToastProvider";
 import { authOptions } from "@/lib/auth";
@@ -59,6 +60,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         <AuthProvider>
           <ThemeAccent />
           <BackgroundScene />
+          <PresenceTracker />
           <DialogProvider>
             <ToastProvider>{children}</ToastProvider>
           </DialogProvider>
