@@ -41,9 +41,18 @@ type Expense = {
   createdAt: string;
 };
 
+type GarageSale = {
+  id: string;
+  type: string;
+  houseNumber: string;
+  priceAmount: number;
+  date: string;
+};
+
 function AgentSalesRow({ agentId, weekId, canEdit, onChanged }: { agentId: string; weekId: string; canEdit: boolean; onChanged: () => void }) {
   const { confirm } = useDialog();
   const [sales, setSales] = useState<Sale[] | null>(null);
+  const [garages, setGarages] = useState<GarageSale[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editHouseNumber, setEditHouseNumber] = useState("");
   const [editPriceAmount, setEditPriceAmount] = useState("");
@@ -53,6 +62,9 @@ function AgentSalesRow({ agentId, weekId, canEdit, onChanged }: { agentId: strin
     fetch(`/api/accounting/agents/${agentId}/sales?weekId=${encodeURIComponent(weekId)}`)
       .then((r) => r.json())
       .then((d) => setSales(d.sales ?? []));
+    fetch(`/api/accounting/agents/${agentId}/garage-sales?weekId=${encodeURIComponent(weekId)}`)
+      .then((r) => (r.ok ? r.json() : []))
+      .then((d) => setGarages(Array.isArray(d) ? d : []));
   }
 
   useEffect(() => {
@@ -86,9 +98,12 @@ function AgentSalesRow({ agentId, weekId, canEdit, onChanged }: { agentId: strin
   }
 
   if (!sales) return <p className="px-4 py-3 text-xs text-[rgb(var(--muted))]">Chargement…</p>;
-  if (sales.length === 0) return <p className="px-4 py-3 text-xs text-[rgb(var(--muted))]">Aucune vente.</p>;
 
   return (
+    <>
+    {sales.length === 0 ? (
+      <p className="px-4 py-3 text-xs text-[rgb(var(--muted))]">Aucune vente.</p>
+    ) : (
     <table className="w-full text-xs">
       <thead>
         <tr className="text-left text-[rgb(var(--muted))] border-b border-white/[0.06]">
@@ -162,6 +177,27 @@ function AgentSalesRow({ agentId, weekId, canEdit, onChanged }: { agentId: strin
         )}
       </tbody>
     </table>
+    )}
+    {garages.length > 0 && (
+      <div className="border-t border-white/[0.06]">
+        <p className="text-[11px] text-[rgb(var(--muted))] px-4 pt-2.5">Garages posés (hors ventes)</p>
+        <table className="w-full text-xs">
+          <tbody>
+            {garages.map((g) => (
+              <tr key={g.id} className="border-b border-white/[0.04] last:border-0">
+                <td className="px-4 py-2">{new Date(g.date).toLocaleDateString("fr-FR")}</td>
+                <td className="px-4 py-2">{g.type}</td>
+                <td className="px-4 py-2">#{g.houseNumber}</td>
+                <td className="px-4 py-2 text-right font-medium text-[rgb(var(--brand-400))]">
+                  ${g.priceAmount.toLocaleString("fr-FR")}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )}
+    </>
   );
 }
 
