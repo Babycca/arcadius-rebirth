@@ -22,6 +22,7 @@ type Sale = {
 type GarageSale = {
   id: string;
   type: string;
+  name: string | null;
   houseNumber: string;
   priceAmount: number;
   date: string;
@@ -128,6 +129,7 @@ export default function AgentWeekDetailPage({
               <tr className="text-left text-xs text-[rgb(var(--muted))] border-b border-white/[0.08]">
                 <th className="px-4 py-2 font-normal">Date</th>
                 <th className="px-4 py-2 font-normal">Type</th>
+                <th className="px-4 py-2 font-normal">Nom</th>
                 <th className="px-4 py-2 font-normal">Habitation</th>
                 <th className="px-4 py-2 font-normal text-right">Prix</th>
               </tr>
@@ -137,6 +139,7 @@ export default function AgentWeekDetailPage({
                 <tr key={g.id} className="border-b border-white/[0.04] last:border-0">
                   <td className="px-4 py-2">{new Date(g.date).toLocaleDateString("fr-FR")}</td>
                   <td className="px-4 py-2">{g.type}</td>
+                  <td className="px-4 py-2">{g.name || "—"}</td>
                   <td className="px-4 py-2">#{g.houseNumber}</td>
                   <td className="px-4 py-2 text-right font-medium text-[rgb(var(--brand-400))]">
                     ${g.priceAmount.toLocaleString("fr-FR")}

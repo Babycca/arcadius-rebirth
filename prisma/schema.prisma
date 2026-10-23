@@ -248,6 +248,7 @@ model GarageSale {
   id          String   @id @default(cuid())
   agentId     String
   type        String
+  name        String?
   houseNumber String
   priceAmount Float
   date        DateTime @default(now())

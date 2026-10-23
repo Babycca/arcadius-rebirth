@@ -22,6 +22,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   const body = await req.json().catch(() => null);
   const type = body?.type?.trim();
+  const name = body?.name?.trim() || null;
   const houseNumber = body?.houseNumber?.trim();
   const priceAmount = Number(body?.priceAmount);
   const date = body?.date ? new Date(body.date) : garageSale.date;
@@ -32,7 +33,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   const updated = await prisma.garageSale.update({
     where: { id },
-    data: { type, houseNumber, priceAmount, date },
+    data: { type, name, houseNumber, priceAmount, date },
   });
 
   return NextResponse.json(updated);

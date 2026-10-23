@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { ChevronDown, GripVertical, Plus, Pencil, Trash2 } from "lucide-react";
+import { useMemo, useState } from "react";
+import { ChevronDown, GripVertical, Plus, Pencil, Search, Trash2 } from "lucide-react";
 import { useCanEdit } from "@/lib/use-can-edit";
 
 type Item = { id: string; name: string; price: number; type: string | null };
@@ -11,6 +11,7 @@ export default function PriceDepliantsClient({ initialGroups }: { initialGroups:
   const { canEdit } = useCanEdit();
   const [groups, setGroups] = useState(initialGroups);
   const [openIds, setOpenIds] = useState<string[]>([]);
+  const [search, setSearch] = useState("");
   const [newGroupName, setNewGroupName] = useState("");
   const [addingItemTo, setAddingItemTo] = useState<string | null>(null);
   const [itemName, setItemName] = useState("");
@@ -22,6 +23,15 @@ export default function PriceDepliantsClient({ initialGroups }: { initialGroups:
   function toggle(id: string) {
     setOpenIds((o) => (o.includes(id) ? o.filter((x) => x !== id) : [...o, id]));
   }
+
+  const query = search.trim().toLowerCase();
+  const isSearching = query.length > 0;
+  const displayGroups = useMemo(() => {
+    if (!isSearching) return groups;
+    return groups
+      .map((g) => ({ ...g, items: g.items.filter((it) => it.name.toLowerCase().includes(query)) }))
+      .filter((g) => g.items.length > 0);
+  }, [groups, isSearching, query]);
 
   async function createGroup() {
     if (!newGroupName.trim()) return;
@@ -101,9 +111,22 @@ export default function PriceDepliantsClient({ initialGroups }: { initialGroups:
         </div>
       )}
 
+      <div className="relative">
+        <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[rgb(var(--muted))]" />
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Rechercher par nom ou mot-clé…"
+          className="glass rounded-lg pl-10 pr-3 py-2.5 text-sm w-full outline-none"
+        />
+      </div>
+
       <div className="glass-strong rounded-xl overflow-hidden">
-        {groups.map((group) => {
-          const open = openIds.includes(group.id);
+        {isSearching && displayGroups.length === 0 && (
+          <p className="px-4 py-6 text-center text-sm text-[rgb(var(--muted))]">Aucun résultat.</p>
+        )}
+        {displayGroups.map((group) => {
+          const open = isSearching ? true : openIds.includes(group.id);
           return (
             <div key={group.id} className="border-b border-white/[0.06] last:border-0">
               <div className="flex items-center gap-1 pl-1 pr-2">

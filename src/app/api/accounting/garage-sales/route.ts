@@ -31,6 +31,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
 
   const type = body?.type?.trim();
+  const name = body?.name?.trim() || null;
   const houseNumber = body?.houseNumber?.trim();
   const priceAmount = Number(body?.priceAmount);
   const date = body?.date ? new Date(body.date) : new Date();
@@ -42,7 +43,7 @@ export async function POST(req: NextRequest) {
   try {
     const weekId = await getActiveWeekId();
     const garageSale = await prisma.garageSale.create({
-      data: { agentId: userId, type, houseNumber, priceAmount, date, weekId },
+      data: { agentId: userId, type, name, houseNumber, priceAmount, date, weekId },
     });
     return NextResponse.json(garageSale, { status: 201 });
   } catch (e) {

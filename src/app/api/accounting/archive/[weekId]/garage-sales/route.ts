@@ -33,6 +33,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ wee
       agentName: nameById.get(g.agentId) ?? "Inconnu",
       date: g.date,
       type: g.type,
+      name: g.name,
       houseNumber: g.houseNumber,
       priceAmount: g.priceAmount,
     }))

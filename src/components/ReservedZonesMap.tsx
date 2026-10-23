@@ -502,8 +502,12 @@ export default function ReservedZonesMap() {
               key={cat.id}
               type="button"
               onClick={() => {
-                if (canEdit) setActiveCategory(cat.id);
-                setHidden((h) => (isHidden ? h.filter((id) => id !== cat.id) : h));
+                if (canEdit) {
+                  setActiveCategory(cat.id);
+                  setHidden((h) => (isHidden ? h.filter((id) => id !== cat.id) : h));
+                } else {
+                  setHidden((h) => (isHidden ? h.filter((id) => id !== cat.id) : [...h, cat.id]));
+                }
               }}
               onDoubleClick={() => setHidden((h) => (h.includes(cat.id) ? h.filter((id) => id !== cat.id) : [...h, cat.id]))}
               className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
@@ -514,7 +518,7 @@ export default function ReservedZonesMap() {
                   ? { background: "rgba(255,255,255,0.05)", color: "rgb(var(--muted))" }
                   : { background: cat.color, color: getCategoryTextColor(cat.color) }
               }
-              title={canEdit ? "Clic = catégorie active pour dessiner, double-clic = masquer" : "Double-clic pour masquer"}
+              title={canEdit ? "Clic = catégorie active pour dessiner, double-clic = masquer" : "Clic pour afficher/masquer"}
             >
               <span>{cat.emoji}</span>
               {cat.name}
