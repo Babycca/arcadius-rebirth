@@ -11,7 +11,8 @@ import AgentDetailModal from "@/components/AgentDetailModal";
 import { useCanEdit } from "@/lib/use-can-edit";
 import { useDialog } from "@/components/DialogProvider";
 import { useToast } from "@/components/ToastProvider";
-import { Plus, KeyRound, Trash2, ChevronUp, ChevronDown, UserX, UserCheck, Archive } from "lucide-react";
+import { Plus, KeyRound, Trash2, ChevronUp, ChevronDown, UserX, UserCheck, Archive, ScrollText } from "lucide-react";
+import Link from "next/link";
 
 type Agent = {
   id: string;
@@ -283,6 +284,14 @@ export default function AdministrationPage() {
     <PageShell>
       <PageHeader title="Administration" subtitle={`${agents.length} comptes agents`} />
       <EditorModeBanner />
+
+      <Link
+        href="/administration/journal"
+        className="inline-flex items-center gap-2 text-sm rounded-xl px-4 py-2.5 glass hover:border-[rgb(var(--brand-500)/0.4)] transition-colors mb-6"
+      >
+        <ScrollText size={14} />
+        Journal d&apos;activité
+      </Link>
 
       <div className="max-w-6xl mx-auto">
       {newCreds && (
