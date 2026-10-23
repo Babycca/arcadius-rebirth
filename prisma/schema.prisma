@@ -366,3 +366,18 @@ model AuditLog {
   @@index([createdAt])
   @@index([actorId])
 }
+
+// Suivi des absences (congés/indisponibilités déclarées) d'un agent, géré
+// par un admin — distinct de active (démission) : une absence est
+// temporaire et bornée dans le temps.
+model Absence {
+  id        String   @id @default(cuid())
+  agentId   String
+  startDate DateTime
+  endDate   DateTime
+  reason    String?
+  createdBy String
+  createdAt DateTime @default(now())
+
+  @@index([agentId])
+}
