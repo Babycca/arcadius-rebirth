@@ -7,7 +7,7 @@ import { useCanEdit } from "@/lib/use-can-edit";
 import { useDialog } from "@/components/DialogProvider";
 import { useToast } from "@/components/ToastProvider";
 import LabeledSelect from "@/components/LabeledSelect";
-import { ArrowLeft, Plus, Trash2, CalendarOff } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Pencil, Check, X, CalendarOff } from "lucide-react";
 
 type Agent = { id: string; firstName: string; lastName: string; active: boolean };
 type Absence = {
@@ -39,6 +39,13 @@ export default function AbsencesPage() {
   const [startDate, setStartDate] = useState(todayInputValue());
   const [endDate, setEndDate] = useState(todayInputValue());
   const [reason, setReason] = useState("");
+
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editStart, setEditStart] = useState("");
+  const [editEnd, setEditEnd] = useState("");
+  const [editReason, setEditReason] = useState("");
+  const [editSaving, setEditSaving] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
 
   function load() {
     setLoading(true);
@@ -88,6 +95,33 @@ export default function AbsencesPage() {
     load();
   }
 
+  function startEdit(a: Absence) {
+    setEditingId(a.id);
+    setEditStart(a.startDate.slice(0, 10));
+    setEditEnd(a.endDate.slice(0, 10));
+    setEditReason(a.reason ?? "");
+    setEditError(null);
+  }
+
+  async function saveEdit(id: string) {
+    setEditSaving(true);
+    setEditError(null);
+    const res = await fetch(`/api/absences/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ startDate: editStart, endDate: editEnd, reason: editReason || null }),
+    });
+    setEditSaving(false);
+    if (!res.ok) {
+      const body = await res.json().catch(() => null);
+      setEditError(body?.error ?? "Impossible de modifier cette absence.");
+      return;
+    }
+    setEditingId(null);
+    toast("Absence modifiée.");
+    load();
+  }
+
   async function handleDelete(id: string) {
     const ok = await confirm("Supprimer cette absence ?", { danger: true });
     if (!ok) return;
@@ -114,6 +148,55 @@ export default function AbsencesPage() {
   const past = absences.filter((a) => new Date(a.endDate) < today);
 
   function AbsenceRow({ a }: { a: Absence }) {
+    if (editingId === a.id) {
+      return (
+        <div className="px-4 py-3 border-b border-white/[0.04] last:border-0 bg-white/[0.02]">
+          {editError && (
+            <div className="rounded-lg bg-[rgb(var(--danger)/0.12)] text-[rgb(var(--danger))] text-xs px-3 py-2 mb-2">
+              {editError}
+            </div>
+          )}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-2">
+            <input
+              type="date"
+              value={editStart}
+              onChange={(e) => setEditStart(e.target.value)}
+              className="glass rounded-lg px-2 py-1.5 text-sm outline-none"
+            />
+            <input
+              type="date"
+              value={editEnd}
+              onChange={(e) => setEditEnd(e.target.value)}
+              className="glass rounded-lg px-2 py-1.5 text-sm outline-none"
+            />
+            <input
+              value={editReason}
+              onChange={(e) => setEditReason(e.target.value)}
+              placeholder="Raison (facultatif)"
+              className="glass rounded-lg px-2 py-1.5 text-sm outline-none"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => saveEdit(a.id)}
+              disabled={editSaving}
+              className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold text-white bg-gradient-to-r from-[rgb(var(--brand-500))] to-[rgb(var(--brand-600))] disabled:opacity-60"
+            >
+              <Check size={13} />
+              {editSaving ? "Enregistrement…" : "Enregistrer"}
+            </button>
+            <button
+              onClick={() => setEditingId(null)}
+              className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs text-[rgb(var(--muted))] hover:text-[rgb(var(--foreground))]"
+            >
+              <X size={13} />
+              Annuler
+            </button>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-white/[0.04] last:border-0 hover:bg-white/[0.03] transition-colors group">
         <div className="flex items-center gap-3 min-w-0">
@@ -133,12 +216,20 @@ export default function AbsencesPage() {
             </p>
           </div>
         </div>
-        <button
-          onClick={() => handleDelete(a.id)}
-          className="text-[rgb(var(--muted))] hover:text-[rgb(var(--danger))] p-1.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
-        >
-          <Trash2 size={14} />
-        </button>
+        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+          <button
+            onClick={() => startEdit(a)}
+            className="text-[rgb(var(--muted))] hover:text-[rgb(var(--brand-400))] p-1.5"
+          >
+            <Pencil size={14} />
+          </button>
+          <button
+            onClick={() => handleDelete(a.id)}
+            className="text-[rgb(var(--muted))] hover:text-[rgb(var(--danger))] p-1.5"
+          >
+            <Trash2 size={14} />
+          </button>
+        </div>
       </div>
     );
   }
