@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ChevronDown, Plus, Pencil, Trash2, Check, X } from "lucide-react";
+import { ChevronDown, Plus, Pencil, Trash2, Check, X, Warehouse, ReceiptText } from "lucide-react";
 import { PageShell, PageHeader } from "@/components/PageShell";
 import { useDialog } from "@/components/DialogProvider";
 import GradeSelect from "@/components/GradeSelect";
@@ -85,12 +85,17 @@ function GaragesPanel() {
   }
 
   return (
-    <div className="glass-strong rounded-xl mb-6 max-w-4xl mx-auto overflow-hidden">
+    <div className="card-hover glass-strong rounded-xl mb-6 max-w-4xl mx-auto overflow-hidden border border-transparent">
       <button
         onClick={() => setOpen((o) => !o)}
         className="flex items-center justify-between w-full px-5 py-3.5 text-sm font-medium"
       >
-        Garages
+        <span className="flex items-center gap-2.5">
+          <span className="w-8 h-8 rounded-lg bg-[rgb(var(--brand-500)/0.14)] flex items-center justify-center">
+            <Warehouse size={14} className="text-[rgb(var(--brand-400))]" />
+          </span>
+          Garages
+        </span>
         <ChevronDown size={15} className={`text-[rgb(var(--muted))] transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
       {open && (
@@ -290,7 +295,12 @@ export default function MesVentesPage() {
       />
 
       <form onSubmit={handleSubmit} className="glass-strong rounded-xl p-5 mb-6 max-w-4xl mx-auto">
-        <h2 className="text-sm font-medium mb-4">Ajouter une vente</h2>
+        <h2 className="text-sm font-medium mb-4 flex items-center gap-2.5">
+          <span className="w-8 h-8 rounded-lg bg-[rgb(var(--brand-500)/0.14)] flex items-center justify-center">
+            <ReceiptText size={14} className="text-[rgb(var(--brand-400))]" />
+          </span>
+          Ajouter une vente
+        </h2>
         {error && (
           <div className="rounded-lg bg-[rgb(var(--danger)/0.12)] text-[rgb(var(--danger))] text-xs px-3 py-2 mb-3">
             {error}

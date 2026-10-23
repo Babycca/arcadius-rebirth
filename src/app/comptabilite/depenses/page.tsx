@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus, Pencil, Trash2, Check, X } from "lucide-react";
+import { Plus, Pencil, Trash2, Check, X, ReceiptText } from "lucide-react";
 import { PageShell, PageHeader } from "@/components/PageShell";
 import { useDialog } from "@/components/DialogProvider";
 
@@ -126,7 +126,12 @@ export default function DepensesPage() {
       />
 
       <form onSubmit={handleSubmit} className="glass-strong rounded-xl p-5 mb-6 max-w-4xl mx-auto">
-        <h2 className="text-sm font-medium mb-4">Ajouter une dépense</h2>
+        <h2 className="text-sm font-medium mb-4 flex items-center gap-2.5">
+          <span className="w-8 h-8 rounded-lg bg-[rgb(var(--danger)/0.14)] flex items-center justify-center">
+            <ReceiptText size={14} className="text-[rgb(var(--danger))]" />
+          </span>
+          Ajouter une dépense
+        </h2>
         {error && (
           <div className="rounded-lg bg-[rgb(var(--danger)/0.12)] text-[rgb(var(--danger))] text-xs px-3 py-2 mb-3">
             {error}

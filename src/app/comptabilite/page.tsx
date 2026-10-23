@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { PageShell, PageHeader } from "@/components/PageShell";
-import { Archive, Pencil, Check, X } from "lucide-react";
+import { Archive, Pencil, Check, X, Users, Receipt, TrendingUp, Wallet, ReceiptText, PiggyBank, Percent } from "lucide-react";
 import { useCanEdit } from "@/lib/use-can-edit";
 import { weekDateRangeLabel } from "@/lib/accounting/week-client";
 
@@ -191,43 +191,59 @@ export default function ComptabilitePage() {
 
       <div className="flex gap-4 mb-4 flex-wrap items-start justify-between">
         <div className="flex gap-4 flex-wrap">
-          <div className="glass-strong rounded-xl px-4 py-2.5">
-            <p className="text-xs text-[rgb(var(--muted))]">Nombre de salariés</p>
+          <div className="card-hover glass-strong rounded-xl px-4 py-2.5 border border-transparent">
+            <p className="text-xs text-[rgb(var(--muted))] flex items-center gap-1.5">
+              <Users size={12} /> Nombre de salariés
+            </p>
             <p className="text-lg font-semibold">{agents.length}</p>
           </div>
-          <div className="glass-strong rounded-xl px-4 py-2.5">
-            <p className="text-xs text-[rgb(var(--muted))]">Total facture</p>
+          <div className="card-hover glass-strong rounded-xl px-4 py-2.5 border border-transparent">
+            <p className="text-xs text-[rgb(var(--muted))] flex items-center gap-1.5">
+              <Receipt size={12} /> Total facture
+            </p>
             <p className="text-lg font-semibold">${totalSales.toLocaleString("fr-FR")}</p>
           </div>
-          <div className="glass-strong rounded-xl px-4 py-2.5">
-            <p className="text-xs text-[rgb(var(--muted))]">Bénéfices</p>
+          <div className="card-hover glass-strong rounded-xl px-4 py-2.5 border border-transparent">
+            <p className="text-xs text-[rgb(var(--muted))] flex items-center gap-1.5">
+              <TrendingUp size={12} /> Bénéfices
+            </p>
             <p className="text-lg font-semibold text-[rgb(var(--brand-400))]">
               ${totalProfit.toLocaleString("fr-FR")}
             </p>
           </div>
-          <div className="glass-strong rounded-xl px-4 py-2.5">
-            <p className="text-xs text-[rgb(var(--muted))]">Salaires</p>
+          <div className="card-hover glass-strong rounded-xl px-4 py-2.5 border border-transparent">
+            <p className="text-xs text-[rgb(var(--muted))] flex items-center gap-1.5">
+              <Wallet size={12} /> Salaires
+            </p>
             <p className="text-lg font-semibold">${totalSalaries.toLocaleString("fr-FR")}</p>
           </div>
           {isAdmin ? (
-            <Link href="/comptabilite/depenses" className="glass-strong rounded-xl px-4 py-2.5 hover:border-[rgb(var(--brand-500)/0.4)] transition-colors">
-              <p className="text-xs text-[rgb(var(--muted))]">Dépenses</p>
+            <Link href="/comptabilite/depenses" className="card-hover glass-strong rounded-xl px-4 py-2.5 border border-transparent hover:border-[rgb(var(--brand-500)/0.4)] transition-colors">
+              <p className="text-xs text-[rgb(var(--muted))] flex items-center gap-1.5">
+                <ReceiptText size={12} /> Dépenses
+              </p>
               <p className="text-lg font-semibold text-[rgb(var(--danger))]">-${totalExpenses.toLocaleString("fr-FR")}</p>
             </Link>
           ) : (
-            <div className="glass-strong rounded-xl px-4 py-2.5">
-              <p className="text-xs text-[rgb(var(--muted))]">Dépenses</p>
+            <div className="card-hover glass-strong rounded-xl px-4 py-2.5 border border-transparent">
+              <p className="text-xs text-[rgb(var(--muted))] flex items-center gap-1.5">
+                <ReceiptText size={12} /> Dépenses
+              </p>
               <p className="text-lg font-semibold text-[rgb(var(--danger))]">-${totalExpenses.toLocaleString("fr-FR")}</p>
             </div>
           )}
-          <div className="glass-strong rounded-xl px-4 py-2.5">
-            <p className="text-xs text-[rgb(var(--muted))]">Bénéfices net</p>
+          <div className="card-hover glass-strong rounded-xl px-4 py-2.5 border border-[rgb(var(--success)/0.25)]">
+            <p className="text-xs text-[rgb(var(--muted))] flex items-center gap-1.5">
+              <PiggyBank size={12} /> Bénéfices net
+            </p>
             <p className="text-lg font-semibold text-[rgb(var(--success))]">
               ${netProfit.toLocaleString("fr-FR")}
             </p>
           </div>
-          <div className="glass-strong rounded-xl px-4 py-2.5">
-            <p className="text-xs text-[rgb(var(--muted))]">Taxes (30%)</p>
+          <div className="card-hover glass-strong rounded-xl px-4 py-2.5 border border-transparent">
+            <p className="text-xs text-[rgb(var(--muted))] flex items-center gap-1.5">
+              <Percent size={12} /> Taxes (30%)
+            </p>
             <p className="text-lg font-semibold text-[rgb(var(--warning))]">${taxes.toLocaleString("fr-FR")}</p>
           </div>
         </div>
