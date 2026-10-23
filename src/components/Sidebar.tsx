@@ -5,6 +5,16 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import {
   Home,
   Map as MapIcon,
   Tag,
@@ -19,8 +29,7 @@ import {
   Pencil,
   User,
   Sofa,
-  ChevronUp,
-  ChevronDown,
+  GripVertical,
   MessageSquareText,
   BookOpen,
   GraduationCap,
@@ -30,7 +39,6 @@ import LiveClock from "./LiveClock";
 import PersonalizeThemeModal from "./PersonalizeThemeModal";
 import ChangePasswordModal from "./ChangePasswordModal";
 import { useCanEdit } from "@/lib/use-can-edit";
-import { logoHueRotationDeg } from "@/lib/theme-colors";
 
 const NAV = [
   { href: "/dashboard", icon: Home, label: "Tableau de bord" },
@@ -83,6 +91,52 @@ function writeCachedPageVisibility(rows: PageVisibilityRow[]) {
   } catch {
     // ignore (stockage indisponible/plein)
   }
+}
+
+function SortableNavItem({
+  href,
+  icon: Icon,
+  label,
+  active,
+  canEdit,
+}: {
+  href: string;
+  icon: typeof Home;
+  label: string;
+  active: boolean;
+  canEdit: boolean;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: href });
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} className="flex items-center gap-1">
+      {canEdit && (
+        <button
+          {...attributes}
+          {...listeners}
+          className="text-[rgb(var(--muted))] hover:text-[rgb(var(--foreground))] cursor-grab active:cursor-grabbing shrink-0 touch-none p-1"
+        >
+          <GripVertical size={13} />
+        </button>
+      )}
+      <Link
+        href={href}
+        className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all flex-1 min-w-0 ${
+          active
+            ? "bg-[rgb(var(--brand-500)/0.18)] text-[rgb(var(--brand-400))] font-medium"
+            : "text-[rgb(var(--muted))] hover:bg-[rgb(var(--brand-500)/0.1)] hover:text-[rgb(var(--foreground))] hover:shadow-[0_0_16px_rgb(var(--brand-glow)/0.18)]"
+        }`}
+      >
+        <Icon size={17} />
+        {label}
+      </Link>
+    </div>
+  );
 }
 
 export function Sidebar() {
@@ -146,14 +200,16 @@ export function Sidebar() {
     });
   })();
 
-  const hueRotate = user?.accentColor ? logoHueRotationDeg(user.accentColor) : 0;
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
 
-  async function movePage(href: string, dir: -1 | 1) {
-    const hrefs = orderedNav.map((n) => n.href);
-    const idx = hrefs.indexOf(href);
-    const target = idx + dir;
-    if (idx < 0 || target < 0 || target >= hrefs.length) return;
-    [hrefs[idx], hrefs[target]] = [hrefs[target], hrefs[idx]];
+  async function handleDragEnd(e: DragEndEvent) {
+    const { active, over } = e;
+    if (!over || active.id === over.id) return;
+    const currentHrefs = orderedNav.map((n) => n.href);
+    const oldIndex = currentHrefs.indexOf(String(active.id));
+    const newIndex = currentHrefs.indexOf(String(over.id));
+    if (oldIndex < 0 || newIndex < 0) return;
+    const hrefs = arrayMove(currentHrefs, oldIndex, newIndex);
 
     setPageVisibility((ps) => {
       const byHref = new Map(ps.map((p) => [p.href, p]));
@@ -188,7 +244,7 @@ export function Sidebar() {
           src="/images/logo.png"
           alt="Arcadius"
           className="w-20 h-20 mb-2 rounded-2xl shrink-0"
-          style={{ filter: `hue-rotate(${hueRotate}deg)` }}
+          style={{ filter: "hue-rotate(var(--logo-hue-rotate, 0deg))" }}
         />
         <span className="font-heading text-2xl brand-gradient-text">Arcadius</span>
         <p className="text-xs text-[rgb(var(--muted))] mt-0.5">Agence immobilière</p>
@@ -198,43 +254,17 @@ export function Sidebar() {
       </div>
 
       <div className="flex-1 flex flex-col gap-1">
-        {orderedNav.map(({ href, icon: Icon, label }, i) => {
-          const active =
-            href === "/comptabilite/archive" ? pathname.startsWith(href) : pathname === href;
-          return (
-            <div key={href} className="flex items-center gap-1">
-              {canEdit && (
-                <div className="flex flex-col shrink-0">
-                  <button
-                    onClick={() => movePage(href, -1)}
-                    disabled={i === 0}
-                    className="text-[rgb(var(--muted))] hover:text-[rgb(var(--foreground))] disabled:opacity-20"
-                  >
-                    <ChevronUp size={11} />
-                  </button>
-                  <button
-                    onClick={() => movePage(href, 1)}
-                    disabled={i === orderedNav.length - 1}
-                    className="text-[rgb(var(--muted))] hover:text-[rgb(var(--foreground))] disabled:opacity-20"
-                  >
-                    <ChevronDown size={11} />
-                  </button>
-                </div>
-              )}
-              <Link
-                href={href}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all flex-1 min-w-0 ${
-                  active
-                    ? "bg-[rgb(var(--brand-500)/0.18)] text-[rgb(var(--brand-400))] font-medium"
-                    : "text-[rgb(var(--muted))] hover:bg-[rgb(var(--brand-500)/0.1)] hover:text-[rgb(var(--foreground))] hover:shadow-[0_0_16px_rgb(var(--brand-glow)/0.18)]"
-                }`}
-              >
-                <Icon size={17} />
-                {label}
-              </Link>
-            </div>
-          );
-        })}
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={orderedNav.map((n) => n.href)} strategy={verticalListSortingStrategy}>
+            {orderedNav.map(({ href, icon, label }) => {
+              const active =
+                href === "/comptabilite/archive" ? pathname.startsWith(href) : pathname === href;
+              return (
+                <SortableNavItem key={href} href={href} icon={icon} label={label} active={active} canEdit={canEdit} />
+              );
+            })}
+          </SortableContext>
+        </DndContext>
       </div>
 
       {user && (

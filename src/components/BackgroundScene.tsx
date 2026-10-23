@@ -5,9 +5,6 @@
 // détourée (fond PNG transparent) ancrée à droite. Le bâtiment et ses
 // fenêtres suivent la couleur d'accent choisie par l'utilisateur (même
 // technique de hue-rotate que le logo dans la Sidebar).
-import { useSession } from "next-auth/react";
-import { useMemo } from "react";
-import { logoHueRotationDeg } from "@/lib/theme-colors";
 
 const SHOOTING_STARS = [
   { top: "6%", left: "8%", delay: "0s", duration: "9s" },
@@ -38,10 +35,6 @@ function seededTwinkleStars(count: number) {
 const TWINKLE_STARS = seededTwinkleStars(45);
 
 export default function BackgroundScene() {
-  const { data: session } = useSession();
-  const accentColor = (session?.user as { accentColor?: string | null } | undefined)?.accentColor;
-  const hueRotate = useMemo(() => (accentColor ? logoHueRotationDeg(accentColor) : 0), [accentColor]);
-
   return (
     <div className="fixed inset-0 -z-20 overflow-hidden pointer-events-none">
       {TWINKLE_STARS.map((s) => (
@@ -62,7 +55,7 @@ export default function BackgroundScene() {
 
       <div
         className="absolute right-0 bottom-0 w-[85vw] max-w-[1900px] h-[95vh]"
-        style={{ filter: `hue-rotate(${hueRotate}deg)` }}
+        style={{ filter: "hue-rotate(var(--logo-hue-rotate, 0deg))" }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img

@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { paletteFromAccent } from "@/lib/theme-colors";
+import { paletteFromAccent, logoHueRotationDeg } from "@/lib/theme-colors";
 
 // La couleur de base (premier affichage) vient désormais du serveur
 // (layout.tsx, via la session) — ce composant ne sert plus qu'à appliquer
@@ -21,6 +21,7 @@ export default function ThemeAccent() {
       root.style.removeProperty("--brand-glow");
       root.style.removeProperty("--bg-elevated");
       root.style.removeProperty("--bg-elevated-2");
+      root.style.removeProperty("--logo-hue-rotate");
       return;
     }
     const palette = paletteFromAccent(accentColor);
@@ -31,6 +32,7 @@ export default function ThemeAccent() {
     root.style.setProperty("--brand-glow", palette.glow);
     root.style.setProperty("--bg-elevated", palette.bgElevated);
     root.style.setProperty("--bg-elevated-2", palette.bgElevated2);
+    root.style.setProperty("--logo-hue-rotate", `${logoHueRotationDeg(accentColor)}deg`);
   }, [accentColor]);
 
   return null;

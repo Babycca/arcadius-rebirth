@@ -25,6 +25,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const data: Record<string, unknown> = {};
   if (typeof body?.content === "string") data.content = body.content.trim();
   if ("price" in (body ?? {})) data.price = body.price != null && body.price !== "" ? Number(body.price) : null;
+  if (typeof body?.order === "number") data.order = body.order;
 
   const item = await prisma.textSnippet.update({ where: { id }, data });
   return NextResponse.json(item);

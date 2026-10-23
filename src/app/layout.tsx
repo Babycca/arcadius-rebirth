@@ -7,7 +7,7 @@ import ThemeAccent from "@/components/ThemeAccent";
 import BackgroundScene from "@/components/BackgroundScene";
 import { DialogProvider } from "@/components/DialogProvider";
 import { authOptions } from "@/lib/auth";
-import { paletteFromAccent } from "@/lib/theme-colors";
+import { paletteFromAccent, logoHueRotationDeg } from "@/lib/theme-colors";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -39,6 +39,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   const session = await getServerSession(authOptions);
   const accentColor = (session?.user as { accentColor?: string | null } | undefined)?.accentColor;
   const palette = accentColor ? paletteFromAccent(accentColor) : null;
+  const logoHue = accentColor ? logoHueRotationDeg(accentColor) : 0;
 
   return (
     <html
@@ -49,7 +50,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         {palette && (
           <style
             dangerouslySetInnerHTML={{
-              __html: `:root{--brand-400:${palette[400]};--brand-500:${palette[500]};--brand-600:${palette[600]};--brand-glow:${palette.glow};--bg-elevated:${palette.bgElevated};--bg-elevated-2:${palette.bgElevated2};}`,
+              __html: `:root{--brand-400:${palette[400]};--brand-500:${palette[500]};--brand-600:${palette[600]};--brand-glow:${palette.glow};--bg-elevated:${palette.bgElevated};--bg-elevated-2:${palette.bgElevated2};--logo-hue-rotate:${logoHue}deg;}`,
             }}
           />
         )}
