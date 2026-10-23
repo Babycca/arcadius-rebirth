@@ -55,7 +55,7 @@ export default function BackgroundScene() {
 
       <div
         className="absolute right-0 bottom-0 w-[85vw] max-w-[1900px] h-[95vh]"
-        style={{ filter: "hue-rotate(var(--logo-hue-rotate, 0deg))" }}
+        style={{ filter: "var(--logo-filter, none)" }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img

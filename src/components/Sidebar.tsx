@@ -244,7 +244,7 @@ export function Sidebar() {
           src="/images/logo.png"
           alt="Arcadius"
           className="w-20 h-20 mb-2 rounded-2xl shrink-0"
-          style={{ filter: "hue-rotate(var(--logo-hue-rotate, 0deg))" }}
+          style={{ filter: "var(--logo-filter, none)" }}
         />
         <span className="font-heading text-2xl brand-gradient-text">Arcadius</span>
         <p className="text-xs text-[rgb(var(--muted))] mt-0.5">Agence immobilière</p>

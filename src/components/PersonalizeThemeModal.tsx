@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { X, Palette } from "lucide-react";
-import { paletteFromAccent, logoHueRotationDeg } from "@/lib/theme-colors";
+import { paletteFromAccent, logoFilter } from "@/lib/theme-colors";
 
 const PRESETS = [
   { label: "Bleu (défaut)", value: "#3b82f6" },
@@ -35,7 +35,7 @@ export default function PersonalizeThemeModal({ onClose }: { onClose: () => void
       root.style.setProperty("--brand-glow", palette.glow);
       root.style.setProperty("--bg-elevated", palette.bgElevated);
       root.style.setProperty("--bg-elevated-2", palette.bgElevated2);
-      root.style.setProperty("--logo-hue-rotate", `${logoHueRotationDeg(hex)}deg`);
+      root.style.setProperty("--logo-filter", logoFilter(hex));
     }
     apply(color);
     return () => apply(current);

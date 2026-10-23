@@ -56,15 +56,32 @@ function hslToRgb(h: number, s: number, l: number): [number, number, number] {
   return [Math.round((r + m) * 255), Math.round((g + m) * 255), Math.round((b + m) * 255)];
 }
 
-// Teinte dominante (bleu) du logo source — sert de référence pour calculer
-// la rotation de teinte CSS nécessaire pour l'accorder à la couleur choisie.
+// Teinte/saturation/luminosité dominantes (bleu) du logo source — sert de
+// référence pour calculer le filtre CSS nécessaire pour l'accorder à la
+// couleur choisie.
 const LOGO_BASE_HUE = 217;
+const LOGO_BASE_SAT = 0.91;
+const LOGO_BASE_LIGHT = 0.6;
 
 export function logoHueRotationDeg(hex: string): number {
   const rgb = hexToRgb(hex);
   if (!rgb) return 0;
   const [h] = rgbToHsl(...rgb);
   return Math.round(((h - LOGO_BASE_HUE + 360) % 360));
+}
+
+// hue-rotate() seul ne fait que tourner la teinte : une couleur perso très
+// claire (presque blanche) ou très sombre ne peut jamais "suivre" le logo
+// avec la rotation seule, puisqu'elle garde la saturation/luminosité
+// d'origine du logo. saturate()/brightness() comblent cet écart.
+export function logoFilter(hex: string): string {
+  const rgb = hexToRgb(hex);
+  if (!rgb) return "none";
+  const [h, s, l] = rgbToHsl(...rgb);
+  const hueRotate = Math.round(((h - LOGO_BASE_HUE + 360) % 360));
+  const saturate = Math.min(3, Math.max(0.3, s / LOGO_BASE_SAT || 1));
+  const brightness = Math.min(2.2, Math.max(0.4, l / LOGO_BASE_LIGHT));
+  return `hue-rotate(${hueRotate}deg) saturate(${saturate.toFixed(2)}) brightness(${brightness.toFixed(2)})`;
 }
 
 export function paletteFromAccent(hex: string) {
