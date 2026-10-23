@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getActiveWeekId } from "@/lib/accounting/week";
+import { logActivity } from "@/lib/audit-log";
 
 const COMPANY_PROFIT_RATE = 0.1;
 
@@ -24,6 +25,7 @@ export async function POST(req: NextRequest) {
   if (!session?.user) return NextResponse.json({ error: "Non connecté" }, { status: 401 });
 
   const userId = (session.user as { id: string }).id;
+  const actorName = session.user.name ?? "Agent";
   const body = await req.json().catch(() => null);
 
   const houseNumber = body?.houseNumber?.trim();
@@ -48,6 +50,15 @@ export async function POST(req: NextRequest) {
       weekId,
       companyProfit: priceAmount * COMPANY_PROFIT_RATE,
     },
+  });
+
+  await logActivity({
+    actorId: userId,
+    actorName,
+    action: "CREATE",
+    entityType: "Sale",
+    entityId: sale.id,
+    summary: `${actorName} a créé une vente — habitation #${houseNumber}, ${clientName}, $${priceAmount.toLocaleString("fr-FR")}`,
   });
 
   return NextResponse.json(sale, { status: 201 });

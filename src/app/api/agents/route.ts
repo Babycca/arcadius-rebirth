@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import bcrypt from "bcryptjs";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { logActivity } from "@/lib/audit-log";
 
 function requireAdmin(role: string | undefined) {
   return role === "ADMIN" || role === "SUPER_ADMIN";
@@ -34,7 +35,8 @@ function randomPassword() {
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
-  const role = (session?.user as { role?: string } | undefined)?.role;
+  const sessionUser = session?.user as { id?: string; name?: string; role?: string } | undefined;
+  const role = sessionUser?.role;
   if (!session?.user || !requireAdmin(role)) {
     return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
   }
@@ -60,6 +62,16 @@ export async function POST(req: NextRequest) {
 
   const agent = await prisma.agent.create({
     data: { firstName, lastName, loginHandle, grade, phone, passwordHash, role: "AGENT" },
+  });
+
+  const actorName = sessionUser!.name ?? "Admin";
+  await logActivity({
+    actorId: sessionUser!.id,
+    actorName,
+    action: "CREATE",
+    entityType: "Agent",
+    entityId: agent.id,
+    summary: `${actorName} a créé le compte ${firstName} ${lastName} (${grade})`,
   });
 
   return NextResponse.json({ agent, tempPassword }, { status: 201 });

@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getActiveWeekId } from "@/lib/accounting/week";
 import { GARAGE_TYPES } from "@/lib/accounting/garage-types";
+import { logActivity } from "@/lib/audit-log";
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -28,6 +29,7 @@ export async function POST(req: NextRequest) {
   if (!session?.user) return NextResponse.json({ error: "Non connecté" }, { status: 401 });
 
   const userId = (session.user as { id: string }).id;
+  const actorName = session.user.name ?? "Agent";
   const body = await req.json().catch(() => null);
 
   const type = body?.type?.trim();
@@ -44,6 +46,14 @@ export async function POST(req: NextRequest) {
     const weekId = await getActiveWeekId();
     const garageSale = await prisma.garageSale.create({
       data: { agentId: userId, type, name, houseNumber, priceAmount, date, weekId },
+    });
+    await logActivity({
+      actorId: userId,
+      actorName,
+      action: "CREATE",
+      entityType: "GarageSale",
+      entityId: garageSale.id,
+      summary: `${actorName} a ajouté un garage — ${type}, habitation #${houseNumber}, $${priceAmount.toLocaleString("fr-FR")}`,
     });
     return NextResponse.json(garageSale, { status: 201 });
   } catch (e) {

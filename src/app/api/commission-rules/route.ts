@@ -8,6 +8,9 @@ function canEdit(role: string | undefined) {
 }
 
 export async function GET() {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) return NextResponse.json({ error: "Non connecté" }, { status: 401 });
+
   const rules = await prisma.commissionRule.findMany({ orderBy: { order: "asc" } });
   return NextResponse.json(rules);
 }

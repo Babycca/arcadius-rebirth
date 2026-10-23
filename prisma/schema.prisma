@@ -349,3 +349,20 @@ model PageVisibility {
   hiddenForAgentIds String  @default("[]")
   order             Int     @default(0)
 }
+
+// Journal d'activité (admin/super admin uniquement) : qui a créé/modifié/
+// supprimé quoi, et les connexions. actorName est figé au moment de l'action
+// (un agent renommé ou désactivé plus tard ne doit pas réécrire l'historique).
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  actorName  String
+  action     String // CREATE | UPDATE | DELETE | LOGIN
+  entityType String // Sale, GarageSale, Expense, Agent, ReservedZone...
+  entityId   String?
+  summary    String
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([actorId])
+}

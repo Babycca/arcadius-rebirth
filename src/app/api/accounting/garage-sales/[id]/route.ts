@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { GARAGE_TYPES } from "@/lib/accounting/garage-types";
+import { logActivity } from "@/lib/audit-log";
 
 function isAdmin(role: string | undefined) {
   return role === "ADMIN" || role === "SUPER_ADMIN";
@@ -11,7 +12,7 @@ function isAdmin(role: string | undefined) {
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
   if (!session?.user) return NextResponse.json({ error: "Non connecté" }, { status: 401 });
-  const user = session.user as { id: string; role?: string };
+  const user = session.user as { id: string; name?: string; role?: string };
 
   const { id } = await params;
   const garageSale = await prisma.garageSale.findUnique({ where: { id } });
@@ -36,13 +37,23 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     data: { type, name, houseNumber, priceAmount, date },
   });
 
+  const actorName = user.name ?? "Agent";
+  await logActivity({
+    actorId: user.id,
+    actorName,
+    action: "UPDATE",
+    entityType: "GarageSale",
+    entityId: id,
+    summary: `${actorName} a modifié un garage — ${type}, habitation #${houseNumber}, $${priceAmount.toLocaleString("fr-FR")}`,
+  });
+
   return NextResponse.json(updated);
 }
 
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
   if (!session?.user) return NextResponse.json({ error: "Non connecté" }, { status: 401 });
-  const user = session.user as { id: string; role?: string };
+  const user = session.user as { id: string; name?: string; role?: string };
 
   const { id } = await params;
   const garageSale = await prisma.garageSale.findUnique({ where: { id } });
@@ -52,5 +63,16 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
   }
 
   await prisma.garageSale.delete({ where: { id } });
+
+  const actorName = user.name ?? "Agent";
+  await logActivity({
+    actorId: user.id,
+    actorName,
+    action: "DELETE",
+    entityType: "GarageSale",
+    entityId: id,
+    summary: `${actorName} a supprimé un garage — ${garageSale.type}, habitation #${garageSale.houseNumber}`,
+  });
+
   return NextResponse.json({ ok: true });
 }

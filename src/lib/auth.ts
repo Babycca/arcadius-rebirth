@@ -2,6 +2,7 @@ import type { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { logActivity } from "@/lib/audit-log";
 
 type ExtendedUser = {
   username: string;
@@ -32,6 +33,16 @@ export const authOptions: AuthOptions = {
 
         const valid = await bcrypt.compare(credentials.password, agent.passwordHash);
         if (!valid) return null;
+
+        const actorName = `${agent.firstName} ${agent.lastName}`;
+        await logActivity({
+          actorId: agent.id,
+          actorName,
+          action: "LOGIN",
+          entityType: "Agent",
+          entityId: agent.id,
+          summary: `${actorName} s'est connecté(e)`,
+        });
 
         return {
           id: agent.id,

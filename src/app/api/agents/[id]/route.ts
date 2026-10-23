@@ -2,17 +2,29 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { logActivity } from "@/lib/audit-log";
 
 function requireAdmin(role: string | undefined) {
   return role === "ADMIN" || role === "SUPER_ADMIN";
 }
+
+const FIELD_LABELS: Record<string, string> = {
+  phone: "téléphone",
+  grade: "grade",
+  canAccessAccounting: "accès comptabilité",
+  active: "statut actif",
+  firstName: "prénom",
+  lastName: "nom",
+  loginHandle: "identifiant",
+  role: "rôle",
+};
 
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getServerSession(authOptions);
-  const sessionUser = session?.user as { id?: string; role?: string } | undefined;
+  const sessionUser = session?.user as { id?: string; name?: string; role?: string } | undefined;
   const role = sessionUser?.role;
   if (!session?.user || !requireAdmin(role)) {
     return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
@@ -63,5 +75,19 @@ export async function PATCH(
   }
 
   const agent = await prisma.agent.update({ where: { id }, data });
+
+  const actorName = sessionUser!.name ?? "Admin";
+  const changedFields = Object.keys(data).map((k) => FIELD_LABELS[k] ?? k);
+  if (changedFields.length > 0) {
+    await logActivity({
+      actorId: sessionUser!.id,
+      actorName,
+      action: "UPDATE",
+      entityType: "Agent",
+      entityId: id,
+      summary: `${actorName} a modifié ${agent.firstName} ${agent.lastName} — ${changedFields.join(", ")}`,
+    });
+  }
+
   return NextResponse.json(agent);
 }

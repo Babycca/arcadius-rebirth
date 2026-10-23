@@ -10,6 +10,9 @@ function canEdit(role: string | undefined) {
 }
 
 export async function GET() {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) return NextResponse.json({ error: "Non connecté" }, { status: 401 });
+
   const zones = await prisma.reservedZone.findMany({ orderBy: { createdAt: "desc" } });
   return NextResponse.json(zones);
 }

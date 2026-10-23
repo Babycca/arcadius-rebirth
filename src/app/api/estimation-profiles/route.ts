@@ -8,6 +8,9 @@ function canEdit(role: string | undefined) {
 }
 
 export async function GET() {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) return NextResponse.json({ error: "Non connecté" }, { status: 401 });
+
   const profiles = await prisma.estimationProfile.findMany({
     orderBy: [{ structureType: "asc" }, { order: "asc" }],
     include: {
