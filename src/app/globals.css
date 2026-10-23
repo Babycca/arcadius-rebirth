@@ -64,7 +64,12 @@ body {
    confirmation) — fond légèrement flouté plutôt qu'opaque, pour rester
    cohérent avec le reste du glassmorphism du site. */
 .glass-popover {
-  background: rgb(var(--bg-elevated-2) / 0.62);
+  /* Un léger voile clair par-dessus le flou : sur un fond déjà sombre et peu
+     texturé (dégradés violets très doux), le flou seul du contenu derrière
+     est quasi invisible à l'œil — ce voile rend l'effet "verre dépoli"
+     perceptible même là où il n'y a rien de net à flouter. */
+  background: linear-gradient(145deg, rgb(255 255 255 / 0.1), rgb(255 255 255 / 0.03)),
+    rgb(var(--bg-elevated-2) / 0.55);
   backdrop-filter: blur(18px) saturate(160%);
   -webkit-backdrop-filter: blur(18px) saturate(160%);
   /* Force la création immédiate d'une couche de composition — sans ça,

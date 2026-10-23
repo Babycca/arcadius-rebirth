@@ -15,6 +15,7 @@ import {
   ScrollText,
   Phone,
   AlertTriangle,
+  Receipt,
 } from "lucide-react";
 
 type Agent = {
@@ -33,6 +34,7 @@ type Page = { href: string; hiddenForAll: boolean; hiddenForAgentIds: string };
 type Sanction = { id: string; type: string; reason: string; date: string };
 type Absence = { id: string; startDate: string; endDate: string; reason: string | null };
 type LogEntry = { id: string; action: string; entityType: string; summary: string; createdAt: string };
+type Sale = { id: string; date: string; houseNumber: string; priceAmount: number; clientName: string };
 
 const ROLE_LABELS: Record<string, string> = {
   SUPER_ADMIN: "Super Admin",
@@ -63,6 +65,7 @@ export default function AgentProfilePage({ params }: { params: Promise<{ id: str
   const [gradeNames, setGradeNames] = useState<string[]>([]);
   const [pages, setPages] = useState<Page[]>([]);
   const [stats, setStats] = useState<{ salesCount: number; total: number } | null>(null);
+  const [sales, setSales] = useState<Sale[]>([]);
   const [sanctions, setSanctions] = useState<Sanction[]>([]);
   const [absences, setAbsences] = useState<Absence[]>([]);
   const [logs, setLogs] = useState<LogEntry[]>([]);
@@ -105,6 +108,7 @@ export default function AgentProfilePage({ params }: { params: Promise<{ id: str
       if (salesData?.sales) {
         const total = salesData.sales.reduce((s: number, x: { priceAmount: number }) => s + x.priceAmount, 0);
         setStats({ salesCount: salesData.sales.length, total });
+        setSales(salesData.sales);
       }
       setSanctions((sanctionsData as (Sanction & { agentId: string })[]).filter((s) => s.agentId === id));
       setAbsences((absencesData as (Absence & { agentId: string })[]).filter((a) => a.agentId === id));
@@ -227,7 +231,7 @@ export default function AgentProfilePage({ params }: { params: Promise<{ id: str
 
       <div className="max-w-6xl mx-auto">
         {/* En-tête profil */}
-        <div className="card-hover glass-strong rounded-2xl p-6 mb-6 border border-transparent flex flex-col sm:flex-row items-center sm:items-start gap-6">
+        <div className="card-hover glass-strong rounded-2xl p-6 mb-8 border border-transparent flex flex-col sm:flex-row items-center sm:items-start gap-6">
           <span className="relative w-24 h-24 rounded-full bg-[rgb(var(--brand-500)/0.18)] text-[rgb(var(--brand-400))] flex items-center justify-center text-2xl font-medium overflow-hidden shrink-0 ring-4 ring-[rgb(var(--brand-500)/0.25)] shadow-[0_0_30px_rgb(var(--brand-glow)/0.2)]">
             {agent.avatarUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -243,13 +247,15 @@ export default function AgentProfilePage({ params }: { params: Promise<{ id: str
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
                 onBlur={saveIdentity}
-                className="font-heading text-2xl bg-transparent outline-none border-b border-transparent focus:border-white/20 w-32 text-center sm:text-left"
+                size={Math.max(firstName.length, 3)}
+                className="font-heading text-2xl bg-transparent outline-none border-b border-transparent focus:border-white/20 text-center sm:text-left"
               />
               <input
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
                 onBlur={saveIdentity}
-                className="font-heading text-2xl bg-transparent outline-none border-b border-transparent focus:border-white/20 w-32 text-center sm:text-left"
+                size={Math.max(lastName.length, 3)}
+                className="font-heading text-2xl bg-transparent outline-none border-b border-transparent focus:border-white/20 text-center sm:text-left"
               />
               {savedMsg && <span className="text-xs text-[rgb(var(--success))]">{savedMsg}</span>}
             </div>
@@ -351,6 +357,45 @@ export default function AgentProfilePage({ params }: { params: Promise<{ id: str
             </div>
           </div>
         )}
+
+        {/* Dernières ventes */}
+        <div className="card-hover glass-strong rounded-xl overflow-hidden border border-transparent mb-6">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.08]">
+            <p className="text-xs text-[rgb(var(--muted))] flex items-center gap-1.5">
+              <Receipt size={13} />
+              Dernières ventes (semaine en cours)
+            </p>
+            <Link href="/comptabilite" className="text-xs text-[rgb(var(--brand-400))] hover:underline">
+              Voir la compta
+            </Link>
+          </div>
+          {sales.length === 0 ? (
+            <p className="px-4 py-5 text-center text-sm text-[rgb(var(--muted))]">Aucune vente cette semaine.</p>
+          ) : (
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-xs text-[rgb(var(--muted))] border-b border-white/[0.08]">
+                  <th className="px-4 py-2 font-normal">Date</th>
+                  <th className="px-4 py-2 font-normal">Habitation</th>
+                  <th className="px-4 py-2 font-normal">Client</th>
+                  <th className="px-4 py-2 font-normal text-right">Prix</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sales.slice(0, 5).map((s) => (
+                  <tr key={s.id} className="border-b border-white/[0.04] last:border-0">
+                    <td className="px-4 py-2">{new Date(s.date).toLocaleDateString("fr-FR")}</td>
+                    <td className="px-4 py-2">#{s.houseNumber}</td>
+                    <td className="px-4 py-2">{s.clientName}</td>
+                    <td className="px-4 py-2 text-right font-medium text-[rgb(var(--brand-400))]">
+                      ${s.priceAmount.toLocaleString("fr-FR")}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           {/* Sanctions */}
