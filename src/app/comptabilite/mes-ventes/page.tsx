@@ -43,11 +43,12 @@ function GaragesPanel() {
 
   function load() {
     fetch("/api/accounting/garage-sales")
-      .then((r) => r.json())
+      .then((r) => (r.ok ? r.json() : []))
       .then((d) => {
-        setGarages(d);
+        setGarages(Array.isArray(d) ? d : []);
         setLoaded(true);
-      });
+      })
+      .catch(() => setLoaded(true));
   }
 
   useEffect(() => {
