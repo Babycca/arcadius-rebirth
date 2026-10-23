@@ -60,6 +60,15 @@ body {
   border: 1px solid rgb(var(--border-subtle) / 0.12);
 }
 
+/* Petites fenêtres flottantes (menus déroulants, pop-ups, modales de
+   confirmation) — fond légèrement flouté plutôt qu'opaque, pour rester
+   cohérent avec le reste du glassmorphism du site. */
+.glass-popover {
+  background: rgb(var(--bg-elevated-2) / 0.55);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+}
+
 .font-heading {
   font-family: var(--font-display), sans-serif;
   letter-spacing: 0.02em;

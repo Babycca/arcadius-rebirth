@@ -49,9 +49,8 @@ export default function GradeSelect({
           <>
             <div className="fixed inset-0 z-[100]" onClick={() => setOpen(false)} />
             <div
-              className="fixed z-[101] rounded-lg overflow-hidden border border-white/10 shadow-xl"
+              className="fixed z-[101] rounded-lg overflow-hidden border border-white/10 shadow-xl glass-popover"
               style={{
-                backgroundColor: "rgb(22 18 32)",
                 left: pos.left,
                 minWidth: pos.width,
                 ...(pos.openUp ? { bottom: window.innerHeight - pos.top } : { top: pos.top }),

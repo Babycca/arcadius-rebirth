@@ -386,3 +386,18 @@ model Absence {
 
   @@index([agentId])
 }
+
+// Suivi disciplinaire d'un agent (avertissements, mises à pied, etc.),
+// géré par un admin — purement un historique consultable, n'affecte rien
+// automatiquement ailleurs (pas de lien avec active/absences).
+model Sanction {
+  id        String   @id @default(cuid())
+  agentId   String
+  type      String // Avertissement oral | Avertissement écrit | Mise à pied | Licenciement
+  reason    String
+  date      DateTime @default(now())
+  createdBy String
+  createdAt DateTime @default(now())
+
+  @@index([agentId])
+}

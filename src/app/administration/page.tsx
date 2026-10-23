@@ -11,7 +11,7 @@ import AgentDetailModal from "@/components/AgentDetailModal";
 import { useCanEdit } from "@/lib/use-can-edit";
 import { useDialog } from "@/components/DialogProvider";
 import { useToast } from "@/components/ToastProvider";
-import { Plus, KeyRound, Trash2, ChevronUp, ChevronDown, UserX, UserCheck, Archive, ScrollText, CalendarOff } from "lucide-react";
+import { Plus, KeyRound, Trash2, ChevronUp, ChevronDown, UserX, UserCheck, Archive, ScrollText, CalendarOff, ShieldAlert } from "lucide-react";
 import Link from "next/link";
 
 type Agent = {
@@ -315,6 +315,13 @@ export default function AdministrationPage() {
         >
           <CalendarOff size={14} />
           Suivi des absences
+        </Link>
+        <Link
+          href="/administration/sanctions"
+          className="inline-flex items-center gap-2 text-sm rounded-xl px-4 py-2.5 glass hover:border-[rgb(var(--brand-500)/0.4)] transition-colors"
+        >
+          <ShieldAlert size={14} />
+          Suivi des sanctions
         </Link>
       </div>
 
