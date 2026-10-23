@@ -83,7 +83,7 @@ function GaragesPanel() {
   }
 
   return (
-    <div className="glass-strong rounded-xl mb-6 max-w-2xl overflow-hidden">
+    <div className="glass-strong rounded-xl mb-6 max-w-4xl mx-auto overflow-hidden">
       <button
         onClick={() => setOpen((o) => !o)}
         className="flex items-center justify-between w-full px-5 py-3.5 text-sm font-medium"
@@ -279,7 +279,7 @@ export default function MesVentesPage() {
         subtitle={`Semaine en cours — ${sales.length} vente${sales.length > 1 ? "s" : ""}, $${totalWeek.toLocaleString("fr-FR")}`}
       />
 
-      <form onSubmit={handleSubmit} className="glass-strong rounded-xl p-5 mb-6 max-w-2xl">
+      <form onSubmit={handleSubmit} className="glass-strong rounded-xl p-5 mb-6 max-w-4xl mx-auto">
         <h2 className="text-sm font-medium mb-4">Ajouter une vente</h2>
         {error && (
           <div className="rounded-lg bg-[rgb(var(--danger)/0.12)] text-[rgb(var(--danger))] text-xs px-3 py-2 mb-3">
@@ -352,7 +352,7 @@ export default function MesVentesPage() {
 
       <GaragesPanel />
 
-      <div className="glass-strong rounded-xl overflow-hidden max-w-3xl">
+      <div className="glass-strong rounded-xl overflow-hidden max-w-4xl mx-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="text-left text-xs text-[rgb(var(--muted))] border-b border-white/[0.08]">
