@@ -1,15 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { PageShell, PageHeader } from "@/components/PageShell";
 import { useCanEdit } from "@/lib/use-can-edit";
 import { useDialog } from "@/components/DialogProvider";
 import { useToast } from "@/components/ToastProvider";
 import LabeledSelect from "@/components/LabeledSelect";
-import { ArrowLeft, Plus, Trash2, Pencil, Check, X, ShieldAlert } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Pencil, Check, X, ShieldAlert, AlertTriangle } from "lucide-react";
 
-type Agent = { id: string; firstName: string; lastName: string; active: boolean };
+type Agent = { id: string; firstName: string; lastName: string; avatarUrl: string | null; active: boolean };
 type Sanction = {
   id: string;
   agentId: string;
@@ -20,13 +20,11 @@ type Sanction = {
   date: string;
 };
 
-const SANCTION_TYPES = ["Avertissement oral", "Avertissement écrit", "Mise à pied", "Licenciement"];
+const SANCTION_TYPES = ["Avertissement", "Licenciement"];
 
 const TYPE_STYLES: Record<string, string> = {
-  "Avertissement oral": "bg-[rgb(var(--warning)/0.14)] text-[rgb(var(--warning))]",
-  "Avertissement écrit": "bg-[rgb(var(--warning)/0.2)] text-[rgb(var(--warning))]",
-  "Mise à pied": "bg-[rgb(var(--danger)/0.14)] text-[rgb(var(--danger))]",
-  Licenciement: "bg-[rgb(var(--danger)/0.22)] text-[rgb(var(--danger))]",
+  Avertissement: "bg-[rgb(var(--danger)/0.16)] text-[rgb(var(--danger))]",
+  Licenciement: "bg-[rgb(var(--danger)/0.26)] text-[rgb(var(--danger))]",
 };
 
 function todayInputValue() {
@@ -43,6 +41,7 @@ export default function SanctionsPage() {
   const [forbidden, setForbidden] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
 
   const [agentId, setAgentId] = useState("");
   const [type, setType] = useState(SANCTION_TYPES[0]);
@@ -72,6 +71,7 @@ export default function SanctionsPage() {
       const active = (agentData as Agent[]).filter((a) => a.active);
       setAgents(active);
       if (!agentId && active.length > 0) setAgentId(active[0].id);
+      if (!selectedAgentId && active.length > 0) setSelectedAgentId(active[0].id);
       setLoading(false);
     });
   }
@@ -80,6 +80,22 @@ export default function SanctionsPage() {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Nombre d'avertissements par agent — sert à la bulle rouge et à l'alerte
+  // "Attention" affichées dans la liste de gauche.
+  const warningCountByAgent = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const s of sanctions) {
+      if (s.type === "Avertissement") map.set(s.agentId, (map.get(s.agentId) ?? 0) + 1);
+    }
+    return map;
+  }, [sanctions]);
+
+  function selectAgent(id: string) {
+    setSelectedAgentId(id);
+    setAgentId(id);
+    setEditingId(null);
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -149,6 +165,9 @@ export default function SanctionsPage() {
     );
   }
 
+  const selectedAgent = agents.find((a) => a.id === selectedAgentId) ?? null;
+  const selectedSanctions = sanctions.filter((s) => s.agentId === selectedAgentId);
+
   return (
     <PageShell>
       <Link
@@ -163,156 +182,202 @@ export default function SanctionsPage() {
         subtitle={`${sanctions.length} sanction${sanctions.length > 1 ? "s" : ""} enregistrée${sanctions.length > 1 ? "s" : ""}`}
       />
 
-      <form onSubmit={handleSubmit} className="card-hover glass-strong rounded-xl p-5 mb-6 max-w-4xl border border-transparent">
-        <h2 className="text-sm font-medium mb-4 flex items-center gap-2.5">
-          <span className="w-8 h-8 rounded-lg bg-[rgb(var(--danger)/0.14)] flex items-center justify-center">
-            <ShieldAlert size={14} className="text-[rgb(var(--danger))]" />
-          </span>
-          Ajouter une sanction
-        </h2>
-        {error && (
-          <div className="rounded-lg bg-[rgb(var(--danger)/0.12)] text-[rgb(var(--danger))] text-xs px-3 py-2 mb-3">
-            {error}
-          </div>
-        )}
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 mb-3">
-          <LabeledSelect
-            value={agentId}
-            onChange={setAgentId}
-            options={agents.map((a) => ({ value: a.id, label: `${a.firstName} ${a.lastName}` }))}
-          />
-          <LabeledSelect
-            value={type}
-            onChange={setType}
-            options={SANCTION_TYPES.map((t) => ({ value: t, label: t }))}
-          />
-          <div>
-            <label className="text-xs text-[rgb(var(--muted))] mb-1 block">Date</label>
+      <div className="flex flex-col lg:flex-row gap-5 max-w-6xl">
+        <div className="card-hover glass-strong rounded-xl overflow-hidden border border-transparent lg:w-72 shrink-0 h-fit">
+          <p className="text-xs text-[rgb(var(--muted))] px-4 py-3 border-b border-white/[0.08]">Agents</p>
+          {agents.map((a) => {
+            const count = warningCountByAgent.get(a.id) ?? 0;
+            const atRisk = count >= 2;
+            return (
+              <button
+                key={a.id}
+                onClick={() => selectAgent(a.id)}
+                className={`w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors border-b border-white/[0.04] last:border-0 ${
+                  selectedAgentId === a.id ? "bg-[rgb(var(--brand-500)/0.12)]" : "hover:bg-white/[0.03]"
+                }`}
+              >
+                <span className="relative shrink-0">
+                  <span className="w-8 h-8 rounded-full bg-[rgb(var(--brand-500)/0.18)] text-[rgb(var(--brand-400))] flex items-center justify-center text-xs font-medium overflow-hidden">
+                    {a.avatarUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={a.avatarUrl} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      a.firstName[0]
+                    )}
+                  </span>
+                  {count > 0 && (
+                    <span
+                      className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-[rgb(var(--danger))] text-white text-[10px] font-semibold flex items-center justify-center"
+                      style={{ boxShadow: "0 0 6px 1px rgb(var(--danger)/0.6)" }}
+                    >
+                      {count}
+                    </span>
+                  )}
+                </span>
+                <div className="min-w-0">
+                  <p className="text-sm font-medium truncate">
+                    {a.firstName} {a.lastName}
+                  </p>
+                  {atRisk && (
+                    <p className="flex items-center gap-1 text-[10px] text-[rgb(var(--danger))] font-medium animate-pulse">
+                      <AlertTriangle size={10} />
+                      Attention
+                    </p>
+                  )}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="flex-1 min-w-0">
+          <form onSubmit={handleSubmit} className="card-hover glass-strong rounded-xl p-5 mb-5 border border-transparent">
+            <h2 className="text-sm font-medium mb-4 flex items-center gap-2.5">
+              <span className="w-8 h-8 rounded-lg bg-[rgb(var(--danger)/0.14)] flex items-center justify-center">
+                <ShieldAlert size={14} className="text-[rgb(var(--danger))]" />
+              </span>
+              Ajouter une sanction{selectedAgent ? ` — ${selectedAgent.firstName} ${selectedAgent.lastName}` : ""}
+            </h2>
+            {error && (
+              <div className="rounded-lg bg-[rgb(var(--danger)/0.12)] text-[rgb(var(--danger))] text-xs px-3 py-2 mb-3">
+                {error}
+              </div>
+            )}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+              <LabeledSelect
+                value={agentId}
+                onChange={(v) => {
+                  setAgentId(v);
+                  setSelectedAgentId(v);
+                }}
+                options={agents.map((a) => ({ value: a.id, label: `${a.firstName} ${a.lastName}` }))}
+              />
+              <LabeledSelect
+                value={type}
+                onChange={setType}
+                options={SANCTION_TYPES.map((t) => ({ value: t, label: t }))}
+              />
+              <div>
+                <label className="text-xs text-[rgb(var(--muted))] mb-1 block">Date</label>
+                <input
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  className="glass rounded-lg px-3 py-2 text-sm w-full outline-none"
+                />
+              </div>
+            </div>
+            <label className="text-xs text-[rgb(var(--muted))] mb-1 block">Motif</label>
             <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              placeholder="Retard répété, comportement inapproprié…"
               className="glass rounded-lg px-3 py-2 text-sm w-full outline-none"
             />
-          </div>
-        </div>
-        <label className="text-xs text-[rgb(var(--muted))] mb-1 block">Motif</label>
-        <input
-          value={reason}
-          onChange={(e) => setReason(e.target.value)}
-          placeholder="Retard répété, comportement inapproprié…"
-          className="glass rounded-lg px-3 py-2 text-sm w-full outline-none"
-        />
-        <button
-          type="submit"
-          disabled={saving || !agentId || !reason.trim()}
-          className="mt-4 flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-semibold text-white bg-gradient-to-r from-[rgb(var(--brand-500))] to-[rgb(var(--brand-600))] hover:brightness-110 transition-all disabled:opacity-60"
-        >
-          <Plus size={15} />
-          {saving ? "Enregistrement…" : "Ajouter la sanction"}
-        </button>
-      </form>
+            <button
+              type="submit"
+              disabled={saving || !agentId || !reason.trim()}
+              className="mt-4 flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-semibold text-white bg-gradient-to-r from-[rgb(var(--brand-500))] to-[rgb(var(--brand-600))] hover:brightness-110 transition-all disabled:opacity-60"
+            >
+              <Plus size={15} />
+              {saving ? "Enregistrement…" : "Ajouter la sanction"}
+            </button>
+          </form>
 
-      {!loading && (
-        <div className="max-w-4xl card-hover glass-strong rounded-xl overflow-hidden border border-transparent">
-          {sanctions.length === 0 ? (
-            <p className="px-4 py-6 text-center text-sm text-[rgb(var(--muted))]">Aucune sanction enregistrée.</p>
-          ) : (
-            sanctions.map((s) => {
-              if (editingId === s.id) {
-                return (
-                  <div key={s.id} className="px-4 py-3 border-b border-white/[0.04] last:border-0 bg-white/[0.02]">
-                    {editError && (
-                      <div className="rounded-lg bg-[rgb(var(--danger)/0.12)] text-[rgb(var(--danger))] text-xs px-3 py-2 mb-2">
-                        {editError}
+          {!loading && (
+            <div className="card-hover glass-strong rounded-xl overflow-hidden border border-transparent">
+              <p className="text-xs text-[rgb(var(--muted))] px-4 py-3 border-b border-white/[0.08]">
+                Historique{selectedAgent ? ` — ${selectedAgent.firstName} ${selectedAgent.lastName}` : ""}
+              </p>
+              {selectedSanctions.length === 0 ? (
+                <p className="px-4 py-6 text-center text-sm text-[rgb(var(--muted))]">Aucune sanction enregistrée.</p>
+              ) : (
+                selectedSanctions.map((s) => {
+                  if (editingId === s.id) {
+                    return (
+                      <div key={s.id} className="px-4 py-3 border-b border-white/[0.04] last:border-0 bg-white/[0.02]">
+                        {editError && (
+                          <div className="rounded-lg bg-[rgb(var(--danger)/0.12)] text-[rgb(var(--danger))] text-xs px-3 py-2 mb-2">
+                            {editError}
+                          </div>
+                        )}
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-2">
+                          <LabeledSelect
+                            value={editType}
+                            onChange={setEditType}
+                            options={SANCTION_TYPES.map((t) => ({ value: t, label: t }))}
+                          />
+                          <input
+                            type="date"
+                            value={editDate}
+                            onChange={(e) => setEditDate(e.target.value)}
+                            className="glass rounded-lg px-2 py-1.5 text-sm outline-none"
+                          />
+                          <input
+                            value={editReason}
+                            onChange={(e) => setEditReason(e.target.value)}
+                            placeholder="Motif"
+                            className="glass rounded-lg px-2 py-1.5 text-sm outline-none"
+                          />
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => saveEdit(s.id)}
+                            disabled={editSaving}
+                            className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold text-white bg-gradient-to-r from-[rgb(var(--brand-500))] to-[rgb(var(--brand-600))] disabled:opacity-60"
+                          >
+                            <Check size={13} />
+                            {editSaving ? "Enregistrement…" : "Enregistrer"}
+                          </button>
+                          <button
+                            onClick={() => setEditingId(null)}
+                            className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs text-[rgb(var(--muted))] hover:text-[rgb(var(--foreground))]"
+                          >
+                            <X size={13} />
+                            Annuler
+                          </button>
+                        </div>
                       </div>
-                    )}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-2">
-                      <LabeledSelect
-                        value={editType}
-                        onChange={setEditType}
-                        options={SANCTION_TYPES.map((t) => ({ value: t, label: t }))}
-                      />
-                      <input
-                        type="date"
-                        value={editDate}
-                        onChange={(e) => setEditDate(e.target.value)}
-                        className="glass rounded-lg px-2 py-1.5 text-sm outline-none"
-                      />
-                      <input
-                        value={editReason}
-                        onChange={(e) => setEditReason(e.target.value)}
-                        placeholder="Motif"
-                        className="glass rounded-lg px-2 py-1.5 text-sm outline-none"
-                      />
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => saveEdit(s.id)}
-                        disabled={editSaving}
-                        className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold text-white bg-gradient-to-r from-[rgb(var(--brand-500))] to-[rgb(var(--brand-600))] disabled:opacity-60"
-                      >
-                        <Check size={13} />
-                        {editSaving ? "Enregistrement…" : "Enregistrer"}
-                      </button>
-                      <button
-                        onClick={() => setEditingId(null)}
-                        className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs text-[rgb(var(--muted))] hover:text-[rgb(var(--foreground))]"
-                      >
-                        <X size={13} />
-                        Annuler
-                      </button>
-                    </div>
-                  </div>
-                );
-              }
+                    );
+                  }
 
-              return (
-                <div
-                  key={s.id}
-                  className="flex items-center justify-between gap-3 px-4 py-3 border-b border-white/[0.04] last:border-0 hover:bg-white/[0.03] transition-colors group"
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <span className="w-8 h-8 rounded-full bg-[rgb(var(--brand-500)/0.18)] text-[rgb(var(--brand-400))] flex items-center justify-center text-xs font-medium overflow-hidden shrink-0">
-                      {s.agentAvatarUrl ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={s.agentAvatarUrl} alt="" className="w-full h-full object-cover" />
-                      ) : (
-                        s.agentName[0]
-                      )}
-                    </span>
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium truncate flex items-center gap-2">
-                        {s.agentName}
-                        <span className={`text-[10px] font-medium rounded-full px-2 py-0.5 ${TYPE_STYLES[s.type] ?? "bg-white/[0.08] text-[rgb(var(--muted))]"}`}>
-                          {s.type}
-                        </span>
-                      </p>
-                      <p className="text-xs text-[rgb(var(--muted))]">
-                        {new Date(s.date).toLocaleDateString("fr-FR")} — {s.reason}
-                      </p>
+                  return (
+                    <div
+                      key={s.id}
+                      className="flex items-center justify-between gap-3 px-4 py-3 border-b border-white/[0.04] last:border-0 hover:bg-white/[0.03] transition-colors group"
+                    >
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium truncate flex items-center gap-2">
+                          <span className={`text-[10px] font-medium rounded-full px-2 py-0.5 ${TYPE_STYLES[s.type] ?? "bg-white/[0.08] text-[rgb(var(--muted))]"}`}>
+                            {s.type}
+                          </span>
+                        </p>
+                        <p className="text-xs text-[rgb(var(--muted))] mt-1">
+                          {new Date(s.date).toLocaleDateString("fr-FR")} — {s.reason}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                        <button
+                          onClick={() => startEdit(s)}
+                          className="text-[rgb(var(--muted))] hover:text-[rgb(var(--brand-400))] p-1.5"
+                        >
+                          <Pencil size={14} />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(s.id)}
+                          className="text-[rgb(var(--muted))] hover:text-[rgb(var(--danger))] p-1.5"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                    <button
-                      onClick={() => startEdit(s)}
-                      className="text-[rgb(var(--muted))] hover:text-[rgb(var(--brand-400))] p-1.5"
-                    >
-                      <Pencil size={14} />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(s.id)}
-                      className="text-[rgb(var(--muted))] hover:text-[rgb(var(--danger))] p-1.5"
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                </div>
-              );
-            })
+                  );
+                })
+              )}
+            </div>
           )}
         </div>
-      )}
+      </div>
     </PageShell>
   );
 }
