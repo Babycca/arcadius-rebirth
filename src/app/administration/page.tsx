@@ -207,6 +207,22 @@ export default function AdministrationPage() {
     }
   }
 
+  async function deletePermanently(agent: Agent) {
+    const ok = await confirm(
+      `Supprimer définitivement ${agent.firstName} ${agent.lastName} ? Action irréversible — le compte n'apparaîtra plus nulle part. Ses ventes/garages passés (s'il en a) resteront dans les archives mais associés à un agent "Inconnu".`,
+      { danger: true, confirmLabel: "Supprimer définitivement" }
+    );
+    if (!ok) return;
+    const res = await fetch(`/api/agents/${agent.id}`, { method: "DELETE" });
+    if (res.ok) {
+      toast("Compte supprimé définitivement.");
+      load();
+    } else {
+      const body = await res.json().catch(() => null);
+      await alertDialog(body?.error ?? "Impossible de supprimer ce compte.");
+    }
+  }
+
   async function resetPassword(id: string) {
     const res = await fetch(`/api/agents/${id}/reset-password`, { method: "POST" });
     if (res.ok) {
@@ -587,13 +603,22 @@ export default function AdministrationPage() {
                   <td className="px-4 py-2.5 text-[rgb(var(--muted))] font-mono text-xs">{a.loginHandle}</td>
                   <td className="px-4 py-2.5 text-[rgb(var(--muted))]">{a.grade}</td>
                   <td className="px-4 py-2.5 text-right">
-                    <button
-                      onClick={() => toggleActive(a)}
-                      className="flex items-center gap-1.5 text-xs text-[rgb(var(--brand-400))] hover:brightness-110 ml-auto"
-                    >
-                      <UserCheck size={14} />
-                      Réactiver
-                    </button>
+                    <div className="flex items-center justify-end gap-3">
+                      <button
+                        onClick={() => toggleActive(a)}
+                        className="flex items-center gap-1.5 text-xs text-[rgb(var(--brand-400))] hover:brightness-110"
+                      >
+                        <UserCheck size={14} />
+                        Réactiver
+                      </button>
+                      <button
+                        onClick={() => deletePermanently(a)}
+                        className="flex items-center gap-1.5 text-xs text-[rgb(var(--danger))] hover:brightness-110"
+                      >
+                        <Trash2 size={14} />
+                        Supprimer
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

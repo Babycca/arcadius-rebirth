@@ -91,3 +91,44 @@ export async function PATCH(
 
   return NextResponse.json(agent);
 }
+
+// Suppression définitive — réservée aux comptes déjà désactivés (démission),
+// pour éviter de supprimer un employé actif par erreur sans passer par la
+// désactivation d'abord. Ses ventes/garages passés ne sont pas supprimés
+// (pas de cascade) : ils restent dans les archives, juste associés à un
+// agent qui n'existe plus ("Inconnu" à l'affichage).
+export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const session = await getServerSession(authOptions);
+  const sessionUser = session?.user as { id?: string; name?: string; role?: string } | undefined;
+  if (!session?.user || !requireAdmin(sessionUser?.role)) {
+    return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
+  }
+
+  const { id } = await params;
+  if (id === sessionUser?.id) {
+    return NextResponse.json({ error: "Tu ne peux pas supprimer ton propre compte." }, { status: 400 });
+  }
+
+  const existing = await prisma.agent.findUnique({ where: { id } });
+  if (!existing) return NextResponse.json({ error: "Compte introuvable" }, { status: 404 });
+  if (existing.role === "SUPER_ADMIN") {
+    return NextResponse.json({ error: "Impossible de supprimer un compte Super Admin." }, { status: 400 });
+  }
+  if (existing.active) {
+    return NextResponse.json({ error: "Désactive d'abord ce compte avant de le supprimer." }, { status: 400 });
+  }
+
+  await prisma.agent.delete({ where: { id } });
+
+  const actorName = sessionUser!.name ?? "Admin";
+  await logActivity({
+    actorId: sessionUser!.id,
+    actorName,
+    action: "DELETE",
+    entityType: "Agent",
+    entityId: id,
+    summary: `${actorName} a supprimé définitivement le compte ${existing.firstName} ${existing.lastName} (${existing.loginHandle})`,
+  });
+
+  return NextResponse.json({ ok: true });
+}

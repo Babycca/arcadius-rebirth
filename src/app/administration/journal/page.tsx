@@ -4,7 +4,10 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { PageShell, PageHeader } from "@/components/PageShell";
 import { useCanEdit } from "@/lib/use-can-edit";
-import { ArrowLeft, ChevronLeft, ChevronRight, PlusCircle, Pencil, Trash2, LogIn } from "lucide-react";
+import { useDialog } from "@/components/DialogProvider";
+import { useToast } from "@/components/ToastProvider";
+import { ArrowLeft, ChevronLeft, ChevronRight, PlusCircle, Pencil, Trash2, LogIn, Eraser, Search } from "lucide-react";
+import LabeledSelect from "@/components/LabeledSelect";
 
 type LogRow = {
   id: string;
@@ -24,14 +27,19 @@ const ACTION_STYLE: Record<LogRow["action"], { icon: typeof PlusCircle; color: s
 
 export default function AuditLogPage() {
   const { isAdmin } = useCanEdit();
+  const { confirm } = useDialog();
+  const toast = useToast();
   const [logs, setLogs] = useState<LogRow[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(0);
   const [entityTypes, setEntityTypes] = useState<string[]>([]);
   const [actionFilter, setActionFilter] = useState("");
   const [entityFilter, setEntityFilter] = useState("");
+  const [actorInput, setActorInput] = useState("");
+  const [actorFilter, setActorFilter] = useState("");
   const [loading, setLoading] = useState(true);
   const [forbidden, setForbidden] = useState(false);
+  const [clearing, setClearing] = useState(false);
   const pageSize = 50;
 
   function load() {
@@ -39,6 +47,7 @@ export default function AuditLogPage() {
     const params = new URLSearchParams({ page: String(page) });
     if (actionFilter) params.set("action", actionFilter);
     if (entityFilter) params.set("entityType", entityFilter);
+    if (actorFilter) params.set("actor", actorFilter);
     fetch(`/api/audit-log?${params}`).then(async (res) => {
       if (res.status === 403) {
         setForbidden(true);
@@ -56,11 +65,34 @@ export default function AuditLogPage() {
   useEffect(() => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, actionFilter, entityFilter]);
+  }, [page, actionFilter, entityFilter, actorFilter]);
 
   useEffect(() => {
     setPage(0);
-  }, [actionFilter, entityFilter]);
+  }, [actionFilter, entityFilter, actorFilter]);
+
+  // Débounce : évite un appel réseau à chaque frappe pendant la recherche.
+  useEffect(() => {
+    const t = setTimeout(() => setActorFilter(actorInput), 350);
+    return () => clearTimeout(t);
+  }, [actorInput]);
+
+  async function handleClear() {
+    const ok = await confirm("Vider tout le journal d'activité ? Cette action est irréversible.", {
+      danger: true,
+      confirmLabel: "Vider",
+    });
+    if (!ok) return;
+    setClearing(true);
+    const res = await fetch("/api/audit-log", { method: "DELETE" });
+    setClearing(false);
+    if (res.ok) {
+      toast("Journal vidé.");
+      load();
+    } else {
+      toast("Échec de la suppression.", "error");
+    }
+  }
 
   if (forbidden || !isAdmin) {
     return (
@@ -84,30 +116,42 @@ export default function AuditLogPage() {
       </Link>
       <PageHeader title="Journal d'activité" subtitle={`${total} action${total > 1 ? "s" : ""} enregistrée${total > 1 ? "s" : ""}`} />
 
-      <div className="flex gap-2 mb-4 flex-wrap">
-        <select
-          value={actionFilter}
-          onChange={(e) => setActionFilter(e.target.value)}
-          className="glass rounded-lg px-3 py-2 text-sm outline-none"
+      <div className="flex gap-2 mb-4 flex-wrap items-center justify-between">
+        <div className="flex gap-2 flex-wrap items-center">
+          <LabeledSelect
+            value={actionFilter}
+            onChange={setActionFilter}
+            options={[
+              { value: "", label: "Toutes les actions" },
+              { value: "CREATE", label: "Créations" },
+              { value: "UPDATE", label: "Modifications" },
+              { value: "DELETE", label: "Suppressions" },
+              { value: "LOGIN", label: "Connexions" },
+            ]}
+          />
+          <LabeledSelect
+            value={entityFilter}
+            onChange={setEntityFilter}
+            options={[{ value: "", label: "Tous les types" }, ...entityTypes.map((t) => ({ value: t, label: t }))]}
+          />
+          <div className="relative">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[rgb(var(--muted))]" />
+            <input
+              value={actorInput}
+              onChange={(e) => setActorInput(e.target.value)}
+              placeholder="Chercher une personne…"
+              className="glass rounded-lg pl-9 pr-3 py-2 text-sm outline-none w-48"
+            />
+          </div>
+        </div>
+        <button
+          onClick={handleClear}
+          disabled={clearing}
+          className="flex items-center gap-1.5 text-xs text-[rgb(var(--danger))] hover:bg-[rgb(var(--danger)/0.1)] rounded-lg px-3 py-2 disabled:opacity-60"
         >
-          <option value="">Toutes les actions</option>
-          <option value="CREATE">Créations</option>
-          <option value="UPDATE">Modifications</option>
-          <option value="DELETE">Suppressions</option>
-          <option value="LOGIN">Connexions</option>
-        </select>
-        <select
-          value={entityFilter}
-          onChange={(e) => setEntityFilter(e.target.value)}
-          className="glass rounded-lg px-3 py-2 text-sm outline-none"
-        >
-          <option value="">Tous les types</option>
-          {entityTypes.map((t) => (
-            <option key={t} value={t}>
-              {t}
-            </option>
-          ))}
-        </select>
+          <Eraser size={13} />
+          {clearing ? "Suppression…" : "Vider le journal"}
+        </button>
       </div>
 
       <div className="card-hover glass-strong rounded-xl overflow-hidden border border-transparent">
