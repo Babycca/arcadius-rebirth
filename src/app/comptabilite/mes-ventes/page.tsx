@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { ChevronDown, Plus, Pencil, Trash2, Check, X } from "lucide-react";
 import { PageShell, PageHeader } from "@/components/PageShell";
 import { useDialog } from "@/components/DialogProvider";
+import GradeSelect from "@/components/GradeSelect";
 
 type Sale = {
   id: string;
@@ -100,17 +101,7 @@ function GaragesPanel() {
             </div>
           )}
           <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-            <select
-              value={type}
-              onChange={(e) => setType(e.target.value)}
-              className="glass rounded-lg px-3 py-2 text-sm outline-none"
-            >
-              {GARAGE_TYPES.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
-            </select>
+            <GradeSelect value={type} grades={GARAGE_TYPES} onChange={setType} />
             <input
               required
               value={houseNumber}
