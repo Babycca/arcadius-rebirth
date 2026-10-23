@@ -25,16 +25,21 @@ export default async function DashboardPage() {
     .map((z) => ({ ...z, pos: zoneCentroidPercent(z.geometry) }))
     .filter((z): z is typeof z & { pos: { x: number; y: number } } => z.pos != null);
 
-  const weekSales = await prisma.sale.findMany({ where: { weekId } });
+  const [weekSales, weekGarageSales] = await Promise.all([
+    prisma.sale.findMany({ where: { weekId } }),
+    prisma.garageSale.findMany({ where: { weekId } }),
+  ]);
   const salesCount = weekSales.length;
-  const totalInvoices = weekSales.reduce((s, x) => s + x.priceAmount, 0);
+  const totalInvoices =
+    weekSales.reduce((s, x) => s + x.priceAmount, 0) + weekGarageSales.reduce((s, x) => s + x.priceAmount, 0);
 
   let mySalary = 0;
   let mySalesCount = 0;
   if (userId) {
-    const [me, mySales] = await Promise.all([
+    const [me, mySales, myGarageSales] = await Promise.all([
       prisma.agent.findUnique({ where: { id: userId } }),
       prisma.sale.findMany({ where: { agentId: userId, weekId } }),
+      prisma.garageSale.findMany({ where: { agentId: userId, weekId } }),
     ]);
     mySalesCount = mySales.length;
     if (me) {
@@ -45,7 +50,8 @@ export default async function DashboardPage() {
       mySalary = computeAgentPayroll(
         mySales,
         rule,
-        bonus ? { enabled: bonus.enabled, amount: bonus.amount } : null
+        bonus ? { enabled: bonus.enabled, amount: bonus.amount } : null,
+        myGarageSales
       ).salary;
     }
   }

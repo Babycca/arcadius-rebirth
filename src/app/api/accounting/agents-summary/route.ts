@@ -53,10 +53,13 @@ export async function GET(req: NextRequest) {
 
   const summaryAll = await Promise.all(
     agents.map(async (agent) => {
-      const sales = await prisma.sale.findMany({ where: { agentId: agent.id, weekId } });
+      const [sales, garageSales] = await Promise.all([
+        prisma.sale.findMany({ where: { agentId: agent.id, weekId } }),
+        prisma.garageSale.findMany({ where: { agentId: agent.id, weekId } }),
+      ]);
       const rule = rulesByGrade[agent.grade] ?? null;
       const bonusOverride = bonusByAgentId[agent.id] ?? null;
-      const payroll = computeAgentPayroll(sales, rule, bonusOverride);
+      const payroll = computeAgentPayroll(sales, rule, bonusOverride, garageSales);
       return {
         id: agent.id,
         name: `${agent.firstName} ${agent.lastName}`,
@@ -72,9 +75,10 @@ export async function GET(req: NextRequest) {
   );
 
   // Un employé désactivé (archivé) ne pollue plus la semaine active s'il n'y
-  // a aucune vente — mais reste visible dans une semaine (passée ou en
-  // cours) où il a effectivement vendu, pour ne jamais brouiller l'historique.
-  const summary = summaryAll.filter((a) => a.active || a.salesCount > 0);
+  // a aucune activité (vente ou garage) — mais reste visible dans une
+  // semaine (passée ou en cours) où il a effectivement travaillé, pour ne
+  // jamais brouiller l'historique.
+  const summary = summaryAll.filter((a) => a.active || a.invoiceCount > 0);
 
   return NextResponse.json({
     weekId,

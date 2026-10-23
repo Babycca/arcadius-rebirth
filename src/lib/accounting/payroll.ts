@@ -4,8 +4,16 @@ type BonusOverride = { enabled: boolean; amount: number | null } | null;
 
 const COMPANY_PROFIT_RATE = 0.1; // 10% — constante pour l'instant, à sortir en AppSetting si besoin de la rendre réglable
 
-export function computeAgentPayroll(sales: SaleLike[], rule: CommissionRuleLike, bonusOverride: BonusOverride = null) {
-  const totalSales = sales.reduce((s, x) => s + x.priceAmount, 0);
+// extraInvoices (ex: garages posés) : compte comme du chiffre d'affaires et
+// une facture, mais jamais comme une "vente" — salesCount reste basé
+// uniquement sur `sales`, invoiceCount inclut les deux.
+export function computeAgentPayroll(
+  sales: SaleLike[],
+  rule: CommissionRuleLike,
+  bonusOverride: BonusOverride = null,
+  extraInvoices: SaleLike[] = []
+) {
+  const totalSales = [...sales, ...extraInvoices].reduce((s, x) => s + x.priceAmount, 0);
   // L'entreprise ne touche que 10% de la facture brute ; l'agent touche
   // ensuite un pourcentage (selon son grade) de ce bénéfice entreprise, pas
   // de la facture brute. Ex : 100 000$ de facture → 10 000$ de bénéfice
@@ -31,5 +39,6 @@ export function computeAgentPayroll(sales: SaleLike[], rule: CommissionRuleLike,
     bonusEnabled,
     salary,
     salesCount: sales.length,
+    invoiceCount: sales.length + extraInvoices.length,
   };
 }

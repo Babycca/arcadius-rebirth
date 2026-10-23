@@ -86,6 +86,7 @@ type AgentSummary = {
   bonusEnabled: boolean;
   salary: number;
   salesCount: number;
+  invoiceCount: number;
 };
 
 export default function ComptabilitePage() {
@@ -296,7 +297,7 @@ export default function ComptabilitePage() {
                 <td className="px-4 py-3 text-[rgb(var(--muted))]">{a.phone || "—"}</td>
                 <td className="px-4 py-3 text-[rgb(var(--muted))]">{a.grade}</td>
                 <td className="px-4 py-3 text-[rgb(var(--muted))]">{a.commissionRate}%</td>
-                <td className="px-4 py-3">{a.salesCount}</td>
+                <td className="px-4 py-3">{a.invoiceCount}</td>
                 <td className="px-4 py-3">${a.totalSales.toLocaleString("fr-FR")}</td>
                 <td className="px-4 py-3">
                   {bonusPromptFor === a.id ? (
