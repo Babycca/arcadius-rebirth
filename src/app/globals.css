@@ -67,6 +67,11 @@ body {
   background: rgb(var(--bg-elevated-2) / 0.62);
   backdrop-filter: blur(18px) saturate(160%);
   -webkit-backdrop-filter: blur(18px) saturate(160%);
+  /* Force la création immédiate d'une couche de composition — sans ça,
+     Chrome applique parfois le flou avec un cran de retard (ou jamais) sur
+     un élément fixed fraîchement monté via portal (ex: menus déroulants). */
+  will-change: backdrop-filter;
+  transform: translateZ(0);
 }
 
 .font-heading {
