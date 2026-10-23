@@ -19,7 +19,7 @@ export async function GET() {
     return NextResponse.json(garageSales);
   } catch (e) {
     console.error("GET /api/accounting/garage-sales", e);
-    return NextResponse.json({ error: "Erreur serveur." }, { status: 500 });
+    return NextResponse.json({ error: `Erreur serveur: ${e instanceof Error ? e.message : String(e)}` }, { status: 500 });
   }
 }
 
@@ -47,6 +47,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(garageSale, { status: 201 });
   } catch (e) {
     console.error("POST /api/accounting/garage-sales", e);
-    return NextResponse.json({ error: "Erreur serveur." }, { status: 500 });
+    return NextResponse.json({ error: `Erreur serveur: ${e instanceof Error ? e.message : String(e)}` }, { status: 500 });
   }
 }
