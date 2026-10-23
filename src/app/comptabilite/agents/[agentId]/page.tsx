@@ -12,6 +12,14 @@ type Sale = {
   clientPhone: string | null;
 };
 
+type GarageSale = {
+  id: string;
+  type: string;
+  houseNumber: string;
+  priceAmount: number;
+  date: string;
+};
+
 export default function AgentWeekDetailPage({
   params,
 }: {
@@ -21,6 +29,7 @@ export default function AgentWeekDetailPage({
   const [agentName, setAgentName] = useState("");
   const [agentAvatarUrl, setAgentAvatarUrl] = useState<string | null>(null);
   const [sales, setSales] = useState<Sale[]>([]);
+  const [garages, setGarages] = useState<GarageSale[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -33,6 +42,9 @@ export default function AgentWeekDetailPage({
       }
       setLoading(false);
     });
+    fetch(`/api/accounting/agents/${agentId}/garage-sales`)
+      .then((res) => (res.ok ? res.json() : []))
+      .then(setGarages);
   }, [agentId]);
 
   const total = sales.reduce((s, x) => s + x.priceAmount, 0);
@@ -89,6 +101,36 @@ export default function AgentWeekDetailPage({
           </tbody>
         </table>
       </div>
+
+      {garages.length > 0 && (
+        <div className="glass-strong rounded-xl overflow-hidden max-w-2xl mt-5">
+          <p className="text-xs text-[rgb(var(--muted))] px-4 py-3 border-b border-white/[0.08]">
+            Garages posés — ne compte pas comme une vente
+          </p>
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left text-xs text-[rgb(var(--muted))] border-b border-white/[0.08]">
+                <th className="px-4 py-2 font-normal">Date</th>
+                <th className="px-4 py-2 font-normal">Type</th>
+                <th className="px-4 py-2 font-normal">Habitation</th>
+                <th className="px-4 py-2 font-normal text-right">Prix</th>
+              </tr>
+            </thead>
+            <tbody>
+              {garages.map((g) => (
+                <tr key={g.id} className="border-b border-white/[0.04] last:border-0">
+                  <td className="px-4 py-2">{new Date(g.date).toLocaleDateString("fr-FR")}</td>
+                  <td className="px-4 py-2">{g.type}</td>
+                  <td className="px-4 py-2">#{g.houseNumber}</td>
+                  <td className="px-4 py-2 text-right font-medium text-[rgb(var(--brand-400))]">
+                    ${g.priceAmount.toLocaleString("fr-FR")}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </PageShell>
   );
 }

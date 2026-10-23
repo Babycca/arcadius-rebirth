@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, Pencil, Trash2, Check, X } from "lucide-react";
+import { ChevronDown, Plus, Pencil, Trash2, Check, X } from "lucide-react";
 import { PageShell, PageHeader } from "@/components/PageShell";
 import { useDialog } from "@/components/DialogProvider";
 
@@ -14,8 +14,162 @@ type Sale = {
   clientPhone: string | null;
 };
 
+const GARAGE_TYPES = ["Garage Bateaux", "Garage Aéronefs", "Garage Hélicoptères"];
+
+type GarageSale = {
+  id: string;
+  type: string;
+  houseNumber: string;
+  priceAmount: number;
+  date: string;
+};
+
 function todayInputValue() {
   return new Date().toISOString().slice(0, 10);
+}
+
+function GaragesPanel() {
+  const { confirm } = useDialog();
+  const [open, setOpen] = useState(false);
+  const [garages, setGarages] = useState<GarageSale[]>([]);
+  const [loaded, setLoaded] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const [type, setType] = useState(GARAGE_TYPES[0]);
+  const [houseNumber, setHouseNumber] = useState("");
+  const [priceAmount, setPriceAmount] = useState("");
+
+  function load() {
+    fetch("/api/accounting/garage-sales")
+      .then((r) => r.json())
+      .then((d) => {
+        setGarages(d);
+        setLoaded(true);
+      });
+  }
+
+  useEffect(() => {
+    if (open && !loaded) load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setSaving(true);
+    setError(null);
+    const res = await fetch("/api/accounting/garage-sales", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type, houseNumber, priceAmount: Number(priceAmount) }),
+    });
+    setSaving(false);
+    if (!res.ok) {
+      const body = await res.json().catch(() => null);
+      setError(body?.error ?? "Impossible d'enregistrer ce garage.");
+      return;
+    }
+    setHouseNumber("");
+    setPriceAmount("");
+    load();
+  }
+
+  async function deleteGarage(id: string) {
+    if (!(await confirm("Supprimer ce garage ?", { danger: true }))) return;
+    const res = await fetch(`/api/accounting/garage-sales/${id}`, { method: "DELETE" });
+    if (res.ok) load();
+  }
+
+  return (
+    <div className="glass-strong rounded-xl mb-6 max-w-2xl overflow-hidden">
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="flex items-center justify-between w-full px-5 py-3.5 text-sm font-medium"
+      >
+        Garages
+        <ChevronDown size={15} className={`text-[rgb(var(--muted))] transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+      {open && (
+        <div className="px-5 pb-5 border-t border-white/[0.08] pt-4">
+          <p className="text-xs text-[rgb(var(--muted))] mb-4">
+            Garages posés sur un bien — ne compte pas comme une vente, mais reste visible en comptabilité.
+          </p>
+          {error && (
+            <div className="rounded-lg bg-[rgb(var(--danger)/0.12)] text-[rgb(var(--danger))] text-xs px-3 py-2 mb-3">
+              {error}
+            </div>
+          )}
+          <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+            <select
+              value={type}
+              onChange={(e) => setType(e.target.value)}
+              className="glass rounded-lg px-3 py-2 text-sm outline-none"
+            >
+              {GARAGE_TYPES.map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
+            </select>
+            <input
+              required
+              value={houseNumber}
+              onChange={(e) => setHouseNumber(e.target.value)}
+              placeholder="N° d'habitation"
+              className="glass rounded-lg px-3 py-2 text-sm outline-none"
+            />
+            <input
+              required
+              type="number"
+              min="0"
+              value={priceAmount}
+              onChange={(e) => setPriceAmount(e.target.value)}
+              placeholder="Prix ($)"
+              className="glass rounded-lg px-3 py-2 text-sm outline-none"
+            />
+            <button
+              type="submit"
+              disabled={saving}
+              className="sm:col-span-3 flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold text-white bg-gradient-to-r from-[rgb(var(--brand-500))] to-[rgb(var(--brand-600))] hover:brightness-110 transition-all disabled:opacity-60"
+            >
+              <Plus size={14} />
+              {saving ? "Enregistrement…" : "Ajouter le garage"}
+            </button>
+          </form>
+
+          {garages.length === 0 ? (
+            <p className="text-xs text-[rgb(var(--muted))] text-center py-2">Aucun garage cette semaine.</p>
+          ) : (
+            <div className="flex flex-col gap-1.5">
+              {garages.map((g) => (
+                <div
+                  key={g.id}
+                  className="flex items-center justify-between gap-3 text-sm px-3 py-2 rounded-lg hover:bg-white/[0.03] group"
+                >
+                  <div className="min-w-0">
+                    <p className="font-medium">{g.type}</p>
+                    <p className="text-xs text-[rgb(var(--muted))]">#{g.houseNumber}</p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="font-medium text-[rgb(var(--brand-400))]">
+                      ${g.priceAmount.toLocaleString("fr-FR")}
+                    </span>
+                    <button
+                      onClick={() => deleteGarage(g.id)}
+                      className="text-[rgb(var(--muted))] hover:text-[rgb(var(--danger))] p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                      title="Supprimer"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default function MesVentesPage() {
@@ -203,6 +357,8 @@ export default function MesVentesPage() {
           {saving ? "Enregistrement…" : "Ajouter la vente"}
         </button>
       </form>
+
+      <GaragesPanel />
 
       <div className="glass-strong rounded-xl overflow-hidden max-w-3xl">
         <table className="w-full text-sm">

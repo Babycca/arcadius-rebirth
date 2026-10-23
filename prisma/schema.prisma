@@ -241,6 +241,23 @@ model Sale {
   @@index([weekId])
 }
 
+// Garage (Bateaux/Aéronefs/Hélicoptères) lié à un bien — suivi à part des
+// ventes : visible dans la comptabilité de l'agent qui l'a posé, mais ne
+// compte jamais dans son chiffre d'affaires ni dans le calcul du salaire.
+model GarageSale {
+  id          String   @id @default(cuid())
+  agentId     String
+  type        String
+  houseNumber String
+  priceAmount Float
+  date        DateTime @default(now())
+  weekId      String
+  createdAt   DateTime @default(now())
+
+  @@index([agentId, weekId])
+  @@index([weekId])
+}
+
 // Dépense d'entreprise (loyer, fournitures, etc.) — même principe que Sale :
 // taguée par weekId, jamais supprimée à l'archivage, donc consultable dans
 // l'archive de la semaine concernée une fois la comptabilité clôturée.
