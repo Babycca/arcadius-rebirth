@@ -121,7 +121,7 @@ export default function PriceMapClient({
     <div
       ref={mapRef}
       onClick={handleMapClick}
-      className={`relative rounded-xl bg-[rgb(var(--bg-base))] border border-white/[0.06] overflow-hidden ${
+      className={`relative isolate rounded-xl bg-[rgb(var(--bg-base))] border border-white/[0.06] overflow-hidden ${
         canEdit ? "cursor-crosshair" : ""
       }`}
     >

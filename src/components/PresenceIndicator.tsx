@@ -43,7 +43,7 @@ export default function PresenceIndicator() {
       {open &&
         createPortal(
           <div
-            className="fixed z-[101] w-48 rounded-lg overflow-hidden border border-white/[0.08] shadow-lg glass-popover"
+            className="fixed z-[1000] w-48 rounded-lg overflow-hidden border border-white/[0.08] shadow-lg glass-popover"
             style={{ top: pos.top, right: pos.right }}
             onMouseEnter={openPanel}
             onMouseLeave={() => setOpen(false)}

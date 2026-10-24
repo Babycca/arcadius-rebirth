@@ -557,7 +557,7 @@ export default function ReservedZonesMap() {
         })}
       </div>
 
-      <div className="relative h-[75vh] min-h-[500px] w-full overflow-hidden rounded-xl border border-white/[0.08]">
+      <div className="relative isolate h-[75vh] min-h-[500px] w-full overflow-hidden rounded-xl border border-white/[0.08]">
         <div ref={containerRef} className="h-full w-full" style={{ background: "#143D6B" }} />
 
         {loading && (
