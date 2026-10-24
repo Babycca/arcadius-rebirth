@@ -40,7 +40,7 @@ export default function ChangePasswordModal({ onClose }: { onClose: () => void }
 
   return (
     <div className="fixed inset-0 z-[3000] flex items-center justify-center bg-black/60 p-4">
-      <div className="glass-strong rounded-2xl p-6 w-full max-w-sm">
+      <div className="glass-popover border border-white/10 rounded-2xl p-6 w-full max-w-sm">
         <div className="flex items-center justify-between mb-5">
           <h2 className="font-heading text-lg flex items-center gap-2">
             <KeyRound size={18} className="text-[rgb(var(--brand-400))]" />

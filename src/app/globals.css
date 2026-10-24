@@ -46,34 +46,18 @@ body {
     radial-gradient(800px circle at 50% 100%, rgb(var(--brand-glow) / 0.08), transparent 60%);
 }
 
-/* Le build (lightningcss) a un bug de minification : "blur(Xpx) saturate(Y%)"
-   écrit directement en valeur perd son espace ("blur(Xpx)saturate(Y%)",
-   invalide) et la déclaration standard backdrop-filter est carrément
-   supprimée au profit du seul -webkit-. Résultat : aucun flou nulle part
-   sur le site, silencieusement. Passer par une custom property contourne
-   le bug (la valeur n'est pas re-sérialisée par le minifieur). */
+/* Cartes/surfaces principales du site — fond translucide SANS flou de fond :
+   c'est le rendu que le site a toujours eu et que l'utilisatrice veut
+   garder. Seul .glass-popover (petits menus/pop-ups) doit être flouté,
+   voir plus bas. */
 .glass {
-  --blur: blur(16px) saturate(140%);
   background: rgb(var(--bg-elevated) / 0.55);
   border: 1px solid rgb(var(--border-subtle) / var(--border-subtle-alpha));
 }
-@supports (-webkit-backdrop-filter: blur(1px)) {
-  .glass { -webkit-backdrop-filter: var(--blur); }
-}
-@supports (backdrop-filter: blur(1px)) {
-  .glass { backdrop-filter: var(--blur); }
-}
 
 .glass-strong {
-  --blur: blur(20px) saturate(150%);
   background: rgb(var(--bg-elevated-2) / 0.75);
   border: 1px solid rgb(var(--border-subtle) / 0.12);
-}
-@supports (-webkit-backdrop-filter: blur(1px)) {
-  .glass-strong { -webkit-backdrop-filter: var(--blur); }
-}
-@supports (backdrop-filter: blur(1px)) {
-  .glass-strong { backdrop-filter: var(--blur); }
 }
 
 /* Petites fenêtres flottantes (menus déroulants, pop-ups, modales de

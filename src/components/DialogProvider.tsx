@@ -45,7 +45,7 @@ export function DialogProvider({ children }: { children: React.ReactNode }) {
       {children}
       {state && (
         <div className="fixed inset-0 z-[4000] flex items-center justify-center bg-black/60 p-4">
-          <div className="glass-strong rounded-2xl p-6 w-full max-w-sm">
+          <div className="glass-popover border border-white/10 rounded-2xl p-6 w-full max-w-sm">
             <div className="flex items-center gap-2 mb-3">
               {state.kind === "confirm" && (state.options as ConfirmOptions).danger ? (
                 <AlertTriangle size={18} className="text-[rgb(var(--danger))]" />
