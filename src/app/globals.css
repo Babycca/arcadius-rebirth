@@ -46,17 +46,25 @@ body {
     radial-gradient(800px circle at 50% 100%, rgb(var(--brand-glow) / 0.08), transparent 60%);
 }
 
+/* Le build (lightningcss) a un bug de minification : "blur(Xpx) saturate(Y%)"
+   écrit directement en valeur perd son espace ("blur(Xpx)saturate(Y%)",
+   invalide) et la déclaration standard backdrop-filter est carrément
+   supprimée au profit du seul -webkit-. Résultat : aucun flou nulle part
+   sur le site, silencieusement. Passer par une custom property contourne
+   le bug (la valeur n'est pas re-sérialisée par le minifieur). */
 .glass {
+  --blur: blur(16px) saturate(140%);
   background: rgb(var(--bg-elevated) / 0.55);
-  backdrop-filter: blur(16px) saturate(140%);
-  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
   border: 1px solid rgb(var(--border-subtle) / var(--border-subtle-alpha));
 }
 
 .glass-strong {
+  --blur: blur(20px) saturate(150%);
   background: rgb(var(--bg-elevated-2) / 0.75);
-  backdrop-filter: blur(20px) saturate(150%);
-  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
   border: 1px solid rgb(var(--border-subtle) / 0.12);
 }
 
@@ -64,14 +72,15 @@ body {
    confirmation) — fond légèrement flouté plutôt qu'opaque, pour rester
    cohérent avec le reste du glassmorphism du site. */
 .glass-popover {
+  --blur: blur(18px) saturate(160%);
   /* Un léger voile clair par-dessus le flou : sur un fond déjà sombre et peu
      texturé (dégradés violets très doux), le flou seul du contenu derrière
      est quasi invisible à l'œil — ce voile rend l'effet "verre dépoli"
      perceptible même là où il n'y a rien de net à flouter. */
   background: linear-gradient(145deg, rgb(255 255 255 / 0.08), rgb(255 255 255 / 0.02)),
     rgb(var(--bg-elevated-2) / 0.36);
-  backdrop-filter: blur(18px) saturate(160%);
-  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
   /* Force la création immédiate d'une couche de composition — sans ça,
      Chrome applique parfois le flou avec un cran de retard (ou jamais) sur
      un élément fixed fraîchement monté via portal (ex: menus déroulants). */
