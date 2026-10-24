@@ -68,8 +68,8 @@ body {
      texturé (dégradés violets très doux), le flou seul du contenu derrière
      est quasi invisible à l'œil — ce voile rend l'effet "verre dépoli"
      perceptible même là où il n'y a rien de net à flouter. */
-  background: linear-gradient(145deg, rgb(255 255 255 / 0.1), rgb(255 255 255 / 0.03)),
-    rgb(var(--bg-elevated-2) / 0.55);
+  background: linear-gradient(145deg, rgb(255 255 255 / 0.08), rgb(255 255 255 / 0.02)),
+    rgb(var(--bg-elevated-2) / 0.36);
   backdrop-filter: blur(18px) saturate(160%);
   -webkit-backdrop-filter: blur(18px) saturate(160%);
   /* Force la création immédiate d'une couche de composition — sans ça,
