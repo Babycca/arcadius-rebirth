@@ -4,16 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
-import {
-  DndContext,
-  closestCenter,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  type DragEndEvent,
-} from "@dnd-kit/core";
-import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
+import dynamic from "next/dynamic";
 import {
   Home,
   Map as MapIcon,
@@ -29,7 +20,6 @@ import {
   Pencil,
   User,
   Sofa,
-  GripVertical,
   MessageSquareText,
   BookOpen,
   GraduationCap,
@@ -95,37 +85,23 @@ function writeCachedPageVisibility(rows: PageVisibilityRow[]) {
   }
 }
 
-function SortableNavItem({
+// Pas de drag-and-drop ici (@dnd-kit n'est chargé qu'à la demande, voir
+// SidebarSortableNav plus bas) — un agent sans droit d'édition ne peut de
+// toute façon pas réordonner le menu, inutile de lui faire télécharger la
+// librairie à chaque page.
+function NavItem({
   href,
   icon: Icon,
   label,
   active,
-  canEdit,
 }: {
   href: string;
   icon: typeof Home;
   label: string;
   active: boolean;
-  canEdit: boolean;
 }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: href });
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-  };
-
   return (
-    <div ref={setNodeRef} style={style} className="flex items-center gap-1">
-      {canEdit && (
-        <button
-          {...attributes}
-          {...listeners}
-          className="text-[rgb(var(--muted))] hover:text-[rgb(var(--foreground))] cursor-grab active:cursor-grabbing shrink-0 touch-none p-1"
-        >
-          <GripVertical size={13} />
-        </button>
-      )}
+    <div className="flex items-center gap-1">
       <Link
         href={href}
         className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all flex-1 min-w-0 ${
@@ -140,6 +116,8 @@ function SortableNavItem({
     </div>
   );
 }
+
+const SidebarSortableNav = dynamic(() => import("./SidebarSortableNav"), { ssr: false });
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -209,17 +187,7 @@ export function Sidebar() {
     });
   })();
 
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
-
-  async function handleDragEnd(e: DragEndEvent) {
-    const { active, over } = e;
-    if (!over || active.id === over.id) return;
-    const currentHrefs = orderedNav.map((n) => n.href);
-    const oldIndex = currentHrefs.indexOf(String(active.id));
-    const newIndex = currentHrefs.indexOf(String(over.id));
-    if (oldIndex < 0 || newIndex < 0) return;
-    const hrefs = arrayMove(currentHrefs, oldIndex, newIndex);
-
+  async function handleReorder(hrefs: string[]) {
     setPageVisibility((ps) => {
       const byHref = new Map(ps.map((p) => [p.href, p]));
       const next = hrefs.map((h, order) => {
@@ -305,17 +273,24 @@ export function Sidebar() {
         </div>
 
       <div className="flex-1 flex flex-col gap-1">
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-          <SortableContext items={orderedNav.map((n) => n.href)} strategy={verticalListSortingStrategy}>
-            {orderedNav.map(({ href, icon, label }) => {
-              const active =
-                href === "/comptabilite/archive" ? pathname.startsWith(href) : pathname === href;
-              return (
-                <SortableNavItem key={href} href={href} icon={icon} label={label} active={active} canEdit={canEdit} />
-              );
-            })}
-          </SortableContext>
-        </DndContext>
+        {canEdit ? (
+          <SidebarSortableNav
+            items={orderedNav.map(({ href, icon, label }) => ({
+              href,
+              icon,
+              label,
+              active: href === "/comptabilite/archive" ? pathname.startsWith(href) : pathname === href,
+            }))}
+            canEdit={canEdit}
+            onReorder={handleReorder}
+          />
+        ) : (
+          orderedNav.map(({ href, icon, label }) => {
+            const active =
+              href === "/comptabilite/archive" ? pathname.startsWith(href) : pathname === href;
+            return <NavItem key={href} href={href} icon={icon} label={label} active={active} />;
+          })
+        )}
       </div>
 
       {user && (

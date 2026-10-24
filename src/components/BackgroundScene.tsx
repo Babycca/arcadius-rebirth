@@ -59,7 +59,7 @@ export default function BackgroundScene() {
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/images/arcadius-tower-cutout.png"
+          src="/images/arcadius-tower-cutout.webp"
           alt=""
           className="w-full h-full object-cover object-right-bottom"
         />
