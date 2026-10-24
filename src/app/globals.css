@@ -55,17 +55,25 @@ body {
 .glass {
   --blur: blur(16px) saturate(140%);
   background: rgb(var(--bg-elevated) / 0.55);
-  backdrop-filter: var(--blur);
-  -webkit-backdrop-filter: var(--blur);
   border: 1px solid rgb(var(--border-subtle) / var(--border-subtle-alpha));
+}
+@supports (-webkit-backdrop-filter: blur(1px)) {
+  .glass { -webkit-backdrop-filter: var(--blur); }
+}
+@supports (backdrop-filter: blur(1px)) {
+  .glass { backdrop-filter: var(--blur); }
 }
 
 .glass-strong {
   --blur: blur(20px) saturate(150%);
   background: rgb(var(--bg-elevated-2) / 0.75);
-  backdrop-filter: var(--blur);
-  -webkit-backdrop-filter: var(--blur);
   border: 1px solid rgb(var(--border-subtle) / 0.12);
+}
+@supports (-webkit-backdrop-filter: blur(1px)) {
+  .glass-strong { -webkit-backdrop-filter: var(--blur); }
+}
+@supports (backdrop-filter: blur(1px)) {
+  .glass-strong { backdrop-filter: var(--blur); }
 }
 
 /* Petites fenêtres flottantes (menus déroulants, pop-ups, modales de
@@ -79,13 +87,17 @@ body {
      perceptible même là où il n'y a rien de net à flouter. */
   background: linear-gradient(145deg, rgb(255 255 255 / 0.08), rgb(255 255 255 / 0.02)),
     rgb(var(--bg-elevated-2) / 0.36);
-  backdrop-filter: var(--blur);
-  -webkit-backdrop-filter: var(--blur);
   /* Force la création immédiate d'une couche de composition — sans ça,
      Chrome applique parfois le flou avec un cran de retard (ou jamais) sur
      un élément fixed fraîchement monté via portal (ex: menus déroulants). */
   will-change: backdrop-filter;
   transform: translateZ(0);
+}
+@supports (-webkit-backdrop-filter: blur(1px)) {
+  .glass-popover { -webkit-backdrop-filter: var(--blur); }
+}
+@supports (backdrop-filter: blur(1px)) {
+  .glass-popover { backdrop-filter: var(--blur); }
 }
 
 .font-heading {
