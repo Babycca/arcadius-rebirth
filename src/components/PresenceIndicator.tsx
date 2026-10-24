@@ -1,23 +1,38 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import UserAvatar from "./UserAvatar";
 
 type OnlineAgent = { id: string; name: string; avatarUrl: string | null; grade: string };
 
+const PANEL_WIDTH = 192; // w-48
+
 // Avatar du compte + petite pastille verte néon (en ligne/présence
-// générale du site, pas liée à soi) — cliquer ouvre la liste des agents
-// actuellement connectés (ping régulier côté client, voir PresenceTracker).
+// générale du site, pas liée à soi). Sur un vrai pointeur souris, un
+// survol ouvre la liste des agents actuellement connectés ; sur tactile
+// (pas de "hover" fiable, cause des pop-up mal positionnés/coincés sur
+// mobile), un tap fait pareil, et un tap ailleurs referme.
 export default function PresenceIndicator() {
   const [open, setOpen] = useState(false);
+  const [canHover, setCanHover] = useState(true);
   const [agents, setAgents] = useState<OnlineAgent[] | null>(null);
-  const [pos, setPos] = useState({ top: 0, right: 0 });
+  const [pos, setPos] = useState({ top: 0, left: 0 });
   const wrapRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setCanHover(window.matchMedia("(hover: hover) and (pointer: fine)").matches);
+  }, []);
 
   function openPanel() {
     const rect = wrapRef.current?.getBoundingClientRect();
-    if (rect) setPos({ top: rect.bottom + 8, right: window.innerWidth - rect.right });
+    if (rect) {
+      const left = Math.min(
+        Math.max(8, rect.right - PANEL_WIDTH),
+        window.innerWidth - PANEL_WIDTH - 8
+      );
+      setPos({ top: rect.bottom + 8, left });
+    }
     setOpen(true);
     fetch("/api/presence/online", { cache: "no-store" })
       .then((r) => (r.ok ? r.json() : []))
@@ -25,29 +40,43 @@ export default function PresenceIndicator() {
       .catch(() => setAgents([]));
   }
 
+  function toggle() {
+    if (open) setOpen(false);
+    else openPanel();
+  }
+
   return (
     <div
       ref={wrapRef}
       className="relative"
-      onMouseEnter={openPanel}
-      onMouseLeave={() => setOpen(false)}
+      onMouseEnter={canHover ? openPanel : undefined}
+      onMouseLeave={canHover ? () => setOpen(false) : undefined}
     >
-      <div className="relative" title="Agents en ligne">
+      <button
+        type="button"
+        onClick={canHover ? undefined : toggle}
+        className="relative block"
+        title="Agents en ligne"
+      >
         <UserAvatar />
         <span
           className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-[rgb(var(--success))] border-2 border-[rgb(var(--bg-elevated))]"
           style={{ boxShadow: "0 0 6px 1.5px rgb(var(--success))" }}
         />
-      </div>
+      </button>
 
       {open &&
         createPortal(
-          <div
-            className="fixed z-[1000] w-48 rounded-lg overflow-hidden border border-white/[0.08] shadow-lg glass-popover"
-            style={{ top: pos.top, right: pos.right }}
-            onMouseEnter={openPanel}
-            onMouseLeave={() => setOpen(false)}
-          >
+          <>
+            {!canHover && (
+              <div className="fixed inset-0 z-[999]" onClick={() => setOpen(false)} />
+            )}
+            <div
+              className="fixed z-[1000] w-48 rounded-lg overflow-hidden border border-white/[0.08] shadow-lg glass-popover"
+              style={{ top: pos.top, left: pos.left }}
+              onMouseEnter={canHover ? openPanel : undefined}
+              onMouseLeave={canHover ? () => setOpen(false) : undefined}
+            >
               <p className="text-[10px] uppercase tracking-wide text-[rgb(var(--muted))] px-3 py-2 border-b border-white/[0.06] flex items-center gap-1.5">
                 <span
                   className="w-1.5 h-1.5 rounded-full bg-[rgb(var(--success))] shrink-0"
@@ -76,7 +105,8 @@ export default function PresenceIndicator() {
                   ))}
                 </div>
               )}
-            </div>,
+            </div>
+          </>,
           document.body
         )}
     </div>
