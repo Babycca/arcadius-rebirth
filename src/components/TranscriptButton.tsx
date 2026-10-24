@@ -3,31 +3,7 @@
 import { useState } from "react";
 import { ClipboardCopy, Check } from "lucide-react";
 import { useDialog } from "./DialogProvider";
-
-function fallbackCopy(text: string): boolean {
-  const textarea = document.createElement("textarea");
-  textarea.value = text;
-  // Hors écran mais PAS opacity:0 — certains navigateurs refusent de
-  // sélectionner/copier un élément invisible via opacity, ce qui fait
-  // échouer execCommand("copy") silencieusement (ou copier la sélection
-  // précédente de la page, pas le texte voulu).
-  textarea.style.position = "fixed";
-  textarea.style.top = "0";
-  textarea.style.left = "-9999px";
-  textarea.readOnly = true;
-  document.body.appendChild(textarea);
-  textarea.focus();
-  textarea.select();
-  textarea.setSelectionRange(0, text.length);
-  let ok = false;
-  try {
-    ok = document.execCommand("copy");
-  } catch {
-    ok = false;
-  }
-  document.body.removeChild(textarea);
-  return ok;
-}
+import { copyToClipboard } from "@/lib/clipboard";
 
 // Copie un tableau de lignes (chaque ligne = tableau de cellules) au format
 // TSV (tabulations) dans le presse-papiers : collé directement dans Google
@@ -40,13 +16,7 @@ export default function TranscriptButton({ rows }: { rows: (string | number | nu
     const today = new Date().toLocaleDateString("fr-FR");
     const text = [[`Export du ${today}`], [], ...rows].map((r) => r.map((c) => c ?? "").join("\t")).join("\n");
 
-    let ok = false;
-    try {
-      await navigator.clipboard.writeText(text);
-      ok = true;
-    } catch {
-      ok = fallbackCopy(text);
-    }
+    const ok = await copyToClipboard(text);
 
     if (ok) {
       setCopied(true);

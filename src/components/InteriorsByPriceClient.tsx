@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { Copy, Check, Tag } from "lucide-react";
 import { renderDiscordText } from "@/lib/discord-markdown";
+import { copyToClipboard } from "@/lib/clipboard";
 
 type TextItem = { id: string; content: string };
 type TextGroup = { id: string; name: string; items: TextItem[] };
@@ -45,12 +46,10 @@ function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
 
   async function handleCopy() {
-    try {
-      await navigator.clipboard.writeText(text);
+    const ok = await copyToClipboard(text);
+    if (ok) {
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
-    } catch {
-      // Presse-papiers indisponible (permissions navigateur) : rien à faire de plus.
     }
   }
 

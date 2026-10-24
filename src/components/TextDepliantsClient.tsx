@@ -7,6 +7,8 @@ import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } 
 import { CSS } from "@dnd-kit/utilities";
 import { useCanEdit } from "@/lib/use-can-edit";
 import { renderDiscordText } from "@/lib/discord-markdown";
+import { copyToClipboard } from "@/lib/clipboard";
+import { useToast } from "./ToastProvider";
 
 type Item = { id: string; content: string; price: number | null };
 type Group = { id: string; name: string; items: Item[] };
@@ -136,6 +138,7 @@ export default function TextDepliantsClient({
   const [editingItem, setEditingItem] = useState<{ groupId: string; id: string } | null>(null);
   const [editContent, setEditContent] = useState("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const toast = useToast();
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
 
@@ -144,12 +147,12 @@ export default function TextDepliantsClient({
   }
 
   async function copyContent(id: string, content: string) {
-    try {
-      await navigator.clipboard.writeText(content);
+    const ok = await copyToClipboard(content);
+    if (ok) {
       setCopiedId(id);
       setTimeout(() => setCopiedId((c) => (c === id ? null : c)), 1500);
-    } catch {
-      // ignore
+    } else {
+      toast("Impossible de copier (presse-papiers refusé par le navigateur).", "error");
     }
   }
 
