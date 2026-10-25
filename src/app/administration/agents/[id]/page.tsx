@@ -189,12 +189,17 @@ export default function AgentProfilePage({ params }: { params: Promise<{ id: str
     if (!page) return;
     const current: string[] = JSON.parse(page.hiddenForAgentIds || "[]");
     const next = current.includes(id) ? current.filter((x) => x !== id) : [...current, id];
-    setPages((ps) => ps.map((p) => (p.href === href ? { ...p, hiddenForAgentIds: JSON.stringify(next) } : p)));
-    await fetch(`/api/page-visibility/${encodeURIComponent(href.slice(1))}`, {
+    const res = await fetch(`/api/page-visibility/${encodeURIComponent(href.slice(1))}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ hiddenForAgentIds: next }),
     });
+    if (!res.ok) {
+      const body = await res.json().catch(() => null);
+      toast(body?.error ?? "Impossible de modifier cette page.", "error");
+      return;
+    }
+    setPages((ps) => ps.map((p) => (p.href === href ? { ...p, hiddenForAgentIds: JSON.stringify(next) } : p)));
   }
 
   async function togglePermission(key: PermissionKey) {
