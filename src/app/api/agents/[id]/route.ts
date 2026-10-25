@@ -40,39 +40,51 @@ export async function PATCH(
     }
   }
 
+  const isRealAdmin = role === "ADMIN" || role === "SUPER_ADMIN";
+  // Un agent qui n'a que la permission "administration" (pas un vrai admin)
+  // ne doit modifier (quoi que ce soit — grade, téléphone, identité,
+  // statut...) ni son propre profil, ni celui d'un collègue mieux classé
+  // que lui. On calcule le rang une seule fois pour toute la requête.
+  let actorRank = -1;
+  let targetRank = -1;
+  if (!isRealAdmin) {
+    if (id === sessionUser?.id) {
+      return NextResponse.json({ error: "Tu ne peux pas modifier ton propre profil ici." }, { status: 403 });
+    }
+    const [actor, target, rules] = await Promise.all([
+      prisma.agent.findUnique({ where: { id: sessionUser!.id! }, select: { grade: true } }),
+      prisma.agent.findUnique({ where: { id }, select: { grade: true } }),
+      prisma.commissionRule.findMany({ orderBy: { order: "asc" }, select: { grade: true } }),
+    ]);
+    const rankOf = (grade: string | undefined) => {
+      const idx = rules.findIndex((r) => r.grade === grade);
+      return idx === -1 ? rules.length : idx;
+    };
+    actorRank = rankOf(actor?.grade);
+    targetRank = rankOf(target?.grade);
+    if (targetRank <= actorRank) {
+      return NextResponse.json(
+        { error: "Tu ne peux pas modifier le profil d'un agent mieux classé (ou égal à) toi." },
+        { status: 403 }
+      );
+    }
+  }
+
   const data: Record<string, unknown> = {};
   if (typeof body?.phone === "string") data.phone = body.phone || null;
 
   if (typeof body?.grade === "string") {
-    const isRealAdmin = role === "ADMIN" || role === "SUPER_ADMIN";
-    // "Sec" est un grade technique (compte factice, pas un vrai agent
+    // "SEC" est un grade technique (compte factice, pas un vrai agent
     // commercial, voir HIDDEN_FROM_AGENT_LISTS_WHERE) — seul un vrai admin
     // peut l'attribuer, jamais quelqu'un avec juste la permission
     // "administration".
-    if (body.grade === "Sec" && !isRealAdmin) {
+    if (body.grade === "SEC" && !isRealAdmin) {
       return NextResponse.json({ error: "Seul un admin peut attribuer le grade Sec." }, { status: 403 });
     }
-    // Un agent qui n'a que la permission "administration" (pas un vrai
-    // admin) ne doit pas pouvoir s'auto-promouvoir, ni changer le grade
-    // d'un collègue mieux classé que lui, ni promouvoir quelqu'un à un
-    // rang égal ou supérieur au sien.
     if (!isRealAdmin) {
-      if (id === sessionUser?.id) {
-        return NextResponse.json({ error: "Tu ne peux pas changer ton propre grade." }, { status: 403 });
-      }
-      const [actor, target, rules] = await Promise.all([
-        prisma.agent.findUnique({ where: { id: sessionUser!.id! }, select: { grade: true } }),
-        prisma.agent.findUnique({ where: { id }, select: { grade: true } }),
-        prisma.commissionRule.findMany({ orderBy: { order: "asc" }, select: { grade: true } }),
-      ]);
-      const rankOf = (grade: string | undefined) => {
-        const idx = rules.findIndex((r) => r.grade === grade);
-        return idx === -1 ? rules.length : idx;
-      };
-      const actorRank = rankOf(actor?.grade);
-      const targetRank = rankOf(target?.grade);
-      const newRank = rankOf(body.grade);
-      if (targetRank <= actorRank || newRank <= actorRank) {
+      const rules = await prisma.commissionRule.findMany({ orderBy: { order: "asc" }, select: { grade: true } });
+      const newRank = rules.findIndex((r) => r.grade === body.grade);
+      if ((newRank === -1 ? rules.length : newRank) <= actorRank) {
         return NextResponse.json(
           { error: "Tu ne peux pas attribuer un grade égal ou supérieur au tien." },
           { status: 403 }
@@ -162,6 +174,24 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
   if (!existing) return NextResponse.json({ error: "Compte introuvable" }, { status: 404 });
   if (existing.role === "SUPER_ADMIN") {
     return NextResponse.json({ error: "Impossible de supprimer un compte Super Admin." }, { status: 400 });
+  }
+
+  const isRealAdmin = sessionUser?.role === "ADMIN" || sessionUser?.role === "SUPER_ADMIN";
+  if (!isRealAdmin) {
+    const [actor, rules] = await Promise.all([
+      prisma.agent.findUnique({ where: { id: sessionUser!.id! }, select: { grade: true } }),
+      prisma.commissionRule.findMany({ orderBy: { order: "asc" }, select: { grade: true } }),
+    ]);
+    const rankOf = (grade: string | undefined) => {
+      const idx = rules.findIndex((r) => r.grade === grade);
+      return idx === -1 ? rules.length : idx;
+    };
+    if (rankOf(existing.grade) <= rankOf(actor?.grade)) {
+      return NextResponse.json(
+        { error: "Tu ne peux pas supprimer le profil d'un agent mieux classé (ou égal à) toi." },
+        { status: 403 }
+      );
+    }
   }
   if (existing.active) {
     return NextResponse.json({ error: "Désactive d'abord ce compte avant de le supprimer." }, { status: 400 });

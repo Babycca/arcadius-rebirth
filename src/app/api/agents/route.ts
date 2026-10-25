@@ -20,7 +20,7 @@ export async function GET() {
     return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
   }
   // Le Super Admin reste masqué ici (compte technique) mais un grade comme
-  // "Sec" doit rester gérable en Administration — il n'est exclu que de la
+  // "SEC" doit rester gérable en Administration — il n'est exclu que de la
   // Comptabilité (voir HIDDEN_FROM_AGENT_LISTS_WHERE), pas de cette liste.
   const agents = await prisma.agent.findMany({
     where: { role: { not: "SUPER_ADMIN" } },
@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
   }
 
   const isRealAdmin = sessionUser?.role === "ADMIN" || sessionUser?.role === "SUPER_ADMIN";
-  if (grade === "Sec" && !isRealAdmin) {
+  if (grade === "SEC" && !isRealAdmin) {
     return NextResponse.json({ error: "Seul un admin peut attribuer le grade Sec." }, { status: 403 });
   }
 
