@@ -2,16 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { hasServerPermission } from "@/lib/permissions-server";
 import { parseLegacyPaste } from "@/lib/accounting/legacy-import";
-
-function isAdmin(role: string | undefined) {
-  return role === "ADMIN" || role === "SUPER_ADMIN";
-}
 
 export async function GET() {
   const session = await getServerSession(authOptions);
-  const role = (session?.user as { role?: string } | undefined)?.role;
-  if (!session?.user || !isAdmin(role)) return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
+  const user = session?.user as { id?: string; role?: string } | undefined;
+  if (!session?.user || !(await hasServerPermission(user?.id, user?.role, "archiveComptabilite")))
+    return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
 
   const archives = await prisma.legacyArchive.findMany({
     orderBy: { createdAt: "desc" },
@@ -31,8 +29,9 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
-  const role = (session?.user as { role?: string } | undefined)?.role;
-  if (!session?.user || !isAdmin(role)) return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
+  const user = session?.user as { id?: string; role?: string } | undefined;
+  if (!session?.user || !(await hasServerPermission(user?.id, user?.role, "archiveComptabilite")))
+    return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
 
   const body = await req.json().catch(() => null);
   const label = body?.label?.trim();

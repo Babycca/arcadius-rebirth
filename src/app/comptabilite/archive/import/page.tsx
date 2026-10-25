@@ -5,10 +5,11 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Upload } from "lucide-react";
 import { PageShell, PageHeader } from "@/components/PageShell";
-import { useCanEdit } from "@/lib/use-can-edit";
+import { usePermissions } from "@/lib/use-permissions";
 
 export default function ImportLegacyArchivePage() {
-  const { isAdmin } = useCanEdit();
+  const { has } = usePermissions();
+  const isAdmin = has("archiveComptabilite");
   const router = useRouter();
   const [label, setLabel] = useState("");
   const [pasted, setPasted] = useState("");

@@ -2,17 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-
-function isAdmin(role: string | undefined) {
-  return role === "ADMIN" || role === "SUPER_ADMIN";
-}
+import { hasServerPermission } from "@/lib/permissions-server";
 
 // Toutes les ventes d'une semaine (archivée ou en cours), avec le nom de
 // l'agent attaché — évite une requête par agent côté page détail d'archive.
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ weekId: string }> }) {
   const session = await getServerSession(authOptions);
-  const role = (session?.user as { role?: string } | undefined)?.role;
-  if (!session?.user || !isAdmin(role)) return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
+  const user = session?.user as { id?: string; role?: string } | undefined;
+  if (!session?.user || !(await hasServerPermission(user?.id, user?.role, "archiveComptabilite")))
+    return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
 
   const { weekId } = await params;
   const sales = await prisma.sale.findMany({

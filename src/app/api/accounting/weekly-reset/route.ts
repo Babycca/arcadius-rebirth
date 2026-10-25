@@ -3,11 +3,12 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getActiveWeekId, getActiveWeekStart, startOfIsoWeek, weekIdFor } from "@/lib/accounting/week";
+import { hasServerPermission } from "@/lib/permissions-server";
 
 export async function POST() {
   const session = await getServerSession(authOptions);
   const user = session?.user as { id?: string; role?: string } | undefined;
-  if (!session?.user || (user?.role !== "ADMIN" && user?.role !== "SUPER_ADMIN")) {
+  if (!session?.user || !(await hasServerPermission(user?.id, user?.role, "archiverCompta"))) {
     return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
   }
 

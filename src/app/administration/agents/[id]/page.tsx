@@ -7,6 +7,7 @@ import GradeSelect from "@/components/GradeSelect";
 import { useSession } from "next-auth/react";
 import { useToast } from "@/components/ToastProvider";
 import { NAV_LABELS } from "@/lib/nav-pages";
+import { PERMISSION_DEFS, parsePermissions, type PermissionKey } from "@/lib/permissions";
 import {
   ArrowLeft,
   KeyRound,
@@ -28,6 +29,7 @@ type Agent = {
   grade: string;
   role: string;
   active: boolean;
+  permissionsJson?: string;
 };
 
 type Page = { href: string; hiddenForAll: boolean; hiddenForAgentIds: string };
@@ -59,6 +61,7 @@ export default function AgentProfilePage({ params }: { params: Promise<{ id: str
   const { data: session } = useSession();
   const sessionUser = session?.user as { id?: string; role?: string } | undefined;
   const isSuperAdmin = sessionUser?.role === "SUPER_ADMIN";
+  const viewerIsAdmin = sessionUser?.role === "ADMIN" || sessionUser?.role === "SUPER_ADMIN";
   const toast = useToast();
 
   const [agent, setAgent] = useState<Agent | null>(null);
@@ -187,6 +190,20 @@ export default function AgentProfilePage({ params }: { params: Promise<{ id: str
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ hiddenForAgentIds: next }),
     });
+  }
+
+  async function togglePermission(key: PermissionKey) {
+    if (!agent) return;
+    const current = parsePermissions(agent.permissionsJson);
+    const next = { ...current, [key]: !current[key] };
+    const permissionsJson = JSON.stringify(next);
+    setAgent({ ...agent, permissionsJson });
+    await fetch(`/api/agents/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ permissionsJson }),
+    });
+    flashSaved();
   }
 
   async function resetPassword() {
@@ -512,6 +529,36 @@ export default function AgentProfilePage({ params }: { params: Promise<{ id: str
             </div>
           </div>
         </div>
+
+        {/* Permissions fines (hors admin/super admin — ils ont déjà tout) */}
+        {agent.role === "AGENT" && (
+          <div className="card-hover glass-strong rounded-xl overflow-hidden border border-transparent mb-6">
+            <p className="text-xs text-[rgb(var(--muted))] px-4 py-3 border-b border-white/[0.08]">
+              Permissions — accès ponctuel accordé à cet agent simple
+            </p>
+            <div className="px-2 py-1">
+              {PERMISSION_DEFS.map((p) => {
+                const checked = !!parsePermissions(agent.permissionsJson)[p.key];
+                return (
+                  <label
+                    key={p.key}
+                    className={`flex items-center justify-between gap-3 px-2 py-2 rounded-lg text-sm ${
+                      viewerIsAdmin ? "hover:bg-white/[0.04] cursor-pointer" : "opacity-70"
+                    }`}
+                  >
+                    <span>{p.label}</span>
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      disabled={!viewerIsAdmin}
+                      onChange={() => togglePermission(p.key)}
+                    />
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
     </PageShell>
   );

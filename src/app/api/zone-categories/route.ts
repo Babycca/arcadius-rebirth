@@ -2,10 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-
-function canEdit(role: string | undefined) {
-  return role === "ADMIN" || role === "SUPER_ADMIN";
-}
+import { hasServerPermission } from "@/lib/permissions-server";
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -17,8 +14,9 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
-  const role = (session?.user as { role?: string } | undefined)?.role;
-  if (!session?.user || !canEdit(role)) return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
+  const user = session?.user as { id?: string; role?: string } | undefined;
+  if (!session?.user || !(await hasServerPermission(user?.id, user?.role, "administration")))
+    return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
 
   const body = await req.json().catch(() => null);
   const name = body?.name?.trim();

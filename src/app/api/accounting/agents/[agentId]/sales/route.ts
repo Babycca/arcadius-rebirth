@@ -4,19 +4,17 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getActiveWeekId } from "@/lib/accounting/week";
 import { canAccessPage } from "@/lib/page-access";
-
-function isAdmin(role: string | undefined) {
-  return role === "ADMIN" || role === "SUPER_ADMIN";
-}
+import { hasServerPermission } from "@/lib/permissions-server";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ agentId: string }> }) {
   const session = await getServerSession(authOptions);
   const user = session?.user as { id?: string; role?: string } | undefined;
 
   const requestedWeekId = req.nextUrl.searchParams.get("weekId");
-  // Une semaine archivée n'est consultable que par un vrai admin.
+  // Une semaine archivée n'est consultable qu'avec la permission
+  // "archiveComptabilite".
   if (requestedWeekId) {
-    if (!session?.user || !isAdmin(user?.role)) {
+    if (!session?.user || !(await hasServerPermission(user?.id, user?.role, "archiveComptabilite"))) {
       return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
     }
   } else if (!session?.user || !(await canAccessPage("/comptabilite", user?.id, user?.role))) {

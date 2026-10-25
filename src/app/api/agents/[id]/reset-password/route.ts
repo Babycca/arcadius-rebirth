@@ -3,10 +3,7 @@ import { getServerSession } from "next-auth";
 import bcrypt from "bcryptjs";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-
-function requireAdmin(role: string | undefined) {
-  return role === "ADMIN" || role === "SUPER_ADMIN";
-}
+import { hasServerPermission } from "@/lib/permissions-server";
 
 function randomPassword() {
   return Math.random().toString(36).slice(-10);
@@ -14,8 +11,8 @@ function randomPassword() {
 
 export async function POST(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
-  const role = (session?.user as { role?: string } | undefined)?.role;
-  if (!session?.user || !requireAdmin(role)) {
+  const user = session?.user as { id?: string; role?: string } | undefined;
+  if (!session?.user || !(await hasServerPermission(user?.id, user?.role, "administration"))) {
     return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
   }
 

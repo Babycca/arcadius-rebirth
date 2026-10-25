@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Archive, ChevronRight, Trash2, Upload, FileClock } from "lucide-react";
 import { PageShell, PageHeader } from "@/components/PageShell";
 import { useCanEdit } from "@/lib/use-can-edit";
+import { usePermissions } from "@/lib/use-permissions";
 import { useDialog } from "@/components/DialogProvider";
 import { weekDateRangeLabel } from "@/lib/accounting/week-client";
 
@@ -12,7 +13,9 @@ type ArchiveRow = { weekId: string; periodStart: string | null; archivedAt: stri
 type LegacyRow = { id: string; label: string; createdAt: string; salesCount: number; totalSales: number };
 
 export default function ComptabiliteArchivePage() {
-  const { isAdmin, canEdit } = useCanEdit();
+  const { canEdit } = useCanEdit();
+  const { has } = usePermissions();
+  const canViewArchive = has("archiveComptabilite");
   const { confirm } = useDialog();
   const [rows, setRows] = useState<ArchiveRow[] | null>(null);
   const [legacyRows, setLegacyRows] = useState<LegacyRow[] | null>(null);
@@ -50,7 +53,7 @@ export default function ComptabiliteArchivePage() {
     load();
   }
 
-  if (forbidden || (!isAdmin && rows === null)) {
+  if (forbidden || (!canViewArchive && rows === null)) {
     return (
       <PageShell>
         <PageHeader title="Archive Comptabilité" subtitle="Accès réservé aux administrateurs" />
@@ -68,7 +71,7 @@ export default function ComptabiliteArchivePage() {
           <h1 className="font-heading text-2xl sm:text-3xl leading-normal pb-1">Archive Comptabilité</h1>
           <p className="text-sm text-[rgb(var(--muted))] mt-1.5">Semaines clôturées — historique conservé</p>
         </div>
-        {isAdmin && (
+        {canViewArchive && (
           <Link
             href="/comptabilite/archive/import"
             className="flex items-center gap-2 text-sm rounded-xl px-4 py-2.5 glass hover:border-[rgb(var(--brand-500)/0.4)] transition-colors"

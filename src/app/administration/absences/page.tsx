@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { PageShell, PageHeader } from "@/components/PageShell";
-import { useCanEdit } from "@/lib/use-can-edit";
+import { usePermissions } from "@/lib/use-permissions";
 import { useDialog } from "@/components/DialogProvider";
 import { useToast } from "@/components/ToastProvider";
 import LabeledSelect from "@/components/LabeledSelect";
@@ -25,7 +25,8 @@ function todayInputValue() {
 }
 
 export default function AbsencesPage() {
-  const { isAdmin } = useCanEdit();
+  const { has } = usePermissions();
+  const isAdmin = has("absences");
   const { confirm } = useDialog();
   const toast = useToast();
   const [absences, setAbsences] = useState<Absence[]>([]);

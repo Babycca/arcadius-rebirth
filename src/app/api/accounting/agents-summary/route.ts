@@ -6,20 +6,18 @@ import { getActiveWeekId, getActiveWeekStart } from "@/lib/accounting/week";
 import { computeAgentPayroll } from "@/lib/accounting/payroll";
 import { canAccessPage } from "@/lib/page-access";
 import { HIDDEN_FROM_AGENT_LISTS_WHERE } from "@/lib/agent-filters";
-
-function isAdmin(role: string | undefined) {
-  return role === "ADMIN" || role === "SUPER_ADMIN";
-}
+import { hasServerPermission } from "@/lib/permissions-server";
 
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
   const user = session?.user as { id?: string; role?: string } | undefined;
 
   const requestedWeekId = req.nextUrl.searchParams.get("weekId");
-  // Une semaine archivée (passée) n'est consultable que par un vrai admin —
-  // pas via le système d'accès accordé par page, réservé à la semaine en cours.
+  // Une semaine archivée (passée) n'est consultable qu'avec la permission
+  // "archiveComptabilite" — pas via le système d'accès accordé par page,
+  // réservé à la semaine en cours.
   if (requestedWeekId) {
-    if (!session?.user || !isAdmin(user?.role)) {
+    if (!session?.user || !(await hasServerPermission(user?.id, user?.role, "archiveComptabilite"))) {
       return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
     }
   } else if (!session?.user || !(await canAccessPage("/comptabilite", user?.id, user?.role))) {

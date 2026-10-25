@@ -5,6 +5,7 @@ import Link from "next/link";
 import { PageShell, PageHeader } from "@/components/PageShell";
 import { Archive, Pencil, Check, X, Users, Receipt, TrendingUp, Wallet, ReceiptText, PiggyBank, Percent } from "lucide-react";
 import { useCanEdit } from "@/lib/use-can-edit";
+import { usePermissions } from "@/lib/use-permissions";
 import { weekDateRangeLabel } from "@/lib/accounting/week-client";
 import { parseMoneyAmount } from "@/lib/accounting/parse-amount";
 
@@ -112,6 +113,9 @@ export default function ComptabilitePage() {
   const [bonusPromptFor, setBonusPromptFor] = useState<string | null>(null);
   const [bonusPromptValue, setBonusPromptValue] = useState("");
   const { isAdmin } = useCanEdit();
+  const { has } = usePermissions();
+  const canViewArchive = has("archiveComptabilite");
+  const canArchiveCompta = has("archiverCompta");
 
   function load() {
     fetch("/api/accounting/agents-summary").then(async (res) => {
@@ -265,23 +269,27 @@ export default function ComptabilitePage() {
             <p className="text-lg font-semibold text-[rgb(var(--warning))]">${taxes.toLocaleString("fr-FR")}</p>
           </div>
         </div>
-        {isAdmin && (
+        {(canViewArchive || canArchiveCompta) && (
           <div className="flex items-center gap-2">
-            <Link
-              href="/comptabilite/archive"
-              className="flex items-center gap-2 text-sm rounded-xl px-4 py-2.5 glass hover:border-[rgb(var(--brand-500)/0.4)] transition-colors"
-            >
-              <Archive size={14} />
-              Archive
-            </Link>
-            <button
-              onClick={() => setShowArchiveConfirm(true)}
-              disabled={archiving}
-              className="flex items-center gap-2 text-sm rounded-xl px-4 py-2.5 glass hover:border-[rgb(var(--brand-500)/0.4)] transition-colors disabled:opacity-60"
-            >
-              <Archive size={14} />
-              {archiving ? "Archivage…" : "Archiver la comptabilité"}
-            </button>
+            {canViewArchive && (
+              <Link
+                href="/comptabilite/archive"
+                className="flex items-center gap-2 text-sm rounded-xl px-4 py-2.5 glass hover:border-[rgb(var(--brand-500)/0.4)] transition-colors"
+              >
+                <Archive size={14} />
+                Archive
+              </Link>
+            )}
+            {canArchiveCompta && (
+              <button
+                onClick={() => setShowArchiveConfirm(true)}
+                disabled={archiving}
+                className="flex items-center gap-2 text-sm rounded-xl px-4 py-2.5 glass hover:border-[rgb(var(--brand-500)/0.4)] transition-colors disabled:opacity-60"
+              >
+                <Archive size={14} />
+                {archiving ? "Archivage…" : "Archiver la comptabilité"}
+              </button>
+            )}
           </div>
         )}
       </div>

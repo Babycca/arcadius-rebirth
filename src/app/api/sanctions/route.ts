@@ -2,17 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { hasServerPermission } from "@/lib/permissions-server";
 import { logActivity } from "@/lib/audit-log";
 import { HIDDEN_FROM_AGENT_LISTS_WHERE } from "@/lib/agent-filters";
 
-function isAdmin(role: string | undefined) {
-  return role === "ADMIN" || role === "SUPER_ADMIN";
-}
-
 export async function GET() {
   const session = await getServerSession(authOptions);
-  const role = (session?.user as { role?: string } | undefined)?.role;
-  if (!session?.user || !isAdmin(role)) return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
+  const user = session?.user as { id?: string; role?: string } | undefined;
+  if (!session?.user || !(await hasServerPermission(user?.id, user?.role, "sanctions")))
+    return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
 
   const [sanctions, agents] = await Promise.all([
     prisma.sanction.findMany({ orderBy: { date: "desc" } }),
@@ -32,7 +30,8 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
   const user = session?.user as { id?: string; name?: string; role?: string } | undefined;
-  if (!session?.user || !isAdmin(user?.role)) return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
+  if (!session?.user || !(await hasServerPermission(user?.id, user?.role, "sanctions")))
+    return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
 
   const body = await req.json().catch(() => null);
   const agentId = body?.agentId;

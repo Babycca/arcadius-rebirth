@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { PageShell, PageHeader } from "@/components/PageShell";
-import { useCanEdit } from "@/lib/use-can-edit";
+import { usePermissions } from "@/lib/use-permissions";
 import { useDialog } from "@/components/DialogProvider";
 import { useToast } from "@/components/ToastProvider";
 import { ArrowLeft, ChevronLeft, ChevronRight, PlusCircle, Pencil, Trash2, LogIn, Eraser, Search } from "lucide-react";
@@ -26,7 +26,8 @@ const ACTION_STYLE: Record<LogRow["action"], { icon: typeof PlusCircle; color: s
 };
 
 export default function AuditLogPage() {
-  const { isAdmin } = useCanEdit();
+  const { has } = usePermissions();
+  const isAdmin = has("journal");
   const { confirm } = useDialog();
   const toast = useToast();
   const [logs, setLogs] = useState<LogRow[]>([]);

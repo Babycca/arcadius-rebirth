@@ -3,15 +3,13 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { logActivity } from "@/lib/audit-log";
-
-function requireAdmin(role: string | undefined) {
-  return role === "ADMIN" || role === "SUPER_ADMIN";
-}
+import { hasServerPermission } from "@/lib/permissions-server";
 
 const FIELD_LABELS: Record<string, string> = {
   phone: "téléphone",
   grade: "grade",
   canAccessAccounting: "accès comptabilité",
+  permissionsJson: "permissions",
   active: "statut actif",
   firstName: "prénom",
   lastName: "nom",
@@ -26,17 +24,27 @@ export async function PATCH(
   const session = await getServerSession(authOptions);
   const sessionUser = session?.user as { id?: string; name?: string; role?: string } | undefined;
   const role = sessionUser?.role;
-  if (!session?.user || !requireAdmin(role)) {
+  if (!session?.user || !(await hasServerPermission(sessionUser?.id, role, "administration"))) {
     return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
   }
 
   const { id } = await params;
   const body = await req.json().catch(() => null);
 
+  if (typeof body?.permissionsJson === "string") {
+    // Réservé aux vrais admins : un agent avec juste la permission
+    // "administration" ne doit pas pouvoir s'accorder (ou accorder à
+    // d'autres) davantage de droits que ce qu'un admin lui a donné.
+    if (role !== "ADMIN" && role !== "SUPER_ADMIN") {
+      return NextResponse.json({ error: "Seul un admin peut modifier les permissions." }, { status: 403 });
+    }
+  }
+
   const data: Record<string, unknown> = {};
   if (typeof body?.phone === "string") data.phone = body.phone || null;
   if (typeof body?.grade === "string") data.grade = body.grade;
   if (typeof body?.canAccessAccounting === "boolean") data.canAccessAccounting = body.canAccessAccounting;
+  if (typeof body?.permissionsJson === "string") data.permissionsJson = body.permissionsJson;
   // Désactiver (démission) plutôt que supprimer : le compte ne peut plus se
   // connecter et sort de la liste active, mais ses ventes passées restent
   // visibles dans les anciennes comptas — il apparaît dans "Archive Employés".
@@ -100,7 +108,7 @@ export async function PATCH(
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
   const sessionUser = session?.user as { id?: string; name?: string; role?: string } | undefined;
-  if (!session?.user || !requireAdmin(sessionUser?.role)) {
+  if (!session?.user || !(await hasServerPermission(sessionUser?.id, sessionUser?.role, "administration"))) {
     return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
   }
 

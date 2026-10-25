@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { PageShell, PageHeader } from "@/components/PageShell";
-import { useCanEdit } from "@/lib/use-can-edit";
+import { usePermissions } from "@/lib/use-permissions";
 import { useDialog } from "@/components/DialogProvider";
 import { useToast } from "@/components/ToastProvider";
 import LabeledSelect from "@/components/LabeledSelect";
@@ -32,7 +32,8 @@ function todayInputValue() {
 }
 
 export default function SanctionsPage() {
-  const { isAdmin } = useCanEdit();
+  const { has } = usePermissions();
+  const isAdmin = has("sanctions");
   const { confirm } = useDialog();
   const toast = useToast();
   const [sanctions, setSanctions] = useState<Sanction[]>([]);

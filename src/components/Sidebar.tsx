@@ -26,13 +26,18 @@ import {
   Archive,
   Menu,
   X,
+  CalendarOff,
+  ShieldAlert,
+  ScrollText,
 } from "lucide-react";
 import LiveClock from "./LiveClock";
 import PersonalizeThemeModal from "./PersonalizeThemeModal";
 import ChangePasswordModal from "./ChangePasswordModal";
 import { useCanEdit } from "@/lib/use-can-edit";
+import { usePermissions } from "@/lib/use-permissions";
+import type { PermissionKey } from "@/lib/permissions";
 
-const NAV = [
+const NAV: { href: string; icon: typeof Home; label: string; permissionKey?: PermissionKey }[] = [
   { href: "/dashboard", icon: Home, label: "Tableau de bord" },
   { href: "/profil", icon: User, label: "Mon profil" },
   { href: "/carte-biens-reserves", icon: MapIcon, label: "Carte des biens réservés" },
@@ -49,8 +54,11 @@ const NAV = [
   { href: "/comptabilite/mes-ventes", icon: Receipt, label: "Mes ventes" },
   { href: "/comptabilite", icon: Wallet, label: "Comptabilité" },
   { href: "/comptabilite/depenses", icon: Receipt, label: "Dépenses" },
-  { href: "/comptabilite/archive", icon: Archive, label: "Archive Comptabilité" },
-  { href: "/administration", icon: Settings, label: "Administration" },
+  { href: "/comptabilite/archive", icon: Archive, label: "Archive Comptabilité", permissionKey: "archiveComptabilite" },
+  { href: "/administration", icon: Settings, label: "Administration", permissionKey: "administration" },
+  { href: "/administration/absences", icon: CalendarOff, label: "Suivi des absences", permissionKey: "absences" },
+  { href: "/administration/sanctions", icon: ShieldAlert, label: "Suivi des sanctions", permissionKey: "sanctions" },
+  { href: "/administration/journal", icon: ScrollText, label: "Journal d'activité", permissionKey: "journal" },
 ];
 
 type PageVisibilityRow = { href: string; hiddenForAll: boolean; hiddenForAgentIds: string; order: number };
@@ -135,6 +143,7 @@ export function Sidebar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [pageVisibility, setPageVisibility] = useState<PageVisibilityRow[]>(() => readCachedPageVisibility() ?? []);
   const { isAdmin, canEdit } = useCanEdit();
+  const { has: hasPermission } = usePermissions();
 
   useEffect(() => {
     if (user?.mustChangePassword) setShowPassword(true);
@@ -170,6 +179,10 @@ export function Sidebar() {
     if (isAdmin && canEdit) return sorted;
     const userId = (user as { id?: string } | undefined)?.id;
     return sorted.filter((item) => {
+      // Pages réservées (Administration, Archive Comptabilité, Absences,
+      // Sanctions, Journal) : jamais affichées sans la permission dédiée,
+      // même si une entrée de visibilité les rendait "visibles" par défaut.
+      if (item.permissionKey && !hasPermission(item.permissionKey)) return false;
       const vis = orderMap.get(item.href);
       if (!vis) return true;
       try {

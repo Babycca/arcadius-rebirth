@@ -2,16 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { hasServerPermission } from "@/lib/permissions-server";
 import { logActivity } from "@/lib/audit-log";
-
-function isAdmin(role: string | undefined) {
-  return role === "ADMIN" || role === "SUPER_ADMIN";
-}
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
   const user = session?.user as { id?: string; name?: string; role?: string } | undefined;
-  if (!session?.user || !isAdmin(user?.role)) return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
+  if (!session?.user || !(await hasServerPermission(user?.id, user?.role, "sanctions")))
+    return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
 
   const { id } = await params;
   const existing = await prisma.sanction.findUnique({ where: { id } });
@@ -45,7 +43,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
   const user = session?.user as { id?: string; name?: string; role?: string } | undefined;
-  if (!session?.user || !isAdmin(user?.role)) return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
+  if (!session?.user || !(await hasServerPermission(user?.id, user?.role, "sanctions")))
+    return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
 
   const { id } = await params;
   const existing = await prisma.sanction.findUnique({ where: { id } });

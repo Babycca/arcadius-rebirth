@@ -11,6 +11,7 @@ type ExtendedUser = {
   accentColor: string | null;
   editorMode: boolean;
   avatarUrl: string | null;
+  permissionsJson: string;
 };
 
 export const authOptions: AuthOptions = {
@@ -53,6 +54,7 @@ export const authOptions: AuthOptions = {
           accentColor: agent.accentColor,
           editorMode: agent.editorMode,
           avatarUrl: agent.avatarUrl,
+          permissionsJson: agent.permissionsJson,
         };
       },
     }),
@@ -68,6 +70,7 @@ export const authOptions: AuthOptions = {
         token.accentColor = extended.accentColor;
         token.editorMode = extended.editorMode;
         token.avatarUrl = extended.avatarUrl;
+        token.permissionsJson = extended.permissionsJson;
       }
       if (trigger === "update" && token.id) {
         const fresh = await prisma.agent.findUnique({ where: { id: token.id as string } });
@@ -76,6 +79,7 @@ export const authOptions: AuthOptions = {
           token.editorMode = fresh.editorMode;
           token.mustChangePassword = fresh.mustChangePassword;
           token.avatarUrl = fresh.avatarUrl;
+          token.permissionsJson = fresh.permissionsJson;
         }
       }
       return token;
@@ -89,6 +93,7 @@ export const authOptions: AuthOptions = {
         (session.user as Record<string, unknown>).accentColor = token.accentColor;
         (session.user as Record<string, unknown>).editorMode = token.editorMode;
         (session.user as Record<string, unknown>).avatarUrl = token.avatarUrl;
+        (session.user as Record<string, unknown>).permissionsJson = token.permissionsJson;
       }
       return session;
     },
