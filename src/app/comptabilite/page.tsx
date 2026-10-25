@@ -6,10 +6,21 @@ import { PageShell, PageHeader } from "@/components/PageShell";
 import { Archive, Pencil, Check, X, Users, Receipt, TrendingUp, Wallet, ReceiptText, PiggyBank, Percent } from "lucide-react";
 import { useCanEdit } from "@/lib/use-can-edit";
 import { weekDateRangeLabel } from "@/lib/accounting/week-client";
+import { parseMoneyAmount } from "@/lib/accounting/parse-amount";
 
 // "Semaine A" / "Semaine B" : valeurs saisies à la main par un admin, sans
 // calcul automatique (demande explicite — pas de logique métier derrière).
-function ManualWeekCard({ settingKey, label, isAdmin }: { settingKey: string; label: string; isAdmin: boolean }) {
+function ManualWeekCard({
+  settingKey,
+  label,
+  isAdmin,
+  onSaved,
+}: {
+  settingKey: string;
+  label: string;
+  isAdmin: boolean;
+  onSaved?: (value: string) => void;
+}) {
   const [value, setValue] = useState("");
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState("");
@@ -32,6 +43,7 @@ function ManualWeekCard({ settingKey, label, isAdmin }: { settingKey: string; la
     if (res.ok) {
       setValue(draft);
       setEditing(false);
+      onSaved?.(draft);
     }
   }
 
@@ -93,6 +105,7 @@ type AgentSummary = {
 export default function ComptabilitePage() {
   const [data, setData] = useState<{ weekId: string; periodStart: string | null; agents: AgentSummary[] } | null>(null);
   const [totalExpenses, setTotalExpenses] = useState(0);
+  const [lotEmployeAmount, setLotEmployeAmount] = useState(0);
   const [forbidden, setForbidden] = useState(false);
   const [archiving, setArchiving] = useState(false);
   const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
@@ -111,6 +124,10 @@ export default function ComptabilitePage() {
     fetch("/api/accounting/expenses")
       .then((res) => (res.ok ? res.json() : []))
       .then((rows: { amount: number }[]) => setTotalExpenses(rows.reduce((s, x) => s + x.amount, 0)))
+      .catch(() => {});
+    fetch("/api/app-settings/comptabilite-lot-employe")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((d: { value?: string } | null) => setLotEmployeAmount(parseMoneyAmount(d?.value)))
       .catch(() => {});
   }
 
@@ -175,7 +192,7 @@ export default function ComptabilitePage() {
   const totalSales = agents.reduce((s, a) => s + a.totalSales, 0);
   const totalProfit = agents.reduce((s, a) => s + a.companyProfit, 0);
   const totalSalaries = agents.reduce((s, a) => s + a.salary, 0);
-  const netProfit = totalProfit - totalSalaries - totalExpenses;
+  const netProfit = totalProfit - totalSalaries - totalExpenses - lotEmployeAmount;
   const taxes = netProfit * 0.3;
 
   return (
@@ -272,7 +289,12 @@ export default function ComptabilitePage() {
       <div className="flex gap-4 mb-5 flex-wrap">
         <ManualWeekCard settingKey="comptabilite-semaine-a" label="Semaine A" isAdmin={isAdmin} />
         <ManualWeekCard settingKey="comptabilite-semaine-b" label="Semaine B" isAdmin={isAdmin} />
-        <ManualWeekCard settingKey="comptabilite-lot-employe" label="Lot employé" isAdmin={isAdmin} />
+        <ManualWeekCard
+          settingKey="comptabilite-lot-employe"
+          label="Lot employé"
+          isAdmin={isAdmin}
+          onSaved={(v) => setLotEmployeAmount(parseMoneyAmount(v))}
+        />
       </div>
 
       <div className="card-hover glass-strong rounded-xl overflow-hidden border border-transparent">

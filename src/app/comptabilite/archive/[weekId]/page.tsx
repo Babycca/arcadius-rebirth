@@ -11,6 +11,7 @@ import { useDialog } from "@/components/DialogProvider";
 import TranscriptButton from "@/components/TranscriptButton";
 import CsvExportButton from "@/components/CsvExportButton";
 import { weekDateRangeLabel } from "@/lib/accounting/week-client";
+import { parseMoneyAmount } from "@/lib/accounting/parse-amount";
 
 type AgentSummary = {
   id: string;
@@ -271,7 +272,8 @@ export default function ComptabiliteArchiveDetailPage({ params }: { params: Prom
   const totalProfit = agents.reduce((s, a) => s + a.companyProfit, 0);
   const totalSalaries = agents.reduce((s, a) => s + a.salary, 0);
   const totalExpenses = expenses.reduce((s, x) => s + x.amount, 0);
-  const netProfit = totalProfit - totalSalaries - totalExpenses;
+  const lotEmployeAmount = parseMoneyAmount(data?.lotEmploye);
+  const netProfit = totalProfit - totalSalaries - totalExpenses - lotEmployeAmount;
   const taxes = netProfit * 0.3;
 
   const exportRows: (string | number | null)[][] = [

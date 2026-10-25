@@ -40,7 +40,15 @@ export default function AuditLogPage() {
   const [loading, setLoading] = useState(true);
   const [forbidden, setForbidden] = useState(false);
   const [clearing, setClearing] = useState(false);
+  const [isPatron, setIsPatron] = useState(false);
   const pageSize = 50;
+
+  useEffect(() => {
+    fetch("/api/my-profile")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d: { grade?: string } | null) => setIsPatron(d?.grade === "Patron"))
+      .catch(() => {});
+  }, []);
 
   function load() {
     setLoading(true);
@@ -144,14 +152,16 @@ export default function AuditLogPage() {
             />
           </div>
         </div>
-        <button
-          onClick={handleClear}
-          disabled={clearing}
-          className="flex items-center gap-1.5 text-xs text-[rgb(var(--danger))] hover:bg-[rgb(var(--danger)/0.1)] rounded-lg px-3 py-2 disabled:opacity-60"
-        >
-          <Eraser size={13} />
-          {clearing ? "Suppression…" : "Vider le journal"}
-        </button>
+        {isPatron && (
+          <button
+            onClick={handleClear}
+            disabled={clearing}
+            className="flex items-center gap-1.5 text-xs text-[rgb(var(--danger))] hover:bg-[rgb(var(--danger)/0.1)] rounded-lg px-3 py-2 disabled:opacity-60"
+          >
+            <Eraser size={13} />
+            {clearing ? "Suppression…" : "Vider le journal"}
+          </button>
+        )}
       </div>
 
       <div className="card-hover glass-strong rounded-xl overflow-hidden border border-transparent">

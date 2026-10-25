@@ -46,10 +46,16 @@ export async function GET(req: NextRequest) {
   });
 }
 
+// Vider le journal est plus sensible qu'une simple action d'admin
+// (irréversible, efface tout l'historique) — réservé au grade "Patron"
+// uniquement, pas à tous les admins/co-patrons.
 export async function DELETE() {
   const session = await getServerSession(authOptions);
-  const role = (session?.user as { role?: string } | undefined)?.role;
-  if (!session?.user || !isAdmin(role)) return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
+  const userId = (session?.user as { id?: string } | undefined)?.id;
+  if (!userId) return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
+
+  const agent = await prisma.agent.findUnique({ where: { id: userId }, select: { grade: true } });
+  if (agent?.grade !== "Patron") return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
 
   await prisma.auditLog.deleteMany({});
   return NextResponse.json({ ok: true });
