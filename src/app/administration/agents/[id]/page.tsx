@@ -156,12 +156,17 @@ export default function AgentProfilePage({ params }: { params: Promise<{ id: str
 
   async function saveGrade(g: string) {
     if (!agent) return;
-    setAgent({ ...agent, grade: g });
-    await fetch(`/api/agents/${id}`, {
+    const res = await fetch(`/api/agents/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ grade: g }),
     });
+    if (!res.ok) {
+      const body = await res.json().catch(() => null);
+      toast(body?.error ?? "Impossible de changer ce grade.", "error");
+      return;
+    }
+    setAgent({ ...agent, grade: g });
     flashSaved();
   }
 

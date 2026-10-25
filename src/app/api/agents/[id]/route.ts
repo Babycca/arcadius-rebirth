@@ -42,7 +42,38 @@ export async function PATCH(
 
   const data: Record<string, unknown> = {};
   if (typeof body?.phone === "string") data.phone = body.phone || null;
-  if (typeof body?.grade === "string") data.grade = body.grade;
+
+  if (typeof body?.grade === "string") {
+    const isRealAdmin = role === "ADMIN" || role === "SUPER_ADMIN";
+    // Un agent qui n'a que la permission "administration" (pas un vrai
+    // admin) ne doit pas pouvoir s'auto-promouvoir, ni changer le grade
+    // d'un collègue mieux classé que lui, ni promouvoir quelqu'un à un
+    // rang égal ou supérieur au sien.
+    if (!isRealAdmin) {
+      if (id === sessionUser?.id) {
+        return NextResponse.json({ error: "Tu ne peux pas changer ton propre grade." }, { status: 403 });
+      }
+      const [actor, target, rules] = await Promise.all([
+        prisma.agent.findUnique({ where: { id: sessionUser!.id! }, select: { grade: true } }),
+        prisma.agent.findUnique({ where: { id }, select: { grade: true } }),
+        prisma.commissionRule.findMany({ orderBy: { order: "asc" }, select: { grade: true } }),
+      ]);
+      const rankOf = (grade: string | undefined) => {
+        const idx = rules.findIndex((r) => r.grade === grade);
+        return idx === -1 ? rules.length : idx;
+      };
+      const actorRank = rankOf(actor?.grade);
+      const targetRank = rankOf(target?.grade);
+      const newRank = rankOf(body.grade);
+      if (targetRank <= actorRank || newRank <= actorRank) {
+        return NextResponse.json(
+          { error: "Tu ne peux pas attribuer un grade égal ou supérieur au tien." },
+          { status: 403 }
+        );
+      }
+    }
+    data.grade = body.grade;
+  }
   if (typeof body?.canAccessAccounting === "boolean") data.canAccessAccounting = body.canAccessAccounting;
   if (typeof body?.permissionsJson === "string") data.permissionsJson = body.permissionsJson;
   // Désactiver (démission) plutôt que supprimer : le compte ne peut plus se
