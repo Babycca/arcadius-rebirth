@@ -215,6 +215,7 @@ export default function ComptabiliteArchiveDetailPage({ params }: { params: Prom
     periodStart: string | null;
     semaineA: string | null;
     semaineB: string | null;
+    lotEmploye: string | null;
     agents: AgentSummary[];
   } | null>(null);
   const [allSales, setAllSales] = useState<
@@ -371,6 +372,10 @@ export default function ComptabiliteArchiveDetailPage({ params }: { params: Prom
         <div className="glass-strong rounded-xl px-4 py-2.5">
           <p className="text-xs text-[rgb(var(--muted))]">Semaine B</p>
           <p className="text-lg font-semibold">{data?.semaineB || "—"}</p>
+        </div>
+        <div className="glass-strong rounded-xl px-4 py-2.5">
+          <p className="text-xs text-[rgb(var(--muted))]">Lot employé</p>
+          <p className="text-lg font-semibold">{data?.lotEmploye || "—"}</p>
         </div>
       </div>
 

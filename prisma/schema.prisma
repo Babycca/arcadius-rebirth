@@ -292,6 +292,7 @@ model WeeklyReset {
   // globales (AppSetting) continuent d'évoluer librement après coup.
   semaineA    String?
   semaineB    String?
+  lotEmploye  String?
 }
 
 // Choix admin, par agent et par semaine, d'appliquer ou non une prime —

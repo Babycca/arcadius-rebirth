@@ -36,9 +36,10 @@ export async function POST() {
     suffix += 1;
   }
 
-  const [semaineA, semaineB] = await Promise.all([
+  const [semaineA, semaineB, lotEmploye] = await Promise.all([
     prisma.appSetting.findUnique({ where: { key: "comptabilite-semaine-a" } }),
     prisma.appSetting.findUnique({ where: { key: "comptabilite-semaine-b" } }),
+    prisma.appSetting.findUnique({ where: { key: "comptabilite-lot-employe" } }),
   ]);
 
   await prisma.$transaction([
@@ -59,6 +60,7 @@ export async function POST() {
         periodStart: archivedWeekStart,
         semaineA: semaineA?.value ?? null,
         semaineB: semaineB?.value ?? null,
+        lotEmploye: lotEmploye?.value ?? null,
       },
     }),
   ]);

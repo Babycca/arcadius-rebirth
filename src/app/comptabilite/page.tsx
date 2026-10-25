@@ -272,6 +272,7 @@ export default function ComptabilitePage() {
       <div className="flex gap-4 mb-5 flex-wrap">
         <ManualWeekCard settingKey="comptabilite-semaine-a" label="Semaine A" isAdmin={isAdmin} />
         <ManualWeekCard settingKey="comptabilite-semaine-b" label="Semaine B" isAdmin={isAdmin} />
+        <ManualWeekCard settingKey="comptabilite-lot-employe" label="Lot employé" isAdmin={isAdmin} />
       </div>
 
       <div className="card-hover glass-strong rounded-xl overflow-hidden border border-transparent">

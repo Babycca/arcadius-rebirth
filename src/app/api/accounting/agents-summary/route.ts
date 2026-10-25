@@ -43,13 +43,16 @@ export async function GET(req: NextRequest) {
 
   let semaineA = archiveRecord?.semaineA ?? null;
   let semaineB = archiveRecord?.semaineB ?? null;
+  let lotEmploye = archiveRecord?.lotEmploye ?? null;
   if (!requestedWeekId) {
-    const [liveA, liveB] = await Promise.all([
+    const [liveA, liveB, liveLot] = await Promise.all([
       prisma.appSetting.findUnique({ where: { key: "comptabilite-semaine-a" } }),
       prisma.appSetting.findUnique({ where: { key: "comptabilite-semaine-b" } }),
+      prisma.appSetting.findUnique({ where: { key: "comptabilite-lot-employe" } }),
     ]);
     semaineA = liveA?.value ?? null;
     semaineB = liveB?.value ?? null;
+    lotEmploye = liveLot?.value ?? null;
   }
   const periodStart = archiveRecord?.periodStart ?? liveWeekStart ?? null;
   const archivedAt = archiveRecord?.createdAt ?? null;
@@ -93,6 +96,7 @@ export async function GET(req: NextRequest) {
     archivedAt,
     semaineA,
     semaineB,
+    lotEmploye,
     isArchived: Boolean(requestedWeekId),
     agents: summary,
   });
