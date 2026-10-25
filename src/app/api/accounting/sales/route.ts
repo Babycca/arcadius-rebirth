@@ -26,6 +26,15 @@ export async function POST(req: NextRequest) {
 
   const userId = (session.user as { id: string }).id;
   const actorName = session.user.name ?? "Agent";
+
+  // "Sec" est un compte technique (secrétaire d'agence factice, voir
+  // HIDDEN_FROM_AGENT_LISTS_WHERE) — il ne doit jamais pouvoir saisir de
+  // vente, qui resterait de toute façon invisible partout en Comptabilité.
+  const actor = await prisma.agent.findUnique({ where: { id: userId }, select: { grade: true } });
+  if (actor?.grade === "Sec") {
+    return NextResponse.json({ error: "Ce compte ne peut pas enregistrer de vente." }, { status: 403 });
+  }
+
   const body = await req.json().catch(() => null);
 
   const houseNumber = body?.houseNumber?.trim();

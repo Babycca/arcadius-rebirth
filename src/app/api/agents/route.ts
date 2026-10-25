@@ -54,6 +54,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Prénom et nom requis." }, { status: 400 });
   }
 
+  const isRealAdmin = sessionUser?.role === "ADMIN" || sessionUser?.role === "SUPER_ADMIN";
+  if (grade === "Sec" && !isRealAdmin) {
+    return NextResponse.json({ error: "Seul un admin peut attribuer le grade Sec." }, { status: 403 });
+  }
+
   const loginHandle = `${firstName}.${lastName}`.toLowerCase().replace(/\s+/g, "");
   const tempPassword = randomPassword();
   const passwordHash = await bcrypt.hash(tempPassword, 10);

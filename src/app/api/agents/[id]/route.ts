@@ -45,6 +45,13 @@ export async function PATCH(
 
   if (typeof body?.grade === "string") {
     const isRealAdmin = role === "ADMIN" || role === "SUPER_ADMIN";
+    // "Sec" est un grade technique (compte factice, pas un vrai agent
+    // commercial, voir HIDDEN_FROM_AGENT_LISTS_WHERE) — seul un vrai admin
+    // peut l'attribuer, jamais quelqu'un avec juste la permission
+    // "administration".
+    if (body.grade === "Sec" && !isRealAdmin) {
+      return NextResponse.json({ error: "Seul un admin peut attribuer le grade Sec." }, { status: 403 });
+    }
     // Un agent qui n'a que la permission "administration" (pas un vrai
     // admin) ne doit pas pouvoir s'auto-promouvoir, ni changer le grade
     // d'un collègue mieux classé que lui, ni promouvoir quelqu'un à un
