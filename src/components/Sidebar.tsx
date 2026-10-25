@@ -53,7 +53,7 @@ const NAV: { href: string; icon: typeof Home; label: string; permissionKey?: Per
   { href: "/mes-messages-prefaits", icon: MessageSquareText, label: "Mes messages préfaits" },
   { href: "/comptabilite/mes-ventes", icon: Receipt, label: "Mes ventes" },
   { href: "/comptabilite", icon: Wallet, label: "Comptabilité" },
-  { href: "/comptabilite/depenses", icon: Receipt, label: "Dépenses" },
+  { href: "/comptabilite/depenses", icon: Receipt, label: "Dépenses", permissionKey: "depenses" },
   { href: "/comptabilite/archive", icon: Archive, label: "Archive Comptabilité", permissionKey: "archiveComptabilite" },
   { href: "/administration", icon: Settings, label: "Administration", permissionKey: "administration" },
   { href: "/administration/absences", icon: CalendarOff, label: "Suivi des absences", permissionKey: "absences" },
@@ -179,10 +179,12 @@ export function Sidebar() {
     if (isAdmin && canEdit) return sorted;
     const userId = (user as { id?: string } | undefined)?.id;
     return sorted.filter((item) => {
-      // Pages réservées (Administration, Archive Comptabilité, Absences,
-      // Sanctions, Journal) : jamais affichées sans la permission dédiée,
-      // même si une entrée de visibilité les rendait "visibles" par défaut.
-      if (item.permissionKey && !hasPermission(item.permissionKey)) return false;
+      // Pages réservées (Administration, Archive Comptabilité, Dépenses,
+      // Absences, Sanctions, Journal) : la permission dédiée est seule
+      // décisionnaire — elle prime sur l'ancien système de visibilité par
+      // page (qui les masque par défaut), sans quoi donner la permission à
+      // un agent simple ne suffirait pas à faire apparaître le lien.
+      if (item.permissionKey) return hasPermission(item.permissionKey);
       const vis = orderMap.get(item.href);
       if (!vis) return true;
       try {

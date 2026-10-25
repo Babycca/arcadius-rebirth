@@ -3,15 +3,13 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getActiveWeekId } from "@/lib/accounting/week";
-
-function isAdmin(role: string | undefined) {
-  return role === "ADMIN" || role === "SUPER_ADMIN";
-}
+import { hasServerPermission } from "@/lib/permissions-server";
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ agentId: string }> }) {
   const session = await getServerSession(authOptions);
-  const role = (session?.user as { role?: string } | undefined)?.role;
-  if (!session?.user || !isAdmin(role)) return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
+  const user = session?.user as { id?: string; role?: string } | undefined;
+  if (!session?.user || !(await hasServerPermission(user?.id, user?.role, "primes")))
+    return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
 
   const { agentId } = await params;
   const body = await req.json().catch(() => null);

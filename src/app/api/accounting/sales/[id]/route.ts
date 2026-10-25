@@ -3,12 +3,9 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { logActivity } from "@/lib/audit-log";
+import { hasServerPermission } from "@/lib/permissions-server";
 
 const COMPANY_PROFIT_RATE = 0.1;
-
-function isAdmin(role: string | undefined) {
-  return role === "ADMIN" || role === "SUPER_ADMIN";
-}
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
@@ -18,7 +15,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const { id } = await params;
   const sale = await prisma.sale.findUnique({ where: { id } });
   if (!sale) return NextResponse.json({ error: "Vente introuvable" }, { status: 404 });
-  if (sale.agentId !== user.id && !isAdmin(user.role)) {
+  if (sale.agentId !== user.id && !(await hasServerPermission(user.id, user.role, "ventesSupprimer"))) {
     return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
   }
 
@@ -66,7 +63,7 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
   const { id } = await params;
   const sale = await prisma.sale.findUnique({ where: { id } });
   if (!sale) return NextResponse.json({ error: "Vente introuvable" }, { status: 404 });
-  if (sale.agentId !== user.id && !isAdmin(user.role)) {
+  if (sale.agentId !== user.id && !(await hasServerPermission(user.id, user.role, "ventesSupprimer"))) {
     return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
   }
 

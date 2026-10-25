@@ -116,6 +116,8 @@ export default function ComptabilitePage() {
   const { has } = usePermissions();
   const canViewArchive = has("archiveComptabilite");
   const canArchiveCompta = has("archiverCompta");
+  const canViewDepenses = has("depenses");
+  const canTogglePrimes = isAdmin || has("primes");
 
   function load() {
     fetch("/api/accounting/agents-summary").then(async (res) => {
@@ -239,7 +241,7 @@ export default function ComptabilitePage() {
             </p>
             <p className="text-lg font-semibold">${totalSalaries.toLocaleString("fr-FR")}</p>
           </div>
-          {isAdmin ? (
+          {canViewDepenses ? (
             <Link href="/comptabilite/depenses" className="card-hover glass-strong rounded-xl px-4 py-2.5 border border-transparent hover:border-[rgb(var(--brand-500)/0.4)] transition-colors">
               <p className="text-xs text-[rgb(var(--muted))] flex items-center gap-1.5">
                 <ReceiptText size={12} /> Dépenses
@@ -378,7 +380,7 @@ export default function ComptabilitePage() {
                     </div>
                   ) : (
                     <div className="flex items-center gap-2">
-                      {isAdmin ? (
+                      {canTogglePrimes ? (
                         <button
                           onClick={() => toggleBonus(a, !a.bonusEnabled)}
                           className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${
@@ -399,7 +401,7 @@ export default function ComptabilitePage() {
                       {a.bonusEnabled && a.bonusAmount > 0 && (
                         <span className="text-xs text-[rgb(var(--muted))]">${a.bonusAmount.toLocaleString("fr-FR")}</span>
                       )}
-                      {!isAdmin && !a.bonusEnabled && a.ruleBonusAmount === 0 && (
+                      {!canTogglePrimes && !a.bonusEnabled && a.ruleBonusAmount === 0 && (
                         <span className="text-xs text-[rgb(var(--muted))]">—</span>
                       )}
                     </div>

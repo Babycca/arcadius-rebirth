@@ -15,7 +15,7 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
   const user = session?.user as { id?: string; role?: string } | undefined;
-  if (!session?.user || !(await hasServerPermission(user?.id, user?.role, "administration")))
+  if (!session?.user || !(await hasServerPermission(user?.id, user?.role, "zonesCategories")))
     return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
 
   const body = await req.json().catch(() => null);

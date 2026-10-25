@@ -43,7 +43,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
   const user = session?.user as { id?: string; name?: string; role?: string } | undefined;
-  if (!session?.user || !(await hasServerPermission(user?.id, user?.role, "sanctions")))
+  if (!session?.user || !(await hasServerPermission(user?.id, user?.role, "sanctionsSupprimer")))
     return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
 
   const { id } = await params;

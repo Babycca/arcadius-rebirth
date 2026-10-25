@@ -16,6 +16,7 @@ export default function ComptabiliteArchivePage() {
   const { canEdit } = useCanEdit();
   const { has } = usePermissions();
   const canViewArchive = has("archiveComptabilite");
+  const canDeleteArchive = canEdit || has("archiveSupprimer");
   const { confirm } = useDialog();
   const [rows, setRows] = useState<ArchiveRow[] | null>(null);
   const [legacyRows, setLegacyRows] = useState<LegacyRow[] | null>(null);
@@ -102,7 +103,7 @@ export default function ComptabiliteArchivePage() {
                 </p>
               </div>
             </Link>
-            {canEdit && (
+            {canDeleteArchive && (
               <button
                 onClick={() => deleteArchive(r.weekId)}
                 className="text-[rgb(var(--muted))] hover:text-[rgb(var(--danger))] p-2 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
@@ -132,7 +133,7 @@ export default function ComptabiliteArchivePage() {
                 </p>
               </div>
             </Link>
-            {canEdit && (
+            {canDeleteArchive && (
               <button
                 onClick={() => deleteLegacyArchive(r.id)}
                 className="text-[rgb(var(--muted))] hover:text-[rgb(var(--danger))] p-2 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"

@@ -224,12 +224,14 @@ export default function AbsencesPage() {
           >
             <Pencil size={14} />
           </button>
-          <button
-            onClick={() => handleDelete(a.id)}
-            className="text-[rgb(var(--muted))] hover:text-[rgb(var(--danger))] p-1.5"
-          >
-            <Trash2 size={14} />
-          </button>
+          {has("absencesSupprimer") && (
+            <button
+              onClick={() => handleDelete(a.id)}
+              className="text-[rgb(var(--muted))] hover:text-[rgb(var(--danger))] p-1.5"
+            >
+              <Trash2 size={14} />
+            </button>
+          )}
         </div>
       </div>
     );

@@ -52,6 +52,9 @@ export async function PATCH(
     if (id === sessionUser?.id && !body.active) {
       return NextResponse.json({ error: "Tu ne peux pas désactiver ton propre compte." }, { status: 400 });
     }
+    if (!(await hasServerPermission(sessionUser?.id, role, "agentsSupprimer"))) {
+      return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
+    }
     data.active = body.active;
   }
   if (typeof body?.firstName === "string" && body.firstName.trim()) data.firstName = body.firstName.trim();
@@ -108,7 +111,7 @@ export async function PATCH(
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
   const sessionUser = session?.user as { id?: string; name?: string; role?: string } | undefined;
-  if (!session?.user || !(await hasServerPermission(sessionUser?.id, sessionUser?.role, "administration"))) {
+  if (!session?.user || !(await hasServerPermission(sessionUser?.id, sessionUser?.role, "agentsSupprimer"))) {
     return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
   }
 

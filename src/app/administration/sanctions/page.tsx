@@ -364,12 +364,14 @@ export default function SanctionsPage() {
                         >
                           <Pencil size={14} />
                         </button>
-                        <button
-                          onClick={() => handleDelete(s.id)}
-                          className="text-[rgb(var(--muted))] hover:text-[rgb(var(--danger))] p-1.5"
-                        >
-                          <Trash2 size={14} />
-                        </button>
+                        {has("sanctionsSupprimer") && (
+                          <button
+                            onClick={() => handleDelete(s.id)}
+                            className="text-[rgb(var(--muted))] hover:text-[rgb(var(--danger))] p-1.5"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        )}
                       </div>
                     </div>
                   );

@@ -7,7 +7,7 @@ import { hasServerPermission } from "@/lib/permissions-server";
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ href: string }> }) {
   const session = await getServerSession(authOptions);
   const user = session?.user as { id?: string; role?: string } | undefined;
-  if (!session?.user || !(await hasServerPermission(user?.id, user?.role, "administration")))
+  if (!session?.user || !(await hasServerPermission(user?.id, user?.role, "pagesVisibilite")))
     return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
 
   const { href } = await params;

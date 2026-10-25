@@ -7,6 +7,7 @@ import Link from "next/link";
 import { ArrowLeft, ChevronDown, Pencil, Trash2, Check, X, Trash } from "lucide-react";
 import { PageShell, PageHeader } from "@/components/PageShell";
 import { useCanEdit } from "@/lib/use-can-edit";
+import { usePermissions } from "@/lib/use-permissions";
 import { useDialog } from "@/components/DialogProvider";
 import TranscriptButton from "@/components/TranscriptButton";
 import CsvExportButton from "@/components/CsvExportButton";
@@ -210,6 +211,8 @@ export default function ComptabiliteArchiveDetailPage({ params }: { params: Prom
   const { weekId } = use(params);
   const router = useRouter();
   const { canEdit } = useCanEdit();
+  const { has } = usePermissions();
+  const canDeleteArchive = canEdit || has("archiveSupprimer");
   const { confirm } = useDialog();
   const [data, setData] = useState<{
     weekId: string;
@@ -313,7 +316,7 @@ export default function ComptabiliteArchiveDetailPage({ params }: { params: Prom
               <CsvExportButton rows={exportRows} filename={`comptabilite-${weekId}`} />
             </>
           )}
-          {canEdit && (
+          {canDeleteArchive && (
             <button
               onClick={deleteArchive}
               className="flex items-center gap-1.5 text-xs text-[rgb(var(--danger))] hover:bg-[rgb(var(--danger)/0.1)] rounded-lg px-2.5 py-1.5"

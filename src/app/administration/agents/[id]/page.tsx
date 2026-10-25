@@ -7,7 +7,7 @@ import GradeSelect from "@/components/GradeSelect";
 import { useSession } from "next-auth/react";
 import { useToast } from "@/components/ToastProvider";
 import { NAV_LABELS } from "@/lib/nav-pages";
-import { PERMISSION_DEFS, parsePermissions, type PermissionKey } from "@/lib/permissions";
+import { PERMISSION_DEFS, PERMISSION_GROUPS, parsePermissions, type PermissionKey } from "@/lib/permissions";
 import {
   ArrowLeft,
   KeyRound,
@@ -537,25 +537,32 @@ export default function AgentProfilePage({ params }: { params: Promise<{ id: str
               Permissions — accès ponctuel accordé à cet agent simple
             </p>
             <div className="px-2 py-1">
-              {PERMISSION_DEFS.map((p) => {
-                const checked = !!parsePermissions(agent.permissionsJson)[p.key];
-                return (
-                  <label
-                    key={p.key}
-                    className={`flex items-center justify-between gap-3 px-2 py-2 rounded-lg text-sm ${
-                      viewerIsAdmin ? "hover:bg-white/[0.04] cursor-pointer" : "opacity-70"
-                    }`}
-                  >
-                    <span>{p.label}</span>
-                    <input
-                      type="checkbox"
-                      checked={checked}
-                      disabled={!viewerIsAdmin}
-                      onChange={() => togglePermission(p.key)}
-                    />
-                  </label>
-                );
-              })}
+              {PERMISSION_GROUPS.map((group) => (
+                <div key={group} className="mb-1 last:mb-0">
+                  <p className="text-[10px] uppercase tracking-wide text-[rgb(var(--muted))] px-2 pt-3 pb-1">
+                    {group}
+                  </p>
+                  {PERMISSION_DEFS.filter((p) => p.group === group).map((p) => {
+                    const checked = !!parsePermissions(agent.permissionsJson)[p.key];
+                    return (
+                      <label
+                        key={p.key}
+                        className={`flex items-center justify-between gap-3 px-2 py-2 rounded-lg text-sm ${
+                          viewerIsAdmin ? "hover:bg-white/[0.04] cursor-pointer" : "opacity-70"
+                        }`}
+                      >
+                        <span>{p.label}</span>
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          disabled={!viewerIsAdmin}
+                          onChange={() => togglePermission(p.key)}
+                        />
+                      </label>
+                    );
+                  })}
+                </div>
+              ))}
             </div>
           </div>
         )}

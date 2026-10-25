@@ -12,7 +12,7 @@ function randomPassword() {
 export async function POST(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
   const user = session?.user as { id?: string; role?: string } | undefined;
-  if (!session?.user || !(await hasServerPermission(user?.id, user?.role, "administration"))) {
+  if (!session?.user || !(await hasServerPermission(user?.id, user?.role, "agentsMotDePasse"))) {
     return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
   }
 

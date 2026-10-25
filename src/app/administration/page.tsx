@@ -8,6 +8,7 @@ import GradeSelect from "@/components/GradeSelect";
 import PageVisibilityPanel from "@/components/PageVisibilityPanel";
 import ZoneCategoriesPanel from "@/components/ZoneCategoriesPanel";
 import { useCanEdit } from "@/lib/use-can-edit";
+import { usePermissions } from "@/lib/use-permissions";
 import { useDialog } from "@/components/DialogProvider";
 import { useToast } from "@/components/ToastProvider";
 import { Plus, KeyRound, Trash2, ChevronUp, ChevronDown, UserX, UserCheck, Archive, ScrollText, CalendarOff, ShieldAlert } from "lucide-react";
@@ -34,6 +35,7 @@ type CommissionRule = {
 
 export default function AdministrationPage() {
   const { canEdit } = useCanEdit();
+  const { has } = usePermissions();
   const { confirm, alertDialog } = useDialog();
   const toast = useToast();
   const { data: session } = useSession();
@@ -344,6 +346,7 @@ export default function AdministrationPage() {
       )}
 
       <div className="flex flex-col lg:flex-row gap-6">
+        {has("agentsCreer") && (
         <form onSubmit={handleCreate} className="card-hover glass-strong rounded-xl p-5 flex-1 min-w-0 max-w-lg lg:max-w-none border border-transparent">
           <h2 className="text-sm font-medium mb-4">Créer un agent</h2>
           {error && (
@@ -387,8 +390,9 @@ export default function AdministrationPage() {
             {creating ? "Création…" : "Créer l'agent"}
           </button>
         </form>
+        )}
 
-        {canEdit && (
+        {has("grades") && (
           <div className="card-hover glass-strong rounded-xl p-5 flex-1 min-w-0 max-w-lg lg:max-w-none border border-transparent">
             <h2 className="text-sm font-medium mb-1">Grades, commissions &amp; primes</h2>
             <p className="text-xs text-[rgb(var(--muted))] mb-4">
@@ -470,10 +474,10 @@ export default function AdministrationPage() {
         )}
       </div>
 
-      {canEdit && (
+      {(has("pagesVisibilite") || has("zonesCategories")) && (
         <div className="flex flex-col lg:flex-row gap-6 mt-6">
-          <PageVisibilityPanel />
-          <ZoneCategoriesPanel />
+          {has("pagesVisibilite") && <PageVisibilityPanel />}
+          {has("zonesCategories") && <ZoneCategoriesPanel />}
         </div>
       )}
 
@@ -568,14 +572,16 @@ export default function AdministrationPage() {
                 </td>
                 <td className="px-4 py-2.5 text-right">
                   <div className="flex items-center justify-end gap-1">
-                    <button
-                      onClick={() => resetPassword(a.id)}
-                      title="Régénérer un mot de passe"
-                      className="text-[rgb(var(--muted))] hover:text-[rgb(var(--brand-400))] p-1.5"
-                    >
-                      <KeyRound size={14} />
-                    </button>
-                    {a.role !== "SUPER_ADMIN" && a.id !== sessionUser?.id && (
+                    {has("agentsMotDePasse") && (
+                      <button
+                        onClick={() => resetPassword(a.id)}
+                        title="Régénérer un mot de passe"
+                        className="text-[rgb(var(--muted))] hover:text-[rgb(var(--brand-400))] p-1.5"
+                      >
+                        <KeyRound size={14} />
+                      </button>
+                    )}
+                    {has("agentsSupprimer") && a.role !== "SUPER_ADMIN" && a.id !== sessionUser?.id && (
                       <button
                         onClick={() => toggleActive(a)}
                         title="Désactiver ce compte (démission)"
@@ -618,20 +624,24 @@ export default function AdministrationPage() {
                   <td className="px-4 py-2.5 text-[rgb(var(--muted))]">{a.grade}</td>
                   <td className="px-4 py-2.5 text-right">
                     <div className="flex items-center justify-end gap-3">
-                      <button
-                        onClick={() => toggleActive(a)}
-                        className="flex items-center gap-1.5 text-xs text-[rgb(var(--brand-400))] hover:brightness-110"
-                      >
-                        <UserCheck size={14} />
-                        Réactiver
-                      </button>
-                      <button
-                        onClick={() => deletePermanently(a)}
-                        className="flex items-center gap-1.5 text-xs text-[rgb(var(--danger))] hover:brightness-110"
-                      >
-                        <Trash2 size={14} />
-                        Supprimer
-                      </button>
+                      {has("agentsSupprimer") && (
+                        <>
+                          <button
+                            onClick={() => toggleActive(a)}
+                            className="flex items-center gap-1.5 text-xs text-[rgb(var(--brand-400))] hover:brightness-110"
+                          >
+                            <UserCheck size={14} />
+                            Réactiver
+                          </button>
+                          <button
+                            onClick={() => deletePermanently(a)}
+                            className="flex items-center gap-1.5 text-xs text-[rgb(var(--danger))] hover:brightness-110"
+                          >
+                            <Trash2 size={14} />
+                            Supprimer
+                          </button>
+                        </>
+                      )}
                     </div>
                   </td>
                 </tr>
