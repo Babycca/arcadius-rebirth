@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { ChevronUp, ChevronDown } from "lucide-react";
-import { NAV_LABELS } from "@/lib/nav-pages";
+import { NAV_LABELS, PERMISSION_CONTROLLED_HREFS } from "@/lib/nav-pages";
 
 type Page = { href: string; hiddenForAll: boolean; order: number };
 
@@ -46,7 +46,8 @@ export default function PageVisibilityPanel() {
       <h2 className="text-sm font-medium mb-1">Pages du menu</h2>
       <p className="text-xs text-[rgb(var(--muted))] mb-4">
         Visibilité globale et ordre des pages. Pour masquer une page à un compte précis, ouvre sa fiche dans le
-        tableau des agents.
+        tableau des agents. Dépenses, Archive Comptabilité et Administration restent réordonnables ici, mais leur
+        accès se décide désormais par permission (fiche de chaque agent), pas par ce bouton.
       </p>
       <div className="flex flex-col gap-1">
         {pages.map((p, i) => (
@@ -61,21 +62,27 @@ export default function PageVisibilityPanel() {
             </div>
             <span className="text-sm flex-1">{NAV_LABELS[p.href] ?? p.href}</span>
 
-            <span className="text-xs text-[rgb(var(--muted))] w-16">
-              {p.hiddenForAll ? "Masquée" : "Visible"}
-            </span>
-            <button
-              onClick={() => toggleHiddenForAll(p.href, !p.hiddenForAll)}
-              className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${
-                !p.hiddenForAll ? "bg-[rgb(var(--brand-500))]" : "bg-white/10"
-              }`}
-            >
-              <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform ${
-                  !p.hiddenForAll ? "translate-x-4" : "translate-x-0.5"
-                }`}
-              />
-            </button>
+            {PERMISSION_CONTROLLED_HREFS.has(p.href) ? (
+              <span className="text-xs text-[rgb(var(--muted))] italic">par permission</span>
+            ) : (
+              <>
+                <span className="text-xs text-[rgb(var(--muted))] w-16">
+                  {p.hiddenForAll ? "Masquée" : "Visible"}
+                </span>
+                <button
+                  onClick={() => toggleHiddenForAll(p.href, !p.hiddenForAll)}
+                  className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${
+                    !p.hiddenForAll ? "bg-[rgb(var(--brand-500))]" : "bg-white/10"
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform ${
+                      !p.hiddenForAll ? "translate-x-4" : "translate-x-0.5"
+                    }`}
+                  />
+                </button>
+              </>
+            )}
           </div>
         ))}
       </div>

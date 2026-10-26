@@ -25,3 +25,13 @@ export const NAV_PAGES: { href: string; label: string }[] = [
 ];
 
 export const NAV_LABELS: Record<string, string> = Object.fromEntries(NAV_PAGES.map((p) => [p.href, p.label]));
+
+// Pages dont l'accès est décidé par le système de permissions fines (voir
+// src/lib/permissions.ts), pas par l'ancienne case à cocher "Pages visibles
+// pour ce compte" — cette dernière n'a plus aucun effet dessus, on les
+// masque donc de cette liste pour ne pas laisser croire le contraire.
+export const PERMISSION_CONTROLLED_HREFS = new Set([
+  "/comptabilite/depenses",
+  "/comptabilite/archive",
+  "/administration",
+]);

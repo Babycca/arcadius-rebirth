@@ -6,7 +6,7 @@ import { PageShell, PageHeader } from "@/components/PageShell";
 import GradeSelect from "@/components/GradeSelect";
 import { useSession } from "next-auth/react";
 import { useToast } from "@/components/ToastProvider";
-import { NAV_LABELS } from "@/lib/nav-pages";
+import { NAV_LABELS, PERMISSION_CONTROLLED_HREFS } from "@/lib/nav-pages";
 import { PERMISSION_DEFS, PERMISSION_GROUPS, parsePermissions, type PermissionKey } from "@/lib/permissions";
 import {
   ArrowLeft,
@@ -516,9 +516,12 @@ export default function AgentProfilePage({ params }: { params: Promise<{ id: str
           <div className="card-hover glass-strong rounded-xl overflow-hidden border border-transparent">
             <p className="text-xs text-[rgb(var(--muted))] px-4 py-3 border-b border-white/[0.08]">
               Pages visibles pour ce compte
+              <span className="block text-[10px] mt-0.5 normal-case">
+                Dépenses, Archive Comptabilité et Administration se gèrent plus bas, dans Permissions.
+              </span>
             </p>
             <div className="max-h-64 overflow-y-auto px-2 py-1">
-              {pages.map((p) => {
+              {pages.filter((p) => !PERMISSION_CONTROLLED_HREFS.has(p.href)).map((p) => {
                 const ids: string[] = JSON.parse(p.hiddenForAgentIds || "[]");
                 const visible = p.hiddenForAll ? ids.includes(id) : !ids.includes(id);
                 return (
