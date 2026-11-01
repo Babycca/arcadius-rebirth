@@ -379,6 +379,7 @@ export default function MesVentesPage() {
               <th className="px-4 py-3 font-normal">Date</th>
               <th className="px-4 py-3 font-normal">Habitation</th>
               <th className="px-4 py-3 font-normal">Client</th>
+              <th className="px-4 py-3 font-normal">Téléphone</th>
               <th className="px-4 py-3 font-normal text-right">Prix</th>
               <th className="px-4 py-3 font-normal text-right">Actions</th>
             </tr>
@@ -386,7 +387,7 @@ export default function MesVentesPage() {
           <tbody>
             {!loading && sales.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-6 text-center text-[rgb(var(--muted))] text-sm">
+                <td colSpan={6} className="px-4 py-6 text-center text-[rgb(var(--muted))] text-sm">
                   Aucune vente cette semaine.
                 </td>
               </tr>
@@ -394,7 +395,7 @@ export default function MesVentesPage() {
             {sales.map((s) =>
               editingId === s.id ? (
                 <tr key={s.id} className="border-b border-white/[0.04] last:border-0 bg-white/[0.03]">
-                  <td colSpan={5} className="px-4 py-3">
+                  <td colSpan={6} className="px-4 py-3">
                     {editError && (
                       <div className="rounded-lg bg-[rgb(var(--danger)/0.12)] text-[rgb(var(--danger))] text-xs px-3 py-2 mb-3">
                         {editError}
@@ -476,6 +477,7 @@ export default function MesVentesPage() {
                   <td className="px-4 py-2.5">{new Date(s.date).toLocaleDateString("fr-FR")}</td>
                   <td className="px-4 py-2.5">#{s.houseNumber}</td>
                   <td className="px-4 py-2.5">{s.clientName}</td>
+                  <td className="px-4 py-2.5 text-[rgb(var(--muted))]">{s.clientPhone ?? "—"}</td>
                   <td className="px-4 py-2.5 text-right font-medium text-[rgb(var(--brand-400))]">
                     ${s.priceAmount.toLocaleString("fr-FR")}
                   </td>
