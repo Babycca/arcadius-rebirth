@@ -10,6 +10,7 @@ import { getActiveWeekId } from "@/lib/accounting/week";
 import { computeAgentPayroll } from "@/lib/accounting/payroll";
 import { HIDDEN_FROM_AGENT_LISTS_WHERE } from "@/lib/agent-filters";
 import DashboardGreeting from "@/components/DashboardGreeting";
+import { NAV_ITEMS_BY_HREF } from "@/lib/nav-items";
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -35,6 +36,7 @@ export default async function DashboardPage() {
 
   let mySalary = 0;
   let mySalesCount = 0;
+  let pinnedHrefs: string[] = [];
   if (userId) {
     const [me, mySales, myGarageSales] = await Promise.all([
       prisma.agent.findUnique({ where: { id: userId } }),
@@ -43,6 +45,11 @@ export default async function DashboardPage() {
     ]);
     mySalesCount = mySales.length;
     if (me) {
+      try {
+        pinnedHrefs = JSON.parse(me.pinnedPages || "[]");
+      } catch {
+        pinnedHrefs = [];
+      }
       const [rule, bonus] = await Promise.all([
         prisma.commissionRule.findUnique({ where: { grade: me.grade } }),
         prisma.agentWeekBonus.findUnique({ where: { agentId_weekId: { agentId: userId, weekId } } }),
@@ -75,6 +82,26 @@ export default async function DashboardPage() {
         title={<DashboardGreeting />}
         subtitle="Vue d'ensemble — données réelles importées"
       />
+
+      {pinnedHrefs.length > 0 && (
+        <div className="flex flex-wrap gap-2.5 mb-6">
+          {pinnedHrefs.map((href) => {
+            const item = NAV_ITEMS_BY_HREF.get(href);
+            if (!item) return null;
+            const Icon = item.icon;
+            return (
+              <Link
+                key={href}
+                href={href}
+                className="card-hover glass rounded-xl px-3.5 py-2.5 flex items-center gap-2 text-sm border border-transparent hover:border-[rgb(var(--brand-500)/0.4)] transition-colors"
+              >
+                <Icon size={15} className="text-[rgb(var(--brand-400))]" />
+                {item.label}
+              </Link>
+            );
+          })}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <Link

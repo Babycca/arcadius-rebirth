@@ -36,6 +36,10 @@ model Agent {
   canAccessAccounting Boolean  @default(false)
   permissionsJson     String   @default("{}")
   commissionRateOverride Float?
+  // Pages épinglées par l'agent lui-même (JSON string[] de hrefs) — purement
+  // personnel, pas géré par un admin. Affichées en priorité dans la sidebar
+  // et en raccourcis sur le tableau de bord.
+  pinnedPages         String   @default("[]")
 
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt

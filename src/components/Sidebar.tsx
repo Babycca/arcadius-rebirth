@@ -7,59 +7,19 @@ import { signOut, useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 import {
   Home,
-  Map as MapIcon,
-  Tag,
-  Calculator,
-  FileText,
-  Images,
-  Wallet,
-  Receipt,
-  Settings,
   LogOut,
   Palette,
   Pencil,
-  User,
-  Sofa,
-  MessageSquareText,
-  BookOpen,
-  GraduationCap,
-  Archive,
   Menu,
   X,
-  CalendarOff,
-  ShieldAlert,
-  ScrollText,
+  Pin,
 } from "lucide-react";
 import LiveClock from "./LiveClock";
 import PersonalizeThemeModal from "./PersonalizeThemeModal";
 import ChangePasswordModal from "./ChangePasswordModal";
 import { useCanEdit } from "@/lib/use-can-edit";
 import { usePermissions } from "@/lib/use-permissions";
-import type { PermissionKey } from "@/lib/permissions";
-
-const NAV: { href: string; icon: typeof Home; label: string; permissionKey?: PermissionKey }[] = [
-  { href: "/dashboard", icon: Home, label: "Tableau de bord" },
-  { href: "/profil", icon: User, label: "Mon profil" },
-  { href: "/carte-biens-reserves", icon: MapIcon, label: "Carte des biens réservés" },
-  { href: "/carte-prix-villas", icon: Tag, label: "Carte des prix des villas" },
-  { href: "/prix-fixe", icon: Tag, label: "Prix fixe" },
-  { href: "/tarifs", icon: Images, label: "Tarifs" },
-  { href: "/interieurs-possibles", icon: Sofa, label: "Intérieurs possibles" },
-  { href: "/guide-coherences", icon: BookOpen, label: "Guide des cohérences" },
-  { href: "/guide-coherences-cayo", icon: BookOpen, label: "Guide des cohérences — Cayo" },
-  { href: "/guide-debutant", icon: GraduationCap, label: "Guide du débutant" },
-  { href: "/estimation", icon: Calculator, label: "Estimation" },
-  { href: "/formulaires", icon: FileText, label: "Formulaires" },
-  { href: "/mes-messages-prefaits", icon: MessageSquareText, label: "Mes messages préfaits" },
-  { href: "/comptabilite/mes-ventes", icon: Receipt, label: "Mes ventes" },
-  { href: "/comptabilite", icon: Wallet, label: "Comptabilité" },
-  { href: "/comptabilite/depenses", icon: Receipt, label: "Dépenses", permissionKey: "depenses" },
-  { href: "/comptabilite/archive", icon: Archive, label: "Archive Comptabilité", permissionKey: "archiveComptabilite" },
-  { href: "/administration", icon: Settings, label: "Administration", permissionKey: "administration" },
-  { href: "/administration/absences", icon: CalendarOff, label: "Suivi des absences", permissionKey: "absences" },
-  { href: "/administration/sanctions", icon: ShieldAlert, label: "Suivi des sanctions", permissionKey: "sanctions" },
-  { href: "/administration/journal", icon: ScrollText, label: "Journal d'activité", permissionKey: "journal" },
-];
+import { NAV_ITEMS as NAV } from "@/lib/nav-items";
 
 type PageVisibilityRow = { href: string; hiddenForAll: boolean; hiddenForAgentIds: string; order: number };
 
@@ -102,14 +62,18 @@ function NavItem({
   icon: Icon,
   label,
   active,
+  pinned,
+  onTogglePin,
 }: {
   href: string;
   icon: typeof Home;
   label: string;
   active: boolean;
+  pinned?: boolean;
+  onTogglePin?: () => void;
 }) {
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex items-center gap-1 group">
       <Link
         href={href}
         className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all flex-1 min-w-0 ${
@@ -119,8 +83,24 @@ function NavItem({
         }`}
       >
         <Icon size={17} />
-        {label}
+        <span className="truncate">{label}</span>
       </Link>
+      {onTogglePin && (
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            onTogglePin();
+          }}
+          title={pinned ? "Désépingler" : "Épingler"}
+          className={`shrink-0 p-1.5 rounded-lg transition-opacity ${
+            pinned
+              ? "text-[rgb(var(--brand-400))] opacity-100"
+              : "text-[rgb(var(--muted))] opacity-0 group-hover:opacity-100 hover:text-[rgb(var(--brand-400))]"
+          }`}
+        >
+          {pinned ? <Pin size={13} fill="currentColor" /> : <Pin size={13} />}
+        </button>
+      )}
     </div>
   );
 }
@@ -142,6 +122,7 @@ export function Sidebar() {
   const [showPassword, setShowPassword] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [pageVisibility, setPageVisibility] = useState<PageVisibilityRow[]>(() => readCachedPageVisibility() ?? []);
+  const [pinnedPages, setPinnedPages] = useState<string[]>([]);
   const { isAdmin, canEdit } = useCanEdit();
   const { has: hasPermission } = usePermissions();
 
@@ -163,7 +144,25 @@ export function Sidebar() {
         setPageVisibility(rows);
       })
       .catch(() => {});
+    fetch("/api/my-pinned-pages")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d: { pinnedPages?: string[] } | null) => {
+        if (d?.pinnedPages) setPinnedPages(d.pinnedPages);
+      })
+      .catch(() => {});
   }, []);
+
+  async function togglePin(href: string) {
+    const next = pinnedPages.includes(href)
+      ? pinnedPages.filter((h) => h !== href)
+      : [...pinnedPages, href];
+    setPinnedPages(next);
+    await fetch("/api/my-pinned-pages", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pinnedPages: next }),
+    }).catch(() => {});
+  }
 
   const orderedNav = (() => {
     const orderMap = new Map(pageVisibility.map((p) => [p.href, p]));
@@ -288,6 +287,30 @@ export function Sidebar() {
         </div>
 
       <div className="flex-1 flex flex-col gap-1">
+        {pinnedPages.length > 0 && (
+          <div className="mb-2 pb-2 border-b border-white/[0.08] flex flex-col gap-1">
+            <p className="text-[10px] uppercase tracking-wide text-[rgb(var(--muted))] px-3 mb-0.5">
+              Épinglés
+            </p>
+            {orderedNav
+              .filter((item) => pinnedPages.includes(item.href))
+              .map(({ href, icon, label }) => {
+                const active =
+                  href === "/comptabilite/archive" ? pathname.startsWith(href) : pathname === href;
+                return (
+                  <NavItem
+                    key={`pinned-${href}`}
+                    href={href}
+                    icon={icon}
+                    label={label}
+                    active={active}
+                    pinned
+                    onTogglePin={() => togglePin(href)}
+                  />
+                );
+              })}
+          </div>
+        )}
         {canEdit ? (
           <SidebarSortableNav
             items={orderedNav.map(({ href, icon, label }) => ({
@@ -303,7 +326,17 @@ export function Sidebar() {
           orderedNav.map(({ href, icon, label }) => {
             const active =
               href === "/comptabilite/archive" ? pathname.startsWith(href) : pathname === href;
-            return <NavItem key={href} href={href} icon={icon} label={label} active={active} />;
+            return (
+              <NavItem
+                key={href}
+                href={href}
+                icon={icon}
+                label={label}
+                active={active}
+                pinned={pinnedPages.includes(href)}
+                onTogglePin={() => togglePin(href)}
+              />
+            );
           })
         )}
       </div>
