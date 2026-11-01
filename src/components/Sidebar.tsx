@@ -260,7 +260,7 @@ export function Sidebar() {
       )}
 
       <aside
-        className={`fixed md:static inset-y-0 left-0 z-50 w-72 md:w-64 flex flex-col glass m-4 rounded-2xl p-4 gap-1 shrink-0 overflow-y-auto transition-transform duration-300 md:translate-x-0 ${
+        className={`fixed md:static inset-y-0 left-0 z-50 w-72 md:w-72 flex flex-col glass m-4 rounded-2xl p-4 gap-1 shrink-0 overflow-y-auto transition-transform duration-300 md:translate-x-0 ${
           mobileOpen ? "translate-x-0" : "-translate-x-[120%]"
         }`}
       >
