@@ -6,6 +6,7 @@ import { PageShell, PageHeader } from "@/components/PageShell";
 import { Archive, Pencil, Check, X, Users, Receipt, TrendingUp, Wallet, ReceiptText, PiggyBank, Percent } from "lucide-react";
 import { useCanEdit } from "@/lib/use-can-edit";
 import { usePermissions } from "@/lib/use-permissions";
+import { useToast } from "@/components/ToastProvider";
 import { weekDateRangeLabel } from "@/lib/accounting/week-client";
 import { parseMoneyAmount } from "@/lib/accounting/parse-amount";
 
@@ -113,6 +114,7 @@ export default function ComptabilitePage() {
   const [bonusPromptFor, setBonusPromptFor] = useState<string | null>(null);
   const [bonusPromptValue, setBonusPromptValue] = useState("");
   const { isAdmin } = useCanEdit();
+  const toast = useToast();
   const { has } = usePermissions();
   const canViewArchive = has("archiveComptabilite");
   const canArchiveCompta = has("archiverCompta");
@@ -174,8 +176,14 @@ export default function ComptabilitePage() {
   async function handleArchive() {
     setShowArchiveConfirm(false);
     setArchiving(true);
-    await fetch("/api/accounting/weekly-reset", { method: "POST" });
+    const res = await fetch("/api/accounting/weekly-reset", { method: "POST" });
     setArchiving(false);
+    if (!res.ok) {
+      const body = await res.json().catch(() => null);
+      toast(body?.error ?? "Impossible d'archiver.", "error");
+      return;
+    }
+    toast("Semaine archivée.");
     load();
   }
 
