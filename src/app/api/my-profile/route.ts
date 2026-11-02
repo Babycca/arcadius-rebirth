@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getActiveWeekId } from "@/lib/accounting/week";
+import { getArchivedWeekIds } from "@/lib/accounting/week";
 import { computeAgentPayroll } from "@/lib/accounting/payroll";
 
 export async function GET() {
@@ -10,7 +10,7 @@ export async function GET() {
   if (!session?.user) return NextResponse.json({ error: "Non connecté" }, { status: 401 });
 
   const userId = (session.user as { id: string }).id;
-  const [agent, weekId, rules] = await Promise.all([
+  const [agent, archivedWeekIds, rules] = await Promise.all([
     prisma.agent.findUnique({
       where: { id: userId },
       select: {
@@ -24,15 +24,15 @@ export async function GET() {
         avatarUrl: true,
       },
     }),
-    getActiveWeekId(),
+    getArchivedWeekIds(),
     prisma.commissionRule.findMany(),
   ]);
 
   if (!agent) return NextResponse.json({ error: "Introuvable" }, { status: 404 });
 
   const [sales, bonus] = await Promise.all([
-    prisma.sale.findMany({ where: { agentId: userId, weekId } }),
-    prisma.agentWeekBonus.findUnique({ where: { agentId_weekId: { agentId: userId, weekId } } }),
+    prisma.sale.findMany({ where: { agentId: userId, weekId: { notIn: archivedWeekIds } } }),
+    prisma.agentWeekBonus.findFirst({ where: { agentId: userId, weekId: { notIn: archivedWeekIds } } }),
   ]);
   const rule = rules.find((r) => r.grade === agent.grade) ?? null;
   const payroll = computeAgentPayroll(sales, rule, bonus ? { enabled: bonus.enabled, amount: bonus.amount } : null);

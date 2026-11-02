@@ -36,3 +36,23 @@ export function weekDateRangeLabel(periodStart: Date): string {
     d.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric", timeZone: "UTC" });
   return `du ${fmt(start)} (lundi) au ${fmt(end)} (dimanche)`;
 }
+
+// Reconstruit le lundi (00:00 UTC) correspondant à un identifiant "YYYY-SNN".
+export function mondayOfWeekId(weekId: string): Date {
+  const m = /^(\d{4})-S(\d{2})$/.exec(weekId);
+  if (!m) return startOfIsoWeek(new Date());
+  const year = Number(m[1]);
+  const week = Number(m[2]);
+  // Le 4 janvier est toujours dans la semaine ISO 1.
+  const jan4Monday = startOfIsoWeek(new Date(Date.UTC(year, 0, 4)));
+  const monday = new Date(jan4Monday);
+  monday.setUTCDate(monday.getUTCDate() + (week - 1) * 7);
+  return monday;
+}
+
+// Identifiant de la semaine ISO suivante.
+export function nextWeekId(weekId: string): string {
+  const monday = mondayOfWeekId(weekId);
+  monday.setUTCDate(monday.getUTCDate() + 7);
+  return weekIdFor(monday);
+}

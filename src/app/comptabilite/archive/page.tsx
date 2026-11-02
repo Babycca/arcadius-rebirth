@@ -15,7 +15,6 @@ type ArchiveRow = {
   archivedAt: string | null;
   salesCount: number;
   totalSales: number;
-  isFormallyArchived: boolean;
 };
 type LegacyRow = { id: string; label: string; createdAt: string; salesCount: number; totalSales: number };
 
@@ -44,11 +43,9 @@ export default function ComptabiliteArchivePage() {
     load();
   }, []);
 
-  async function deleteArchive(weekId: string, isFormallyArchived: boolean) {
+  async function deleteArchive(weekId: string) {
     const ok = await confirm(
-      isFormallyArchived
-        ? "Supprimer cette archive ? Les ventes elles-mêmes resteront en base, mais cette entrée disparaîtra de l'archive."
-        : "Cette semaine n'a jamais été archivée (étiquette \"non clôturée\") : supprimer cette ligne supprime définitivement les ventes, garages et dépenses de cette semaine. Continuer ?",
+      "Supprimer cette archive ? Les ventes elles-mêmes resteront en base, mais cette entrée disparaîtra de l'archive.",
       { danger: true }
     );
     if (!ok) return;
@@ -104,14 +101,7 @@ export default function ComptabiliteArchivePage() {
             <Link href={`/comptabilite/archive/${encodeURIComponent(r.weekId)}`} className="flex items-center gap-3 flex-1 min-w-0">
               <Archive size={16} className="text-[rgb(var(--brand-400))] shrink-0" />
               <div className="min-w-0">
-                <p className="text-sm font-medium flex items-center gap-2">
-                  {r.weekId}
-                  {!r.isFormallyArchived && (
-                    <span className="text-[10px] font-normal rounded-full px-2 py-0.5 bg-[rgb(var(--warning)/0.14)] text-[rgb(var(--warning))]">
-                      non clôturée
-                    </span>
-                  )}
-                </p>
+                <p className="text-sm font-medium">{r.weekId}</p>
                 <p className="text-xs text-[rgb(var(--muted))]">
                   {r.periodStart ? `${weekDateRangeLabel(new Date(r.periodStart))} — ` : ""}
                   {r.salesCount} vente
@@ -121,7 +111,7 @@ export default function ComptabiliteArchivePage() {
             </Link>
             {canDeleteArchive && (
               <button
-                onClick={() => deleteArchive(r.weekId, r.isFormallyArchived)}
+                onClick={() => deleteArchive(r.weekId)}
                 className="text-[rgb(var(--muted))] hover:text-[rgb(var(--danger))] p-2 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
                 title="Supprimer cette archive"
               >

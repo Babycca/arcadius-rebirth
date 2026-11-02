@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getActiveWeekId, getActiveWeekStart } from "@/lib/accounting/week";
+import { getActiveWeekId, getActiveWeekStart, getArchivedWeekIds } from "@/lib/accounting/week";
 import { computeAgentPayroll } from "@/lib/accounting/payroll";
 import { canAccessPage } from "@/lib/page-access";
 import { HIDDEN_FROM_AGENT_LISTS_WHERE } from "@/lib/agent-filters";
@@ -24,13 +24,19 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
   }
 
+  // weekId : étiquette affichée (semaine archivée demandée, ou la semaine
+  // calendaire du jour en mode "en cours"). dataWhere : ce qui détermine
+  // RÉELLEMENT quelles ventes/garages/primes sont inclus — en mode "en
+  // cours" c'est tout ce qui n'a pas encore été archivé, peu importe sous
+  // quelle étiquette de semaine calendaire ça a été enregistré.
   const weekId = requestedWeekId || (await getActiveWeekId());
+  const dataWhere = requestedWeekId ? { weekId: requestedWeekId } : { weekId: { notIn: await getArchivedWeekIds() } };
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const [agents, rules, bonuses, archiveRecord, liveWeekStart, absencesToday] = await Promise.all([
     prisma.agent.findMany({ where: HIDDEN_FROM_AGENT_LISTS_WHERE, orderBy: { order: "asc" } }),
     prisma.commissionRule.findMany(),
-    prisma.agentWeekBonus.findMany({ where: { weekId } }),
+    prisma.agentWeekBonus.findMany({ where: dataWhere }),
     requestedWeekId ? prisma.weeklyReset.findUnique({ where: { weekId: requestedWeekId } }) : null,
     requestedWeekId ? null : getActiveWeekStart(),
     // Pertinent uniquement pour la semaine en cours (une absence est un
@@ -61,8 +67,8 @@ export async function GET(req: NextRequest) {
   const summaryAll = await Promise.all(
     agents.map(async (agent) => {
       const [sales, garageSales] = await Promise.all([
-        prisma.sale.findMany({ where: { agentId: agent.id, weekId } }),
-        prisma.garageSale.findMany({ where: { agentId: agent.id, weekId } }),
+        prisma.sale.findMany({ where: { agentId: agent.id, ...dataWhere } }),
+        prisma.garageSale.findMany({ where: { agentId: agent.id, ...dataWhere } }),
       ]);
       const rule = rulesByGrade[agent.grade] ?? null;
       const bonusOverride = bonusByAgentId[agent.id] ?? null;

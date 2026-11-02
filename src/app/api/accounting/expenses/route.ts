@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { hasServerPermission } from "@/lib/permissions-server";
-import { getActiveWeekId } from "@/lib/accounting/week";
+import { getActiveWeekId, getArchivedWeekIds } from "@/lib/accounting/week";
 import { logActivity } from "@/lib/audit-log";
 
 
@@ -15,8 +15,8 @@ export async function GET(req: NextRequest) {
   }
 
   const requestedWeekId = req.nextUrl.searchParams.get("weekId");
-  const weekId = requestedWeekId || (await getActiveWeekId());
-  const expenses = await prisma.expense.findMany({ where: { weekId }, orderBy: { createdAt: "desc" } });
+  const where = requestedWeekId ? { weekId: requestedWeekId } : { weekId: { notIn: await getArchivedWeekIds() } };
+  const expenses = await prisma.expense.findMany({ where, orderBy: { createdAt: "desc" } });
   return NextResponse.json(expenses);
 }
 

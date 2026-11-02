@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 import { categoryFor, MAP_CONFIG } from "@/lib/reserved-zone-categories";
 import { zoneCentroidPercent } from "@/lib/zone-centroid";
-import { getActiveWeekId } from "@/lib/accounting/week";
+import { getArchivedWeekIds } from "@/lib/accounting/week";
 import { computeAgentPayroll } from "@/lib/accounting/payroll";
 import { HIDDEN_FROM_AGENT_LISTS_WHERE } from "@/lib/agent-filters";
 import DashboardGreeting from "@/components/DashboardGreeting";
@@ -16,19 +16,20 @@ export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
   const userId = (session?.user as { id?: string } | undefined)?.id;
 
-  const [zonesRaw, zoneCategories, weekId] = await Promise.all([
+  const [zonesRaw, zoneCategories, archivedWeekIds] = await Promise.all([
     prisma.reservedZone.findMany({ select: { id: true, categoryId: true, geometry: true } }),
     prisma.reservedZoneCategory.findMany(),
-    getActiveWeekId(),
+    getArchivedWeekIds(),
   ]);
+  const weekWhere = { weekId: { notIn: archivedWeekIds } };
 
   const zonePoints = zonesRaw
     .map((z) => ({ ...z, pos: zoneCentroidPercent(z.geometry) }))
     .filter((z): z is typeof z & { pos: { x: number; y: number } } => z.pos != null);
 
   const [weekSales, weekGarageSales] = await Promise.all([
-    prisma.sale.findMany({ where: { weekId } }),
-    prisma.garageSale.findMany({ where: { weekId } }),
+    prisma.sale.findMany({ where: weekWhere }),
+    prisma.garageSale.findMany({ where: weekWhere }),
   ]);
   const salesCount = weekSales.length;
   const totalInvoices =
@@ -40,8 +41,8 @@ export default async function DashboardPage() {
   if (userId) {
     const [me, mySales, myGarageSales] = await Promise.all([
       prisma.agent.findUnique({ where: { id: userId } }),
-      prisma.sale.findMany({ where: { agentId: userId, weekId } }),
-      prisma.garageSale.findMany({ where: { agentId: userId, weekId } }),
+      prisma.sale.findMany({ where: { agentId: userId, ...weekWhere } }),
+      prisma.garageSale.findMany({ where: { agentId: userId, ...weekWhere } }),
     ]);
     mySalesCount = mySales.length;
     if (me) {
@@ -52,7 +53,7 @@ export default async function DashboardPage() {
       }
       const [rule, bonus] = await Promise.all([
         prisma.commissionRule.findUnique({ where: { grade: me.grade } }),
-        prisma.agentWeekBonus.findUnique({ where: { agentId_weekId: { agentId: userId, weekId } } }),
+        prisma.agentWeekBonus.findFirst({ where: { agentId: userId, ...weekWhere } }),
       ]);
       mySalary = computeAgentPayroll(
         mySales,
@@ -63,7 +64,7 @@ export default async function DashboardPage() {
     }
   }
 
-  const recentSalesRaw = await prisma.sale.findMany({ where: { weekId }, orderBy: { createdAt: "desc" }, take: 15 });
+  const recentSalesRaw = await prisma.sale.findMany({ where: weekWhere, orderBy: { createdAt: "desc" }, take: 15 });
   const visibleAgents = await prisma.agent.findMany({
     where: { id: { in: [...new Set(recentSalesRaw.map((s) => s.agentId))] }, ...HIDDEN_FROM_AGENT_LISTS_WHERE },
   });

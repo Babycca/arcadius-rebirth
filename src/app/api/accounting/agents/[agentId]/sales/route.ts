@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getActiveWeekId } from "@/lib/accounting/week";
+import { getArchivedWeekIds } from "@/lib/accounting/week";
 import { canAccessPage } from "@/lib/page-access";
 import { hasServerPermission } from "@/lib/permissions-server";
 
@@ -22,11 +22,13 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ agen
   }
 
   const { agentId } = await params;
-  const weekId = requestedWeekId || (await getActiveWeekId());
+  const where = requestedWeekId
+    ? { agentId, weekId: requestedWeekId }
+    : { agentId, weekId: { notIn: await getArchivedWeekIds() } };
   const [agent, sales] = await Promise.all([
     prisma.agent.findUnique({ where: { id: agentId } }),
     prisma.sale.findMany({
-      where: { agentId, weekId },
+      where,
       orderBy: { date: "desc" },
     }),
   ]);

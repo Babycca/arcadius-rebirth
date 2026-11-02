@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getActiveWeekId } from "@/lib/accounting/week";
+import { getActiveWeekId, getArchivedWeekIds } from "@/lib/accounting/week";
 import { logActivity } from "@/lib/audit-log";
 
 const COMPANY_PROFIT_RATE = 0.1;
@@ -12,9 +12,9 @@ export async function GET() {
   if (!session?.user) return NextResponse.json({ error: "Non connecté" }, { status: 401 });
 
   const userId = (session.user as { id: string }).id;
-  const weekId = await getActiveWeekId();
+  const archivedWeekIds = await getArchivedWeekIds();
   const sales = await prisma.sale.findMany({
-    where: { agentId: userId, weekId },
+    where: { agentId: userId, weekId: { notIn: archivedWeekIds } },
     orderBy: { date: "desc" },
   });
   return NextResponse.json(sales);

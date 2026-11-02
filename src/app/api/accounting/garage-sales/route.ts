@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getActiveWeekId } from "@/lib/accounting/week";
+import { getActiveWeekId, getArchivedWeekIds } from "@/lib/accounting/week";
 import { GARAGE_TYPES } from "@/lib/accounting/garage-types";
 import { logActivity } from "@/lib/audit-log";
 
@@ -12,9 +12,9 @@ export async function GET() {
 
   const userId = (session.user as { id: string }).id;
   try {
-    const weekId = await getActiveWeekId();
+    const archivedWeekIds = await getArchivedWeekIds();
     const garageSales = await prisma.garageSale.findMany({
-      where: { agentId: userId, weekId },
+      where: { agentId: userId, weekId: { notIn: archivedWeekIds } },
       orderBy: { date: "desc" },
     });
     return NextResponse.json(garageSales);

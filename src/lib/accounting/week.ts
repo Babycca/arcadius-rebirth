@@ -1,20 +1,27 @@
-export { weekIdFor, currentWeekId, startOfIsoWeek, weekDateRangeLabel } from "./week-client";
+export { weekIdFor, currentWeekId, startOfIsoWeek, weekDateRangeLabel, mondayOfWeekId, nextWeekId } from "./week-client";
 import { currentWeekId, startOfIsoWeek } from "./week-client";
+import { prisma } from "@/lib/prisma";
 
-// Semaine "active" de la Comptabilité : toujours la semaine calendaire ISO
-// en cours (lundi → dimanche), calculée en direct — jamais figée en base.
-// Avant, "Archiver la comptabilité" fixait un identifiant manuel qui restait
-// collé indéfiniment tant qu'on n'archivait pas à nouveau : si l'admin
-// oubliait d'archiver un dimanche, le site restait bloqué sur l'ancienne
-// semaine. Le calendrier fait maintenant foi tout seul, et "Archiver" ne
-// sert qu'à clôturer/enregistrer la semaine qui vient de se terminer —
-// la bascule vers la semaine suivante est automatique, pas déclenchée par ce
-// bouton.
+// Simple étiquette d'affichage qui avance toute seule avec le calendrier
+// (minuit du lundi). Sert uniquement à afficher "Semaine en cours" et à
+// nommer l'archive créée au moment où l'agence clique sur "Archiver" — elle
+// n'a AUCUN effet sur quelles ventes sont regroupées ou affichées, voir
+// getArchivedWeekIds ci-dessous. C'est la date qui bouge toute seule, jamais
+// la comptabilité elle-même.
 export async function getActiveWeekId(): Promise<string> {
   return currentWeekId();
 }
-
-// Début (lundi) de la période active — sert à afficher "Semaine du … au …".
 export async function getActiveWeekStart(): Promise<Date> {
   return startOfIsoWeek(new Date());
+}
+
+// Identifiants de toutes les semaines déjà formellement archivées (bouton
+// "Archiver" cliqué). Tout ce qui n'est PAS dans cette liste fait partie de
+// la comptabilité "en cours" — peu importe sous quelle étiquette de semaine
+// calendaire une vente a été enregistrée, et peu importe depuis combien de
+// temps elle traîne sans avoir été archivée. Rien n'en sort tant que
+// l'agence n'archive pas elle-même.
+export async function getArchivedWeekIds(): Promise<string[]> {
+  const resets = await prisma.weeklyReset.findMany({ select: { weekId: true } });
+  return resets.map((r) => r.weekId);
 }
