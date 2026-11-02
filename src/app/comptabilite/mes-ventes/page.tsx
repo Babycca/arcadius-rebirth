@@ -184,7 +184,7 @@ function GaragesPanel() {
 
 export default function MesVentesPage() {
   const { confirm } = useDialog();
-  const { canEdit } = useCanEdit();
+  const { isAdmin } = useCanEdit();
   const [sales, setSales] = useState<Sale[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -487,7 +487,7 @@ export default function MesVentesPage() {
                   </td>
                   <td className="px-4 py-2.5 text-right">
                     <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      {canEdit && (
+                      {isAdmin && (
                         <ReassignSaleButton saleId={s.id} currentAgentId={s.agentId} onReassigned={load} />
                       )}
                       <button

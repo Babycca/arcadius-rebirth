@@ -43,7 +43,7 @@ export default function AgentWeekDetailPage({
   params: Promise<{ agentId: string }>;
 }) {
   const { agentId } = use(params);
-  const { canEdit } = useCanEdit();
+  const { isAdmin, canEdit } = useCanEdit();
   const { confirm } = useDialog();
   const [agentName, setAgentName] = useState("");
   const [agentAvatarUrl, setAgentAvatarUrl] = useState<string | null>(null);
@@ -206,7 +206,7 @@ export default function AgentWeekDetailPage({
         </p>
       </div>
 
-      {canEdit && (
+      {isAdmin && (
         <div className="max-w-4xl mx-auto mb-5">
           {!adding ? (
             <button
@@ -309,13 +309,13 @@ export default function AgentWeekDetailPage({
               <th className="px-4 py-3 font-normal">Client</th>
               <th className="px-4 py-3 font-normal">Téléphone</th>
               <th className="px-4 py-3 font-normal text-right">Prix</th>
-              {canEdit && <th className="px-4 py-3 font-normal text-right">Actions</th>}
+              {isAdmin && <th className="px-4 py-3 font-normal text-right">Actions</th>}
             </tr>
           </thead>
           <tbody>
             {!loading && sales.length === 0 && (
               <tr>
-                <td colSpan={canEdit ? 6 : 5} className="px-4 py-6 text-center text-[rgb(var(--muted))] text-sm">
+                <td colSpan={isAdmin ? 6 : 5} className="px-4 py-6 text-center text-[rgb(var(--muted))] text-sm">
                   Aucune vente cette semaine.
                 </td>
               </tr>
@@ -323,7 +323,7 @@ export default function AgentWeekDetailPage({
             {sales.map((s) =>
               editingId === s.id ? (
                 <tr key={s.id} className="border-b border-white/[0.04] last:border-0 bg-white/[0.03]">
-                  <td colSpan={canEdit ? 6 : 5} className="px-4 py-3">
+                  <td colSpan={isAdmin ? 6 : 5} className="px-4 py-3">
                     {editError && (
                       <div className="rounded-lg bg-[rgb(var(--danger)/0.12)] text-[rgb(var(--danger))] text-xs px-3 py-2 mb-3">
                         {editError}
@@ -409,24 +409,28 @@ export default function AgentWeekDetailPage({
                   <td className="px-4 py-2.5 text-right font-medium text-[rgb(var(--brand-400))]">
                     ${s.priceAmount.toLocaleString("fr-FR")}
                   </td>
-                  {canEdit && (
+                  {isAdmin && (
                     <td className="px-4 py-2.5 text-right">
                       <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <ReassignSaleButton saleId={s.id} currentAgentId={s.agentId} onReassigned={load} />
-                        <button
-                          onClick={() => startEdit(s)}
-                          className="text-[rgb(var(--muted))] hover:text-[rgb(var(--brand-400))] p-1.5"
-                          title="Modifier"
-                        >
-                          <Pencil size={13} />
-                        </button>
-                        <button
-                          onClick={() => deleteSale(s.id)}
-                          className="text-[rgb(var(--muted))] hover:text-[rgb(var(--danger))] p-1.5"
-                          title="Supprimer"
-                        >
-                          <Trash2 size={13} />
-                        </button>
+                        {canEdit && (
+                          <>
+                            <button
+                              onClick={() => startEdit(s)}
+                              className="text-[rgb(var(--muted))] hover:text-[rgb(var(--brand-400))] p-1.5"
+                              title="Modifier"
+                            >
+                              <Pencil size={13} />
+                            </button>
+                            <button
+                              onClick={() => deleteSale(s.id)}
+                              className="text-[rgb(var(--muted))] hover:text-[rgb(var(--danger))] p-1.5"
+                              title="Supprimer"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          </>
+                        )}
                       </div>
                     </td>
                   )}
