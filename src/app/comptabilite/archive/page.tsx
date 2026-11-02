@@ -44,9 +44,11 @@ export default function ComptabiliteArchivePage() {
     load();
   }, []);
 
-  async function deleteArchive(weekId: string) {
+  async function deleteArchive(weekId: string, isFormallyArchived: boolean) {
     const ok = await confirm(
-      "Supprimer cette archive ? Les ventes elles-mêmes resteront en base, mais cette entrée disparaîtra de l'archive.",
+      isFormallyArchived
+        ? "Supprimer cette archive ? Les ventes elles-mêmes resteront en base, mais cette entrée disparaîtra de l'archive."
+        : "Cette semaine n'a jamais été archivée (étiquette \"non clôturée\") : supprimer cette ligne supprime définitivement les ventes, garages et dépenses de cette semaine. Continuer ?",
       { danger: true }
     );
     if (!ok) return;
@@ -117,9 +119,9 @@ export default function ComptabiliteArchivePage() {
                 </p>
               </div>
             </Link>
-            {canDeleteArchive && r.isFormallyArchived && (
+            {canDeleteArchive && (
               <button
-                onClick={() => deleteArchive(r.weekId)}
+                onClick={() => deleteArchive(r.weekId, r.isFormallyArchived)}
                 className="text-[rgb(var(--muted))] hover:text-[rgb(var(--danger))] p-2 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
                 title="Supprimer cette archive"
               >

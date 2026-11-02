@@ -256,7 +256,12 @@ export default function ComptabiliteArchiveDetailPage({ params }: { params: Prom
   }, [weekId]);
 
   async function deleteArchive() {
-    const ok = await confirm("Supprimer cette archive ? Les ventes elles-mêmes resteront en base.", { danger: true });
+    const ok = await confirm(
+      data?.isFormallyArchived
+        ? "Supprimer cette archive ? Les ventes elles-mêmes resteront en base."
+        : "Cette semaine n'a jamais été archivée (\"non clôturée\") : supprimer cette page supprime définitivement les ventes, garages et dépenses de cette semaine. Continuer ?",
+      { danger: true }
+    );
     if (!ok) return;
     await fetch(`/api/accounting/archive/${encodeURIComponent(weekId)}`, { method: "DELETE" });
     router.push("/comptabilite/archive");
@@ -317,7 +322,7 @@ export default function ComptabiliteArchiveDetailPage({ params }: { params: Prom
               <CsvExportButton rows={exportRows} filename={`comptabilite-${weekId}`} />
             </>
           )}
-          {canDeleteArchive && data?.isFormallyArchived && (
+          {canDeleteArchive && data && (
             <button
               onClick={deleteArchive}
               className="flex items-center gap-1.5 text-xs text-[rgb(var(--danger))] hover:bg-[rgb(var(--danger)/0.1)] rounded-lg px-2.5 py-1.5"
