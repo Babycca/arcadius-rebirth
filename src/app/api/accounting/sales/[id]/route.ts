@@ -20,27 +20,43 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
 
   const body = await req.json().catch(() => null);
-  const houseNumber = body?.houseNumber?.trim();
-  const clientName = body?.clientName?.trim();
-  const priceAmount = Number(body?.priceAmount);
-  const clientPhone = body?.clientPhone?.trim() || null;
+  // Champs partiels : un transfert d'agent seul (voir plus bas) n'envoie que
+  // "agentId", le reste garde sa valeur actuelle.
+  const houseNumber = typeof body?.houseNumber === "string" ? body.houseNumber.trim() : sale.houseNumber;
+  const clientName = typeof body?.clientName === "string" ? body.clientName.trim() : sale.clientName;
+  const priceAmount = body?.priceAmount != null ? Number(body.priceAmount) : sale.priceAmount;
+  const clientPhone = "clientPhone" in (body ?? {}) ? body.clientPhone?.trim() || null : sale.clientPhone;
   const date = body?.date ? new Date(body.date) : sale.date;
 
   if (!houseNumber || !clientName || !Number.isFinite(priceAmount) || priceAmount <= 0) {
     return NextResponse.json({ error: "Numéro d'habitation, client et prix sont requis." }, { status: 400 });
   }
 
-  const updated = await prisma.sale.update({
-    where: { id },
-    data: {
-      houseNumber,
-      clientName,
-      clientPhone,
-      priceAmount,
-      date,
-      companyProfit: priceAmount * COMPANY_PROFIT_RATE,
-    },
-  });
+  const data: Record<string, unknown> = {
+    houseNumber,
+    clientName,
+    clientPhone,
+    priceAmount,
+    date,
+    companyProfit: priceAmount * COMPANY_PROFIT_RATE,
+  };
+
+  // Transférer une vente à un autre agent — réservé aux vrais admins (mode
+  // éditeur), pas aux agents qui modifient juste leurs propres informations.
+  if (typeof body?.agentId === "string" && body.agentId !== sale.agentId) {
+    const isAdmin = user.role === "ADMIN" || user.role === "SUPER_ADMIN";
+    if (!isAdmin) {
+      return NextResponse.json({ error: "Seul un administrateur peut transférer une vente." }, { status: 403 });
+    }
+    const target = await prisma.agent.findUnique({ where: { id: body.agentId }, select: { id: true, grade: true } });
+    if (!target) return NextResponse.json({ error: "Agent introuvable." }, { status: 400 });
+    if (target.grade === "SEC") {
+      return NextResponse.json({ error: "Ce compte ne peut pas recevoir de vente." }, { status: 400 });
+    }
+    data.agentId = body.agentId;
+  }
+
+  const updated = await prisma.sale.update({ where: { id }, data });
 
   const actorName = user.name ?? "Agent";
   await logActivity({
