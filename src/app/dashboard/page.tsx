@@ -74,7 +74,7 @@ export default async function DashboardPage() {
     .slice(0, 3)
     .map((s) => {
       const agent = agentById.get(s.agentId)!;
-      return { id: s.id, agent: agent.firstName, house: s.houseNumber, price: s.priceAmount };
+      return { id: s.id, agent: agent.firstName, avatarUrl: agent.avatarUrl, house: s.houseNumber, price: s.priceAmount };
     });
 
   return (
@@ -167,8 +167,13 @@ export default async function DashboardPage() {
                 className="flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-white/[0.04] transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-[rgb(var(--brand-500)/0.18)] text-[rgb(var(--brand-400))] flex items-center justify-center text-xs font-medium">
-                    {s.agent[0]}
+                  <div className="w-8 h-8 rounded-full bg-[rgb(var(--brand-500)/0.18)] text-[rgb(var(--brand-400))] flex items-center justify-center text-xs font-medium overflow-hidden shrink-0">
+                    {s.avatarUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={s.avatarUrl} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      s.agent[0]
+                    )}
                   </div>
                   <div>
                     <p className="text-sm font-medium">{s.agent}</p>
