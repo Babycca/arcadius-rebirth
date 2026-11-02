@@ -16,13 +16,14 @@ export async function POST(req: NextRequest) {
   const groupId = body?.groupId;
   const name = body?.name?.trim();
   const price = Number(body?.price);
+  const type = body?.type?.trim() || null;
   if (!groupId || !name || !Number.isFinite(price)) {
     return NextResponse.json({ error: "Nom et prix requis." }, { status: 400 });
   }
 
   const count = await prisma.priceItem.count({ where: { groupId } });
   const item = await prisma.priceItem.create({
-    data: { groupId, name, price, order: count },
+    data: { groupId, name, price, type, order: count },
   });
   return NextResponse.json(item, { status: 201 });
 }

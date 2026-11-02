@@ -19,6 +19,8 @@ function ItemRow({
   setEditName,
   editPrice,
   setEditPrice,
+  editType,
+  setEditType,
   onStartEdit,
   onSaveEdit,
   onDelete,
@@ -31,6 +33,8 @@ function ItemRow({
   setEditName: (v: string) => void;
   editPrice: string;
   setEditPrice: (v: string) => void;
+  editType: string;
+  setEditType: (v: string) => void;
   onStartEdit: (item: Item) => void;
   onSaveEdit: (groupId: string, id: string) => void;
   onDelete: (groupId: string, id: string) => void;
@@ -56,6 +60,7 @@ function ItemRow({
       {editingItem === item.id ? (
         <>
           <input value={editName} onChange={(e) => setEditName(e.target.value)} className="glass rounded-lg px-2 py-1 text-sm flex-1 outline-none" />
+          <input value={editType} onChange={(e) => setEditType(e.target.value)} placeholder="Type" className="glass rounded-lg px-2 py-1 text-sm w-20 outline-none" />
           <input value={editPrice} onChange={(e) => setEditPrice(e.target.value)} type="number" className="glass rounded-lg px-2 py-1 text-sm w-24 outline-none" />
           <button onClick={() => onSaveEdit(groupId, item.id)} className="text-xs text-[rgb(var(--brand-400))] font-medium px-2">OK</button>
         </>
@@ -95,9 +100,11 @@ export default function PriceDepliantsClient({ initialGroups }: { initialGroups:
   const [addingItemTo, setAddingItemTo] = useState<string | null>(null);
   const [itemName, setItemName] = useState("");
   const [itemPrice, setItemPrice] = useState("");
+  const [itemType, setItemType] = useState("");
   const [editingItem, setEditingItem] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
   const [editPrice, setEditPrice] = useState("");
+  const [editType, setEditType] = useState("");
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
 
@@ -138,13 +145,14 @@ export default function PriceDepliantsClient({ initialGroups }: { initialGroups:
     const res = await fetch("/api/price-items", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ groupId, name: itemName.trim(), price: Number(itemPrice) }),
+      body: JSON.stringify({ groupId, name: itemName.trim(), price: Number(itemPrice), type: itemType.trim() || null }),
     });
     if (res.ok) {
       const item = await res.json();
       setGroups((gs) => gs.map((g) => (g.id === groupId ? { ...g, items: [...g.items, item] } : g)));
       setItemName("");
       setItemPrice("");
+      setItemType("");
       setAddingItemTo(null);
     }
   }
@@ -153,13 +161,18 @@ export default function PriceDepliantsClient({ initialGroups }: { initialGroups:
     const res = await fetch(`/api/price-items/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: editName, price: Number(editPrice) }),
+      body: JSON.stringify({ name: editName, price: Number(editPrice), type: editType.trim() || null }),
     });
     if (res.ok) {
       setGroups((gs) =>
         gs.map((g) =>
           g.id === groupId
-            ? { ...g, items: g.items.map((it) => (it.id === id ? { ...it, name: editName, price: Number(editPrice) } : it)) }
+            ? {
+                ...g,
+                items: g.items.map((it) =>
+                  it.id === id ? { ...it, name: editName, price: Number(editPrice), type: editType.trim() || null } : it
+                ),
+              }
             : g
         )
       );
@@ -176,6 +189,7 @@ export default function PriceDepliantsClient({ initialGroups }: { initialGroups:
     setEditingItem(item.id);
     setEditName(item.name);
     setEditPrice(String(item.price));
+    setEditType(item.type ?? "");
   }
 
   async function handleGroupDragEnd(e: DragEndEvent) {
@@ -266,6 +280,8 @@ export default function PriceDepliantsClient({ initialGroups }: { initialGroups:
               setEditName={setEditName}
               editPrice={editPrice}
               setEditPrice={setEditPrice}
+              editType={editType}
+              setEditType={setEditType}
               onStartEdit={startEdit}
               onSaveEdit={saveItem}
               onDeleteItem={deleteItem}
@@ -277,6 +293,8 @@ export default function PriceDepliantsClient({ initialGroups }: { initialGroups:
               setItemName={setItemName}
               itemPrice={itemPrice}
               setItemPrice2={setItemPrice}
+              itemType={itemType}
+              setItemType={setItemType}
               onAddItem={addItem}
               dragDisabled
             />
@@ -297,6 +315,8 @@ export default function PriceDepliantsClient({ initialGroups }: { initialGroups:
                   setEditName={setEditName}
                   editPrice={editPrice}
                   setEditPrice={setEditPrice}
+                  editType={editType}
+                  setEditType={setEditType}
                   onStartEdit={startEdit}
                   onSaveEdit={saveItem}
                   onDeleteItem={deleteItem}
@@ -308,6 +328,8 @@ export default function PriceDepliantsClient({ initialGroups }: { initialGroups:
                   setItemName={setItemName}
                   itemPrice={itemPrice}
                   setItemPrice2={setItemPrice}
+                  itemType={itemType}
+                  setItemType={setItemType}
                   onAddItem={addItem}
                 />
               ))}
@@ -330,6 +352,8 @@ function GroupRow({
   setEditName,
   editPrice,
   setEditPrice,
+  editType,
+  setEditType,
   onStartEdit,
   onSaveEdit,
   onDeleteItem,
@@ -341,6 +365,8 @@ function GroupRow({
   setItemName,
   itemPrice,
   setItemPrice2,
+  itemType,
+  setItemType,
   onAddItem,
   dragDisabled = false,
 }: {
@@ -354,6 +380,8 @@ function GroupRow({
   setEditName: (v: string) => void;
   editPrice: string;
   setEditPrice: (v: string) => void;
+  editType: string;
+  setEditType: (v: string) => void;
   onStartEdit: (item: Item) => void;
   onSaveEdit: (groupId: string, id: string) => void;
   onDeleteItem: (groupId: string, id: string) => void;
@@ -365,6 +393,8 @@ function GroupRow({
   setItemName: (v: string) => void;
   itemPrice: string;
   setItemPrice2: (v: string) => void;
+  itemType: string;
+  setItemType: (v: string) => void;
   onAddItem: (groupId: string) => void;
   dragDisabled?: boolean;
 }) {
@@ -418,6 +448,8 @@ function GroupRow({
                   setEditName={setEditName}
                   editPrice={editPrice}
                   setEditPrice={setEditPrice}
+                  editType={editType}
+                  setEditType={setEditType}
                   onStartEdit={onStartEdit}
                   onSaveEdit={onSaveEdit}
                   onDelete={onDeleteItem}
@@ -435,6 +467,12 @@ function GroupRow({
                   onChange={(e) => setItemName(e.target.value)}
                   placeholder="Nom"
                   className="glass rounded-lg px-2 py-1.5 text-sm flex-1 outline-none"
+                />
+                <input
+                  value={itemType}
+                  onChange={(e) => setItemType(e.target.value)}
+                  placeholder="Type"
+                  className="glass rounded-lg px-2 py-1.5 text-sm w-20 outline-none"
                 />
                 <input
                   value={itemPrice}
