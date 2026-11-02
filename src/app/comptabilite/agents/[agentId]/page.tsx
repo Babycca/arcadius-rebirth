@@ -5,8 +5,10 @@ import { Plus, Pencil, Trash2, Check, X } from "lucide-react";
 import { PageShell } from "@/components/PageShell";
 import UserAvatar from "@/components/UserAvatar";
 import ReassignSaleButton from "@/components/ReassignSaleButton";
+import GradeSelect from "@/components/GradeSelect";
 import { usePermissions } from "@/lib/use-permissions";
 import { useDialog } from "@/components/DialogProvider";
+import { GARAGE_TYPES } from "@/lib/accounting/garage-types";
 
 const ROLE_LABELS: Record<string, string> = {
   SUPER_ADMIN: "Super Admin",
@@ -75,6 +77,14 @@ export default function AgentWeekDetailPage({
   const [editClientPhone, setEditClientPhone] = useState("");
   const [editError, setEditError] = useState<string | null>(null);
   const [editSaving, setEditSaving] = useState(false);
+
+  const [editingGarageId, setEditingGarageId] = useState<string | null>(null);
+  const [editGarageType, setEditGarageType] = useState(GARAGE_TYPES[0]);
+  const [editGarageName, setEditGarageName] = useState("");
+  const [editGarageHouseNumber, setEditGarageHouseNumber] = useState("");
+  const [editGaragePriceAmount, setEditGaragePriceAmount] = useState("");
+  const [editGarageError, setEditGarageError] = useState<string | null>(null);
+  const [editGarageSaving, setEditGarageSaving] = useState(false);
 
   function load() {
     fetch(`/api/accounting/agents/${agentId}/sales`).then(async (res) => {
@@ -167,6 +177,49 @@ export default function AgentWeekDetailPage({
   async function deleteSale(id: string) {
     if (!(await confirm("Supprimer cette vente ?", { danger: true }))) return;
     const res = await fetch(`/api/accounting/sales/${id}`, { method: "DELETE" });
+    if (res.ok) load();
+  }
+
+  function startEditGarage(g: GarageSale) {
+    setEditingGarageId(g.id);
+    setEditGarageType(g.type);
+    setEditGarageName(g.name ?? "");
+    setEditGarageHouseNumber(g.houseNumber);
+    setEditGaragePriceAmount(String(g.priceAmount));
+    setEditGarageError(null);
+  }
+
+  function cancelEditGarage() {
+    setEditingGarageId(null);
+    setEditGarageError(null);
+  }
+
+  async function saveEditGarage(id: string) {
+    setEditGarageSaving(true);
+    setEditGarageError(null);
+    const res = await fetch(`/api/accounting/garage-sales/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        type: editGarageType,
+        name: editGarageName || null,
+        houseNumber: editGarageHouseNumber,
+        priceAmount: Number(editGaragePriceAmount),
+      }),
+    });
+    setEditGarageSaving(false);
+    if (!res.ok) {
+      const body = await res.json().catch(() => null);
+      setEditGarageError(body?.error ?? "Impossible de modifier ce garage.");
+      return;
+    }
+    setEditingGarageId(null);
+    load();
+  }
+
+  async function deleteGarage(id: string) {
+    if (!(await confirm("Supprimer ce garage ?", { danger: true }))) return;
+    const res = await fetch(`/api/accounting/garage-sales/${id}`, { method: "DELETE" });
     if (res.ok) load();
   }
 
@@ -460,20 +513,98 @@ export default function AgentWeekDetailPage({
                 <th className="px-4 py-2 font-normal">Nom</th>
                 <th className="px-4 py-2 font-normal">Habitation</th>
                 <th className="px-4 py-2 font-normal text-right">Prix</th>
+                {canModifier && <th className="px-4 py-2 font-normal text-right">Actions</th>}
               </tr>
             </thead>
             <tbody>
-              {garages.map((g) => (
-                <tr key={g.id} className="border-b border-white/[0.04] last:border-0">
-                  <td className="px-4 py-2">{new Date(g.date).toLocaleDateString("fr-FR")}</td>
-                  <td className="px-4 py-2">{g.type}</td>
-                  <td className="px-4 py-2">{g.name || "—"}</td>
-                  <td className="px-4 py-2">#{g.houseNumber}</td>
-                  <td className="px-4 py-2 text-right font-medium text-[rgb(var(--brand-400))]">
-                    ${g.priceAmount.toLocaleString("fr-FR")}
-                  </td>
-                </tr>
-              ))}
+              {garages.map((g) =>
+                editingGarageId === g.id ? (
+                  <tr key={g.id} className="border-b border-white/[0.04] last:border-0 bg-white/[0.03]">
+                    <td colSpan={canModifier ? 6 : 5} className="px-4 py-3">
+                      {editGarageError && (
+                        <div className="rounded-lg bg-[rgb(var(--danger)/0.12)] text-[rgb(var(--danger))] text-xs px-3 py-2 mb-3">
+                          {editGarageError}
+                        </div>
+                      )}
+                      <div className="flex flex-wrap items-center gap-2">
+                        <GradeSelect value={editGarageType} grades={[...GARAGE_TYPES]} onChange={setEditGarageType} />
+                        <input
+                          value={editGarageName}
+                          onChange={(e) => setEditGarageName(e.target.value)}
+                          placeholder="Nom (facultatif)"
+                          className="glass rounded-lg px-2 py-1.5 text-sm outline-none"
+                        />
+                        <input
+                          value={editGarageHouseNumber}
+                          onChange={(e) => setEditGarageHouseNumber(e.target.value)}
+                          placeholder="N° d'habitation"
+                          className="glass rounded-lg px-2 py-1.5 text-sm w-28 outline-none"
+                        />
+                        <input
+                          type="number"
+                          min="0"
+                          value={editGaragePriceAmount}
+                          onChange={(e) => setEditGaragePriceAmount(e.target.value)}
+                          placeholder="Prix"
+                          className="glass rounded-lg px-2 py-1.5 text-sm w-28 outline-none"
+                        />
+                        <button
+                          onClick={() => saveEditGarage(g.id)}
+                          disabled={editGarageSaving}
+                          className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold text-white bg-gradient-to-r from-[rgb(var(--brand-500))] to-[rgb(var(--brand-600))] hover:brightness-110 transition-all disabled:opacity-60"
+                        >
+                          <Check size={13} />
+                          {editGarageSaving ? "Enregistrement…" : "Enregistrer"}
+                        </button>
+                        <button
+                          onClick={cancelEditGarage}
+                          className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs text-[rgb(var(--muted))] hover:text-[rgb(var(--foreground))]"
+                        >
+                          <X size={13} />
+                          Annuler
+                        </button>
+                        <button
+                          onClick={() => deleteGarage(g.id)}
+                          className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs text-[rgb(var(--danger))] hover:bg-[rgb(var(--danger)/0.1)] ml-auto"
+                        >
+                          <Trash2 size={13} />
+                          Supprimer
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  <tr key={g.id} className="border-b border-white/[0.04] last:border-0 hover:bg-white/[0.03] group">
+                    <td className="px-4 py-2">{new Date(g.date).toLocaleDateString("fr-FR")}</td>
+                    <td className="px-4 py-2">{g.type}</td>
+                    <td className="px-4 py-2">{g.name || "—"}</td>
+                    <td className="px-4 py-2">#{g.houseNumber}</td>
+                    <td className="px-4 py-2 text-right font-medium text-[rgb(var(--brand-400))]">
+                      ${g.priceAmount.toLocaleString("fr-FR")}
+                    </td>
+                    {canModifier && (
+                      <td className="px-4 py-2 text-right">
+                        <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            onClick={() => startEditGarage(g)}
+                            className="text-[rgb(var(--muted))] hover:text-[rgb(var(--brand-400))] p-1.5"
+                            title="Modifier"
+                          >
+                            <Pencil size={13} />
+                          </button>
+                          <button
+                            onClick={() => deleteGarage(g.id)}
+                            className="text-[rgb(var(--muted))] hover:text-[rgb(var(--danger))] p-1.5"
+                            title="Supprimer"
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        </div>
+                      </td>
+                    )}
+                  </tr>
+                )
+              )}
             </tbody>
           </table>
         </div>
