@@ -16,7 +16,10 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
   const { weekId } = await params;
   await prisma.$transaction([
     prisma.agentWeekBonus.deleteMany({ where: { weekId } }),
-    prisma.weeklyReset.delete({ where: { weekId } }),
+    // deleteMany (pas delete) : ne lève pas si la semaine n'a en fait jamais
+    // été formellement archivée (semaine "orpheline" listée quand même pour
+    // ne rien rendre invisible, voir /api/accounting/archive).
+    prisma.weeklyReset.deleteMany({ where: { weekId } }),
   ]);
 
   return NextResponse.json({ ok: true });

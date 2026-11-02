@@ -9,7 +9,14 @@ import { usePermissions } from "@/lib/use-permissions";
 import { useDialog } from "@/components/DialogProvider";
 import { weekDateRangeLabel } from "@/lib/accounting/week-client";
 
-type ArchiveRow = { weekId: string; periodStart: string | null; archivedAt: string; salesCount: number; totalSales: number };
+type ArchiveRow = {
+  weekId: string;
+  periodStart: string | null;
+  archivedAt: string | null;
+  salesCount: number;
+  totalSales: number;
+  isFormallyArchived: boolean;
+};
 type LegacyRow = { id: string; label: string; createdAt: string; salesCount: number; totalSales: number };
 
 export default function ComptabiliteArchivePage() {
@@ -95,7 +102,14 @@ export default function ComptabiliteArchivePage() {
             <Link href={`/comptabilite/archive/${encodeURIComponent(r.weekId)}`} className="flex items-center gap-3 flex-1 min-w-0">
               <Archive size={16} className="text-[rgb(var(--brand-400))] shrink-0" />
               <div className="min-w-0">
-                <p className="text-sm font-medium">{r.weekId}</p>
+                <p className="text-sm font-medium flex items-center gap-2">
+                  {r.weekId}
+                  {!r.isFormallyArchived && (
+                    <span className="text-[10px] font-normal rounded-full px-2 py-0.5 bg-[rgb(var(--warning)/0.14)] text-[rgb(var(--warning))]">
+                      non clôturée
+                    </span>
+                  )}
+                </p>
                 <p className="text-xs text-[rgb(var(--muted))]">
                   {r.periodStart ? `${weekDateRangeLabel(new Date(r.periodStart))} — ` : ""}
                   {r.salesCount} vente
@@ -103,7 +117,7 @@ export default function ComptabiliteArchivePage() {
                 </p>
               </div>
             </Link>
-            {canDeleteArchive && (
+            {canDeleteArchive && r.isFormallyArchived && (
               <button
                 onClick={() => deleteArchive(r.weekId)}
                 className="text-[rgb(var(--muted))] hover:text-[rgb(var(--danger))] p-2 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
