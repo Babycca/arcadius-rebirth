@@ -6,6 +6,7 @@ import { getActiveWeekId, getArchivedWeekIds } from "@/lib/accounting/week";
 import { sortByHouseNumberDesc } from "@/lib/accounting/sort-sales";
 import { canAccessPage } from "@/lib/page-access";
 import { hasServerPermission } from "@/lib/permissions-server";
+import { titleCase } from "@/lib/text-case";
 import { logActivity } from "@/lib/audit-log";
 
 const COMPANY_PROFIT_RATE = 0.1;
@@ -78,7 +79,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ age
 
   const body = await req.json().catch(() => null);
   const houseNumber = body?.houseNumber?.trim();
-  const clientName = body?.clientName?.trim();
+  const clientName = body?.clientName?.trim() ? titleCase(body.clientName.trim()) : "";
   const priceAmount = Number(body?.priceAmount);
   const clientPhone = body?.clientPhone?.trim() || null;
   const date = body?.date ? new Date(body.date) : new Date();

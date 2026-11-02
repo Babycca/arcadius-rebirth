@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { logActivity } from "@/lib/audit-log";
 import { hasServerPermission } from "@/lib/permissions-server";
+import { titleCase } from "@/lib/text-case";
 
 const COMPANY_PROFIT_RATE = 0.1;
 
@@ -23,7 +24,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   // Champs partiels : un transfert d'agent seul (voir plus bas) n'envoie que
   // "agentId", le reste garde sa valeur actuelle.
   const houseNumber = typeof body?.houseNumber === "string" ? body.houseNumber.trim() : sale.houseNumber;
-  const clientName = typeof body?.clientName === "string" ? body.clientName.trim() : sale.clientName;
+  const clientName = typeof body?.clientName === "string" ? titleCase(body.clientName.trim()) : sale.clientName;
   const priceAmount = body?.priceAmount != null ? Number(body.priceAmount) : sale.priceAmount;
   const clientPhone = "clientPhone" in (body ?? {}) ? body.clientPhone?.trim() || null : sale.clientPhone;
   const date = body?.date ? new Date(body.date) : sale.date;
