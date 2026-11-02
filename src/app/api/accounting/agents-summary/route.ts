@@ -96,6 +96,7 @@ export async function GET(req: NextRequest) {
     semaineB,
     lotEmploye,
     isArchived: Boolean(requestedWeekId),
+    isFormallyArchived: Boolean(archiveRecord),
     agents: summary,
   });
 }

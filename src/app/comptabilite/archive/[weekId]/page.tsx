@@ -220,6 +220,7 @@ export default function ComptabiliteArchiveDetailPage({ params }: { params: Prom
     semaineA: string | null;
     semaineB: string | null;
     lotEmploye: string | null;
+    isFormallyArchived: boolean;
     agents: AgentSummary[];
   } | null>(null);
   const [allSales, setAllSales] = useState<
@@ -316,7 +317,7 @@ export default function ComptabiliteArchiveDetailPage({ params }: { params: Prom
               <CsvExportButton rows={exportRows} filename={`comptabilite-${weekId}`} />
             </>
           )}
-          {canDeleteArchive && (
+          {canDeleteArchive && data?.isFormallyArchived && (
             <button
               onClick={deleteArchive}
               className="flex items-center gap-1.5 text-xs text-[rgb(var(--danger))] hover:bg-[rgb(var(--danger)/0.1)] rounded-lg px-2.5 py-1.5"
@@ -332,9 +333,11 @@ export default function ComptabiliteArchiveDetailPage({ params }: { params: Prom
         subtitle={
           !data
             ? "Chargement…"
-            : data.periodStart
-            ? `${weekDateRangeLabel(new Date(data.periodStart))} — archivée, lecture seule`
-            : "Archivée, lecture seule"
+            : data.isFormallyArchived
+            ? data.periodStart
+              ? `${weekDateRangeLabel(new Date(data.periodStart))} — archivée, lecture seule`
+              : "Archivée, lecture seule"
+            : "Semaine passée, non clôturée — lecture seule"
         }
       />
 
