@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { hasServerPermission } from "@/lib/permissions-server";
+import { sortByHouseNumberDesc } from "@/lib/accounting/sort-sales";
 
 // Tous les garages posés une semaine donnée (archivée ou en cours), avec le
 // nom de l'agent attaché — même principe que archive/[weekId]/sales.
@@ -13,10 +14,11 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ wee
     return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
 
   const { weekId } = await params;
-  const garageSales = await prisma.garageSale.findMany({
-    where: { weekId: decodeURIComponent(weekId) },
-    orderBy: { date: "desc" },
-  });
+  const garageSales = sortByHouseNumberDesc(
+    await prisma.garageSale.findMany({
+      where: { weekId: decodeURIComponent(weekId) },
+    })
+  );
 
   const agents = await prisma.agent.findMany({
     where: { id: { in: [...new Set(garageSales.map((g) => g.agentId))] } },

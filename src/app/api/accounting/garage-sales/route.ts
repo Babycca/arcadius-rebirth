@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getActiveWeekId, getArchivedWeekIds } from "@/lib/accounting/week";
+import { sortByHouseNumberDesc } from "@/lib/accounting/sort-sales";
 import { GARAGE_TYPES } from "@/lib/accounting/garage-types";
 import { logActivity } from "@/lib/audit-log";
 
@@ -15,9 +16,8 @@ export async function GET() {
     const archivedWeekIds = await getArchivedWeekIds();
     const garageSales = await prisma.garageSale.findMany({
       where: { agentId: userId, weekId: { notIn: archivedWeekIds } },
-      orderBy: { date: "desc" },
     });
-    return NextResponse.json(garageSales);
+    return NextResponse.json(sortByHouseNumberDesc(garageSales));
   } catch (e) {
     console.error("GET /api/accounting/garage-sales", e);
     return NextResponse.json({ error: "Erreur serveur." }, { status: 500 });

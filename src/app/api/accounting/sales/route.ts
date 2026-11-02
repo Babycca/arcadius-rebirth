@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getActiveWeekId, getArchivedWeekIds } from "@/lib/accounting/week";
+import { sortByHouseNumberDesc } from "@/lib/accounting/sort-sales";
 import { logActivity } from "@/lib/audit-log";
 
 const COMPANY_PROFIT_RATE = 0.1;
@@ -15,9 +16,8 @@ export async function GET() {
   const archivedWeekIds = await getArchivedWeekIds();
   const sales = await prisma.sale.findMany({
     where: { agentId: userId, weekId: { notIn: archivedWeekIds } },
-    orderBy: { date: "desc" },
   });
-  return NextResponse.json(sales);
+  return NextResponse.json(sortByHouseNumberDesc(sales));
 }
 
 export async function POST(req: NextRequest) {

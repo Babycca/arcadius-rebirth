@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getArchivedWeekIds } from "@/lib/accounting/week";
+import { sortByHouseNumberDesc } from "@/lib/accounting/sort-sales";
 import { canAccessPage } from "@/lib/page-access";
 
 function isAdmin(role: string | undefined) {
@@ -26,10 +27,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ agen
   const where = requestedWeekId
     ? { agentId, weekId: requestedWeekId }
     : { agentId, weekId: { notIn: await getArchivedWeekIds() } };
-  const garageSales = await prisma.garageSale.findMany({
-    where,
-    orderBy: { date: "desc" },
-  });
+  const garageSales = await prisma.garageSale.findMany({ where });
 
-  return NextResponse.json(garageSales);
+  return NextResponse.json(sortByHouseNumberDesc(garageSales));
 }
