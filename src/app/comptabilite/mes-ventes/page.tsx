@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ChevronDown, Plus, Pencil, Trash2, Check, X, Warehouse, ReceiptText } from "lucide-react";
+import { ChevronDown, Plus, Pencil, Trash2, Copy, Check, X, Warehouse, ReceiptText } from "lucide-react";
 import { PageShell, PageHeader } from "@/components/PageShell";
 import { useDialog } from "@/components/DialogProvider";
 import GradeSelect from "@/components/GradeSelect";
@@ -246,6 +246,19 @@ export default function MesVentesPage() {
 
   const totalWeek = sales.reduce((s, x) => s + x.priceAmount, 0);
 
+  // Pré-remplit le formulaire d'ajout avec le même client/habitation — il
+  // ne reste plus qu'à ajuster le prix et valider, pour les ventes répétées
+  // (même client qui rachète/revend plusieurs biens).
+  function duplicateSale(sale: Sale) {
+    setHouseNumber(sale.houseNumber);
+    setClientName(sale.clientName);
+    setClientPhone(sale.clientPhone ?? "");
+    setPriceAmount("");
+    setDate(todayInputValue());
+    setEditingId(null);
+    document.getElementById("ajouter-une-vente")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
   function startEdit(sale: Sale) {
     setEditingId(sale.id);
     setEditDate(sale.date.slice(0, 10));
@@ -298,7 +311,7 @@ export default function MesVentesPage() {
         subtitle={`Semaine en cours — ${sales.length} vente${sales.length > 1 ? "s" : ""}, $${totalWeek.toLocaleString("fr-FR")}`}
       />
 
-      <form onSubmit={handleSubmit} className="card-hover glass-strong rounded-xl p-5 mb-6 max-w-6xl mx-auto border border-transparent">
+      <form id="ajouter-une-vente" onSubmit={handleSubmit} className="card-hover glass-strong rounded-xl p-5 mb-6 max-w-6xl mx-auto border border-transparent">
         <h2 className="text-sm font-medium mb-4 flex items-center gap-2.5">
           <span className="w-8 h-8 rounded-lg bg-[rgb(var(--brand-500)/0.14)] flex items-center justify-center">
             <ReceiptText size={14} className="text-[rgb(var(--brand-400))]" />
@@ -490,6 +503,13 @@ export default function MesVentesPage() {
                       {has("ventesTransferer") && (
                         <ReassignSaleButton saleId={s.id} currentAgentId={s.agentId} onReassigned={load} />
                       )}
+                      <button
+                        onClick={() => duplicateSale(s)}
+                        className="text-[rgb(var(--muted))] hover:text-[rgb(var(--brand-400))] p-1.5"
+                        title="Dupliquer (même client, même habitation)"
+                      >
+                        <Copy size={13} />
+                      </button>
                       <button
                         onClick={() => startEdit(s)}
                         className="text-[rgb(var(--muted))] hover:text-[rgb(var(--brand-400))] p-1.5"

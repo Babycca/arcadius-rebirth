@@ -1,7 +1,7 @@
 "use client";
 
 import { use, useEffect, useState } from "react";
-import { Plus, Pencil, Trash2, Check, X } from "lucide-react";
+import { Plus, Pencil, Trash2, Copy, Check, X } from "lucide-react";
 import { PageShell } from "@/components/PageShell";
 import UserAvatar from "@/components/UserAvatar";
 import ReassignSaleButton from "@/components/ReassignSaleButton";
@@ -49,7 +49,7 @@ export default function AgentWeekDetailPage({
   const canAjouter = has("ventesAjouter");
   const canTransferer = has("ventesTransferer");
   const canModifier = has("ventesSupprimer");
-  const showActionsColumn = canTransferer || canModifier;
+  const showActionsColumn = canTransferer || canModifier || canAjouter;
   const { confirm } = useDialog();
   const [agentName, setAgentName] = useState("");
   const [agentAvatarUrl, setAgentAvatarUrl] = useState<string | null>(null);
@@ -110,6 +110,17 @@ export default function AgentWeekDetailPage({
   }, [agentId]);
 
   const total = sales.reduce((s, x) => s + x.priceAmount, 0);
+
+  function duplicateSale(sale: Sale) {
+    setHouseNumber(sale.houseNumber);
+    setClientName(sale.clientName);
+    setClientPhone(sale.clientPhone ?? "");
+    setPriceAmount("");
+    setDate(todayInputValue());
+    setEditingId(null);
+    setAdding(true);
+    setTimeout(() => document.getElementById("ajouter-une-vente-agent")?.scrollIntoView({ behavior: "smooth", block: "start" }), 0);
+  }
 
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
@@ -274,7 +285,7 @@ export default function AgentWeekDetailPage({
               Ajouter une vente pour cet agent
             </button>
           ) : (
-            <form onSubmit={handleAdd} className="card-hover glass-strong rounded-xl p-5 border border-transparent">
+            <form id="ajouter-une-vente-agent" onSubmit={handleAdd} className="card-hover glass-strong rounded-xl p-5 border border-transparent">
               {error && (
                 <div className="rounded-lg bg-[rgb(var(--danger)/0.12)] text-[rgb(var(--danger))] text-xs px-3 py-2 mb-3">
                   {error}
@@ -471,6 +482,15 @@ export default function AgentWeekDetailPage({
                       <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         {canTransferer && (
                           <ReassignSaleButton saleId={s.id} currentAgentId={s.agentId} onReassigned={load} />
+                        )}
+                        {canAjouter && (
+                          <button
+                            onClick={() => duplicateSale(s)}
+                            className="text-[rgb(var(--muted))] hover:text-[rgb(var(--brand-400))] p-1.5"
+                            title="Dupliquer (même client, même habitation)"
+                          >
+                            <Copy size={13} />
+                          </button>
                         )}
                         {canModifier && (
                           <>
