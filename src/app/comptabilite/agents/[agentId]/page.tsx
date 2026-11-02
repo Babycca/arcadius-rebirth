@@ -5,7 +5,7 @@ import { Plus, Pencil, Trash2, Check, X } from "lucide-react";
 import { PageShell } from "@/components/PageShell";
 import UserAvatar from "@/components/UserAvatar";
 import ReassignSaleButton from "@/components/ReassignSaleButton";
-import { useCanEdit } from "@/lib/use-can-edit";
+import { usePermissions } from "@/lib/use-permissions";
 import { useDialog } from "@/components/DialogProvider";
 
 const ROLE_LABELS: Record<string, string> = {
@@ -43,7 +43,11 @@ export default function AgentWeekDetailPage({
   params: Promise<{ agentId: string }>;
 }) {
   const { agentId } = use(params);
-  const { isAdmin, canEdit } = useCanEdit();
+  const { has } = usePermissions();
+  const canAjouter = has("ventesAjouter");
+  const canTransferer = has("ventesTransferer");
+  const canModifier = has("ventesSupprimer");
+  const showActionsColumn = canTransferer || canModifier;
   const { confirm } = useDialog();
   const [agentName, setAgentName] = useState("");
   const [agentAvatarUrl, setAgentAvatarUrl] = useState<string | null>(null);
@@ -206,7 +210,7 @@ export default function AgentWeekDetailPage({
         </p>
       </div>
 
-      {isAdmin && (
+      {canAjouter && (
         <div className="max-w-4xl mx-auto mb-5">
           {!adding ? (
             <button
@@ -309,13 +313,13 @@ export default function AgentWeekDetailPage({
               <th className="px-4 py-3 font-normal">Client</th>
               <th className="px-4 py-3 font-normal">Téléphone</th>
               <th className="px-4 py-3 font-normal text-right">Prix</th>
-              {isAdmin && <th className="px-4 py-3 font-normal text-right">Actions</th>}
+              {showActionsColumn && <th className="px-4 py-3 font-normal text-right">Actions</th>}
             </tr>
           </thead>
           <tbody>
             {!loading && sales.length === 0 && (
               <tr>
-                <td colSpan={isAdmin ? 6 : 5} className="px-4 py-6 text-center text-[rgb(var(--muted))] text-sm">
+                <td colSpan={showActionsColumn ? 6 : 5} className="px-4 py-6 text-center text-[rgb(var(--muted))] text-sm">
                   Aucune vente cette semaine.
                 </td>
               </tr>
@@ -323,7 +327,7 @@ export default function AgentWeekDetailPage({
             {sales.map((s) =>
               editingId === s.id ? (
                 <tr key={s.id} className="border-b border-white/[0.04] last:border-0 bg-white/[0.03]">
-                  <td colSpan={isAdmin ? 6 : 5} className="px-4 py-3">
+                  <td colSpan={showActionsColumn ? 6 : 5} className="px-4 py-3">
                     {editError && (
                       <div className="rounded-lg bg-[rgb(var(--danger)/0.12)] text-[rgb(var(--danger))] text-xs px-3 py-2 mb-3">
                         {editError}
@@ -409,11 +413,13 @@ export default function AgentWeekDetailPage({
                   <td className="px-4 py-2.5 text-right font-medium text-[rgb(var(--brand-400))]">
                     ${s.priceAmount.toLocaleString("fr-FR")}
                   </td>
-                  {isAdmin && (
+                  {showActionsColumn && (
                     <td className="px-4 py-2.5 text-right">
                       <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <ReassignSaleButton saleId={s.id} currentAgentId={s.agentId} onReassigned={load} />
-                        {canEdit && (
+                        {canTransferer && (
+                          <ReassignSaleButton saleId={s.id} currentAgentId={s.agentId} onReassigned={load} />
+                        )}
+                        {canModifier && (
                           <>
                             <button
                               onClick={() => startEdit(s)}

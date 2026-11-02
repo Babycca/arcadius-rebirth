@@ -79,7 +79,9 @@ function ManualWeekCard({
           </button>
         </div>
       ) : (
-        <p className="text-lg font-semibold">{value || "—"}</p>
+        <p className="text-lg font-semibold">
+          {value ? `$${parseMoneyAmount(value).toLocaleString("fr-FR")}` : "—"}
+        </p>
       )}
     </div>
   );

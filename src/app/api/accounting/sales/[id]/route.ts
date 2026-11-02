@@ -41,12 +41,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     companyProfit: priceAmount * COMPANY_PROFIT_RATE,
   };
 
-  // Transférer une vente à un autre agent — réservé aux vrais admins (mode
-  // éditeur), pas aux agents qui modifient juste leurs propres informations.
+  // Transférer une vente à un autre agent — réservé aux admins ou à un
+  // agent simple ayant reçu la permission "ventesTransferer".
   if (typeof body?.agentId === "string" && body.agentId !== sale.agentId) {
-    const isAdmin = user.role === "ADMIN" || user.role === "SUPER_ADMIN";
-    if (!isAdmin) {
-      return NextResponse.json({ error: "Seul un administrateur peut transférer une vente." }, { status: 403 });
+    if (!(await hasServerPermission(user.id, user.role, "ventesTransferer"))) {
+      return NextResponse.json({ error: "Tu n'as pas la permission de transférer une vente." }, { status: 403 });
     }
     const target = await prisma.agent.findUnique({ where: { id: body.agentId }, select: { id: true, grade: true } });
     if (!target) return NextResponse.json({ error: "Agent introuvable." }, { status: 400 });

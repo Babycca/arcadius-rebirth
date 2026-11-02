@@ -6,7 +6,7 @@ import { PageShell, PageHeader } from "@/components/PageShell";
 import { useDialog } from "@/components/DialogProvider";
 import GradeSelect from "@/components/GradeSelect";
 import ReassignSaleButton from "@/components/ReassignSaleButton";
-import { useCanEdit } from "@/lib/use-can-edit";
+import { usePermissions } from "@/lib/use-permissions";
 import { GARAGE_TYPES } from "@/lib/accounting/garage-types";
 
 type Sale = {
@@ -184,7 +184,7 @@ function GaragesPanel() {
 
 export default function MesVentesPage() {
   const { confirm } = useDialog();
-  const { isAdmin } = useCanEdit();
+  const { has } = usePermissions();
   const [sales, setSales] = useState<Sale[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -487,7 +487,7 @@ export default function MesVentesPage() {
                   </td>
                   <td className="px-4 py-2.5 text-right">
                     <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      {isAdmin && (
+                      {has("ventesTransferer") && (
                         <ReassignSaleButton saleId={s.id} currentAgentId={s.agentId} onReassigned={load} />
                       )}
                       <button

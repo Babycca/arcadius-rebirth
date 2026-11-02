@@ -4,10 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { GARAGE_TYPES } from "@/lib/accounting/garage-types";
 import { logActivity } from "@/lib/audit-log";
-
-function isAdmin(role: string | undefined) {
-  return role === "ADMIN" || role === "SUPER_ADMIN";
-}
+import { hasServerPermission } from "@/lib/permissions-server";
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
@@ -17,7 +14,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const { id } = await params;
   const garageSale = await prisma.garageSale.findUnique({ where: { id } });
   if (!garageSale) return NextResponse.json({ error: "Garage introuvable" }, { status: 404 });
-  if (garageSale.agentId !== user.id && !isAdmin(user.role)) {
+  if (garageSale.agentId !== user.id && !(await hasServerPermission(user.id, user.role, "ventesSupprimer"))) {
     return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
   }
 
@@ -58,7 +55,7 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
   const { id } = await params;
   const garageSale = await prisma.garageSale.findUnique({ where: { id } });
   if (!garageSale) return NextResponse.json({ error: "Garage introuvable" }, { status: 404 });
-  if (garageSale.agentId !== user.id && !isAdmin(user.role)) {
+  if (garageSale.agentId !== user.id && !(await hasServerPermission(user.id, user.role, "ventesSupprimer"))) {
     return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
   }
 

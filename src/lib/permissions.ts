@@ -17,7 +17,9 @@ export const PERMISSION_DEFS = [
   { key: "archiverCompta", label: "Archiver la comptabilité (clôturer la semaine)", group: "Comptabilité" },
   { key: "archiveSupprimer", label: "Supprimer une semaine archivée", group: "Comptabilité" },
   { key: "depenses", label: "Gérer les dépenses d'entreprise (ajouter/modifier/supprimer)", group: "Comptabilité" },
-  { key: "ventesSupprimer", label: "Modifier/supprimer la vente d'un autre agent", group: "Comptabilité" },
+  { key: "ventesSupprimer", label: "Modifier/supprimer la vente (ou le garage) d'un autre agent", group: "Comptabilité" },
+  { key: "ventesAjouter", label: "Ajouter une vente sur la fiche d'un autre agent", group: "Comptabilité" },
+  { key: "ventesTransferer", label: "Transférer une vente vers un autre agent", group: "Comptabilité" },
   { key: "primes", label: "Activer/désactiver les primes des agents", group: "Comptabilité" },
 
   // Absences & sanctions

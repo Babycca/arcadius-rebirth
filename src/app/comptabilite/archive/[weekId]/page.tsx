@@ -375,15 +375,19 @@ export default function ComptabiliteArchiveDetailPage({ params }: { params: Prom
       <div className="flex gap-4 mb-5 flex-wrap">
         <div className="glass-strong rounded-xl px-4 py-2.5">
           <p className="text-xs text-[rgb(var(--muted))]">Semaine A</p>
-          <p className="text-lg font-semibold">{data?.semaineA || "—"}</p>
+          <p className="text-lg font-semibold">
+            {data?.semaineA ? `$${parseMoneyAmount(data.semaineA).toLocaleString("fr-FR")}` : "—"}
+          </p>
         </div>
         <div className="glass-strong rounded-xl px-4 py-2.5">
           <p className="text-xs text-[rgb(var(--muted))]">Semaine B</p>
-          <p className="text-lg font-semibold">{data?.semaineB || "—"}</p>
+          <p className="text-lg font-semibold">
+            {data?.semaineB ? `$${parseMoneyAmount(data.semaineB).toLocaleString("fr-FR")}` : "—"}
+          </p>
         </div>
         <div className="glass-strong rounded-xl px-4 py-2.5">
           <p className="text-xs text-[rgb(var(--muted))]">Lot employé</p>
-          <p className="text-lg font-semibold">{data?.lotEmploye || "—"}</p>
+          <p className="text-lg font-semibold">{data?.lotEmploye ? `$${lotEmployeAmount.toLocaleString("fr-FR")}` : "—"}</p>
         </div>
       </div>
 

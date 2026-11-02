@@ -61,13 +61,13 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ agen
   });
 }
 
-// Admin seul (mode éditeur) : saisir une vente directement sur la fiche
-// d'un autre agent.
+// Admin, ou agent simple avec la permission "ventesAjouter" : saisir une
+// vente directement sur la fiche d'un autre agent.
 export async function POST(req: NextRequest, { params }: { params: Promise<{ agentId: string }> }) {
   const session = await getServerSession(authOptions);
   const user = session?.user as { id?: string; name?: string; role?: string } | undefined;
-  const isAdmin = user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
-  if (!session?.user || !isAdmin) return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
+  if (!session?.user || !(await hasServerPermission(user?.id, user?.role, "ventesAjouter")))
+    return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
 
   const { agentId } = await params;
   const target = await prisma.agent.findUnique({ where: { id: agentId }, select: { grade: true } });
