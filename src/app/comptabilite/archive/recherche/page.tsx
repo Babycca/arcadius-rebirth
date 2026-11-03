@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Search, Archive } from "lucide-react";
+import { Search, Archive, FileClock } from "lucide-react";
 import { PageShell, PageHeader } from "@/components/PageShell";
 import { usePermissions } from "@/lib/use-permissions";
 
@@ -32,6 +32,18 @@ type GarageResult = {
   isFormallyArchived: boolean;
 };
 
+type LegacySaleResult = {
+  id: string;
+  archiveId: string;
+  archiveLabel: string;
+  agentName: string;
+  date: string | null;
+  houseNumber: string | null;
+  priceAmount: number;
+  clientName: string | null;
+  clientPhone: string | null;
+};
+
 function destinationFor(weekId: string, agentId: string, isFormallyArchived: boolean) {
   return isFormallyArchived ? `/comptabilite/archive/${encodeURIComponent(weekId)}` : `/comptabilite/agents/${agentId}`;
 }
@@ -42,6 +54,7 @@ export default function AccountingSearchPage() {
   const [q, setQ] = useState("");
   const [sales, setSales] = useState<SaleResult[] | null>(null);
   const [garages, setGarages] = useState<GarageResult[] | null>(null);
+  const [legacySales, setLegacySales] = useState<LegacySaleResult[] | null>(null);
   const [loading, setLoading] = useState(false);
 
   async function runSearch(value: string) {
@@ -49,6 +62,7 @@ export default function AccountingSearchPage() {
     if (value.trim().length < 2) {
       setSales(null);
       setGarages(null);
+      setLegacySales(null);
       return;
     }
     setLoading(true);
@@ -58,6 +72,7 @@ export default function AccountingSearchPage() {
       const data = await res.json();
       setSales(data.sales);
       setGarages(data.garages);
+      setLegacySales(data.legacySales);
     }
   }
 
@@ -70,7 +85,13 @@ export default function AccountingSearchPage() {
     );
   }
 
-  const nothing = sales !== null && garages !== null && sales.length === 0 && garages.length === 0;
+  const nothing =
+    sales !== null &&
+    garages !== null &&
+    legacySales !== null &&
+    sales.length === 0 &&
+    garages.length === 0 &&
+    legacySales.length === 0;
 
   return (
     <PageShell>
@@ -140,6 +161,34 @@ export default function AccountingSearchPage() {
                 </div>
                 <span className="text-sm font-medium text-[rgb(var(--brand-400))] shrink-0">
                   ${g.priceAmount.toLocaleString("fr-FR")}
+                </span>
+              </Link>
+            ))}
+          </div>
+        )}
+
+        {legacySales !== null && legacySales.length > 0 && (
+          <div className="glass-strong rounded-xl overflow-hidden">
+            <p className="text-xs text-[rgb(var(--muted))] px-4 py-2.5 border-b border-white/[0.08]">Archives importées</p>
+            {legacySales.map((s) => (
+              <Link
+                key={s.id}
+                href={`/comptabilite/archive/legacy/${s.archiveId}`}
+                className="flex items-center justify-between gap-3 px-4 py-3 border-b border-white/[0.04] last:border-0 hover:bg-white/[0.03] transition-colors"
+              >
+                <div className="min-w-0">
+                  <p className="text-sm font-medium flex items-center gap-2">
+                    {s.clientName || "—"}
+                    <FileClock size={11} className="text-[rgb(var(--muted))]" />
+                  </p>
+                  <p className="text-xs text-[rgb(var(--muted))]">
+                    {s.houseNumber ? `#${s.houseNumber} — ` : ""}
+                    {s.agentName} — {s.date ? new Date(s.date).toLocaleDateString("fr-FR") : "date inconnue"} —{" "}
+                    {s.archiveLabel}
+                  </p>
+                </div>
+                <span className="text-sm font-medium text-[rgb(var(--brand-400))] shrink-0">
+                  ${s.priceAmount.toLocaleString("fr-FR")}
                 </span>
               </Link>
             ))}

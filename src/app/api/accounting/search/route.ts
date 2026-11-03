@@ -6,9 +6,10 @@ import { hasServerPermission } from "@/lib/permissions-server";
 import { HIDDEN_FROM_AGENT_LISTS_WHERE } from "@/lib/agent-filters";
 
 // Recherche par nom de client ou numéro d'habitation à travers TOUTES les
-// ventes/garages (archivés ou non) — réservée à ceux qui ont accès à
-// l'archive, puisque son intérêt principal est de retrouver une vieille
-// vente sans rouvrir chaque semaine archivée une par une.
+// ventes/garages (archivés ou non) ET les anciennes archives importées
+// (LegacySale, voir /comptabilite/archive/import) — réservée à ceux qui ont
+// accès à l'archive, puisque son intérêt principal est de retrouver une
+// vieille vente sans rouvrir chaque semaine archivée une par une.
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
   const user = session?.user as { id?: string; role?: string } | undefined;
@@ -16,9 +17,9 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
 
   const q = (req.nextUrl.searchParams.get("q") ?? "").trim();
-  if (q.length < 2) return NextResponse.json({ sales: [], garages: [] });
+  if (q.length < 2) return NextResponse.json({ sales: [], garages: [], legacySales: [] });
 
-  const [resets, sales, garages, agents] = await Promise.all([
+  const [resets, sales, garages, agents, legacySales] = await Promise.all([
     prisma.weeklyReset.findMany({ select: { weekId: true } }),
     prisma.sale.findMany({
       where: { OR: [{ clientName: { contains: q, mode: "insensitive" } }, { houseNumber: { contains: q } }] },
@@ -31,6 +32,18 @@ export async function GET(req: NextRequest) {
       take: 100,
     }),
     prisma.agent.findMany({ where: HIDDEN_FROM_AGENT_LISTS_WHERE, select: { id: true, firstName: true, lastName: true } }),
+    prisma.legacySale.findMany({
+      where: {
+        OR: [
+          { clientName: { contains: q, mode: "insensitive" } },
+          { houseNumber: { contains: q } },
+          { agentName: { contains: q, mode: "insensitive" } },
+        ],
+      },
+      include: { archive: { select: { label: true } } },
+      orderBy: { date: "desc" },
+      take: 100,
+    }),
   ]);
 
   const archivedWeekIds = new Set(resets.map((r) => r.weekId));
@@ -65,5 +78,16 @@ export async function GET(req: NextRequest) {
         weekId: g.weekId,
         isFormallyArchived: archivedWeekIds.has(g.weekId),
       })),
+    legacySales: legacySales.map((s) => ({
+      id: s.id,
+      archiveId: s.archiveId,
+      archiveLabel: s.archive.label,
+      agentName: s.agentName,
+      date: s.date,
+      houseNumber: s.houseNumber,
+      priceAmount: s.priceAmount,
+      clientName: s.clientName,
+      clientPhone: s.clientPhone,
+    })),
   });
 }
