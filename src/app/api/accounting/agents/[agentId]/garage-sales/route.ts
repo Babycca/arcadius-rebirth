@@ -5,10 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { getArchivedWeekIds } from "@/lib/accounting/week";
 import { sortByHouseNumberDesc } from "@/lib/accounting/sort-sales";
 import { canAccessPage } from "@/lib/page-access";
-
-function isAdmin(role: string | undefined) {
-  return role === "ADMIN" || role === "SUPER_ADMIN";
-}
+import { hasServerPermission } from "@/lib/permissions-server";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ agentId: string }> }) {
   const session = await getServerSession(authOptions);
@@ -16,7 +13,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ agen
 
   const requestedWeekId = req.nextUrl.searchParams.get("weekId");
   if (requestedWeekId) {
-    if (!session?.user || !isAdmin(user?.role)) {
+    if (!session?.user || !(await hasServerPermission(user?.id, user?.role, "archiveComptabilite"))) {
       return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
     }
   } else if (!session?.user || !(await canAccessPage("/comptabilite", user?.id, user?.role))) {
