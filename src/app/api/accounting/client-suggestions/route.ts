@@ -15,6 +15,12 @@ export async function GET(req: NextRequest) {
   const q = (req.nextUrl.searchParams.get("q") ?? "").trim();
   if (q.length < 3) return NextResponse.json([]);
 
+  // Interrupteur global (Administration) — off par défaut tant qu'un admin
+  // n'a rien réglé reviendrait à activé, donc on ne coupe que sur "false"
+  // explicite.
+  const toggle = await prisma.appSetting.findUnique({ where: { key: "client-suggestions-enabled" } });
+  if (toggle?.value === "false") return NextResponse.json([]);
+
   const [sales, legacySales] = await Promise.all([
     prisma.sale.findMany({
       where: { OR: [{ clientName: { contains: q, mode: "insensitive" } }, { clientPhone: { contains: q } }] },

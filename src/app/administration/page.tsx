@@ -13,6 +13,7 @@ import { useDialog } from "@/components/DialogProvider";
 import { useToast } from "@/components/ToastProvider";
 import Tooltip from "@/components/Tooltip";
 import HouseNumberGapsAlert from "@/components/HouseNumberGapsAlert";
+import ClientSuggestionsToggle from "@/components/ClientSuggestionsToggle";
 import { Plus, KeyRound, Trash2, ChevronUp, ChevronDown, UserX, UserCheck, Archive, ScrollText, CalendarOff, ShieldAlert, Search } from "lucide-react";
 import Link from "next/link";
 
@@ -36,7 +37,7 @@ type CommissionRule = {
 };
 
 export default function AdministrationPage() {
-  const { canEdit } = useCanEdit();
+  const { canEdit, isAdmin } = useCanEdit();
   const { has } = usePermissions();
   const { confirm, alertDialog } = useDialog();
   const toast = useToast();
@@ -502,6 +503,8 @@ export default function AdministrationPage() {
           {has("zonesCategories") && <ZoneCategoriesPanel />}
         </div>
       )}
+
+      {isAdmin && <ClientSuggestionsToggle />}
 
       <div className="card-hover glass-strong rounded-xl overflow-hidden mt-6 border border-transparent">
         <table className="w-full text-sm">
