@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { ChevronDown, GripVertical, Plus, Pencil, Trash2, Copy, Check } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ChevronDown, GripVertical, Plus, Pencil, Trash2, Copy, Check, Star } from "lucide-react";
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -20,6 +20,8 @@ function ItemRow({
   showPrice,
   canEdit,
   copiedId,
+  isFavorite,
+  onToggleFavorite,
   editingItem,
   editContent,
   setEditContent,
@@ -33,6 +35,8 @@ function ItemRow({
   showPrice: boolean;
   canEdit: boolean;
   copiedId: string | null;
+  isFavorite: boolean;
+  onToggleFavorite: (id: string) => void;
   editingItem: { groupId: string; id: string } | null;
   editContent: string;
   setEditContent: (v: string) => void;
@@ -80,6 +84,18 @@ function ItemRow({
             </span>
           )}
           <div className="flex items-center gap-1 shrink-0">
+            <Tooltip label={isFavorite ? "Retirer des favoris" : "Mettre en favori"}>
+              <button
+                onClick={() => onToggleFavorite(item.id)}
+                className={`p-1.5 rounded-lg transition-colors ${
+                  isFavorite
+                    ? "text-[rgb(var(--warning))]"
+                    : "text-[rgb(var(--muted))] hover:text-[rgb(var(--warning))] hover:bg-white/[0.06]"
+                }`}
+              >
+                <Star size={14} fill={isFavorite ? "currentColor" : "none"} />
+              </button>
+            </Tooltip>
             <Tooltip label="Copier">
               <button
                 onClick={() => onCopy(item.id, item.content)}
@@ -140,7 +156,24 @@ export default function TextDepliantsClient({
   const [editingItem, setEditingItem] = useState<{ groupId: string; id: string } | null>(null);
   const [editContent, setEditContent] = useState("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
   const toast = useToast();
+
+  useEffect(() => {
+    fetch("/api/my-favorite-messages")
+      .then((r) => (r.ok ? r.json() : { favoriteMessageIds: [] }))
+      .then((d) => setFavoriteIds(d.favoriteMessageIds ?? []));
+  }, []);
+
+  async function toggleFavorite(id: string) {
+    const next = favoriteIds.includes(id) ? favoriteIds.filter((x) => x !== id) : [...favoriteIds, id];
+    setFavoriteIds(next);
+    await fetch("/api/my-favorite-messages", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ favoriteMessageIds: next }),
+    });
+  }
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
 
@@ -296,6 +329,8 @@ export default function TextDepliantsClient({
                   onToggle={toggle}
                   onDeleteGroup={deleteGroup}
                   copiedId={copiedId}
+                  favoriteIds={favoriteIds}
+                  onToggleFavorite={toggleFavorite}
                   editingItem={editingItem}
                   editContent={editContent}
                   setEditContent={setEditContent}
@@ -330,6 +365,8 @@ function GroupRow({
   onToggle,
   onDeleteGroup,
   copiedId,
+  favoriteIds,
+  onToggleFavorite,
   editingItem,
   editContent,
   setEditContent,
@@ -354,6 +391,8 @@ function GroupRow({
   onToggle: (id: string) => void;
   onDeleteGroup: (id: string) => void;
   copiedId: string | null;
+  favoriteIds: string[];
+  onToggleFavorite: (id: string) => void;
   editingItem: { groupId: string; id: string } | null;
   editContent: string;
   setEditContent: (v: string) => void;
@@ -418,6 +457,8 @@ function GroupRow({
                   showPrice={showPrice}
                   canEdit={canEdit}
                   copiedId={copiedId}
+                  isFavorite={favoriteIds.includes(it.id)}
+                  onToggleFavorite={onToggleFavorite}
                   editingItem={editingItem}
                   editContent={editContent}
                   setEditContent={setEditContent}

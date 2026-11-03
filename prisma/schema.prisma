@@ -40,6 +40,7 @@ model Agent {
   // personnel, pas géré par un admin. Affichées en priorité dans la sidebar
   // et en raccourcis sur le tableau de bord.
   pinnedPages         String   @default("[]")
+  favoriteMessageIds  String   @default("[]")
 
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt

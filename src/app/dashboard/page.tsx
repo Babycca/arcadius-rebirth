@@ -10,6 +10,8 @@ import { getArchivedWeekIds } from "@/lib/accounting/week";
 import { computeAgentPayroll } from "@/lib/accounting/payroll";
 import { HIDDEN_FROM_AGENT_LISTS_WHERE } from "@/lib/agent-filters";
 import DashboardGreeting from "@/components/DashboardGreeting";
+import DashboardQuickAddSale from "@/components/DashboardQuickAddSale";
+import DashboardFavoriteMessages from "@/components/DashboardFavoriteMessages";
 import { NAV_ITEMS_BY_HREF } from "@/lib/nav-items";
 
 export default async function DashboardPage() {
@@ -38,6 +40,7 @@ export default async function DashboardPage() {
   let mySalary = 0;
   let mySalesCount = 0;
   let pinnedHrefs: string[] = [];
+  let favoriteMessages: { id: string; content: string; groupName: string }[] = [];
   if (userId) {
     const [me, mySales, myGarageSales] = await Promise.all([
       prisma.agent.findUnique({ where: { id: userId } }),
@@ -50,6 +53,23 @@ export default async function DashboardPage() {
         pinnedHrefs = JSON.parse(me.pinnedPages || "[]");
       } catch {
         pinnedHrefs = [];
+      }
+      let favoriteIds: string[] = [];
+      try {
+        favoriteIds = JSON.parse(me.favoriteMessageIds || "[]");
+      } catch {
+        favoriteIds = [];
+      }
+      if (favoriteIds.length > 0) {
+        const snippets = await prisma.textSnippet.findMany({
+          where: { id: { in: favoriteIds } },
+          include: { group: { select: { name: true } } },
+        });
+        const byId = new Map(snippets.map((s) => [s.id, s]));
+        favoriteMessages = favoriteIds
+          .map((id) => byId.get(id))
+          .filter((s): s is NonNullable<typeof s> => !!s)
+          .map((s) => ({ id: s.id, content: s.content, groupName: s.group.name }));
       }
       const [rule, bonus] = await Promise.all([
         prisma.commissionRule.findUnique({ where: { grade: me.grade } }),
@@ -214,6 +234,13 @@ export default async function DashboardPage() {
           </div>
         </Link>
       </div>
+
+      {userId && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
+          <DashboardQuickAddSale />
+          <DashboardFavoriteMessages items={favoriteMessages} />
+        </div>
+      )}
     </PageShell>
   );
 }
