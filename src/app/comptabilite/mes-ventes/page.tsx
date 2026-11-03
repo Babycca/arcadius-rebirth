@@ -7,6 +7,7 @@ import { useDialog } from "@/components/DialogProvider";
 import GradeSelect from "@/components/GradeSelect";
 import ReassignSaleButton from "@/components/ReassignSaleButton";
 import Tooltip from "@/components/Tooltip";
+import ClientNameInput from "@/components/ClientNameInput";
 import { usePermissions } from "@/lib/use-permissions";
 import { GARAGE_TYPES } from "@/lib/accounting/garage-types";
 
@@ -367,10 +368,14 @@ export default function MesVentesPage() {
           </div>
           <div>
             <label className="text-xs text-[rgb(var(--muted))] mb-1 block">Identité du client *</label>
-            <input
+            <ClientNameInput
               required
               value={clientName}
-              onChange={(e) => setClientName(e.target.value)}
+              onChange={setClientName}
+              onSelect={(s) => {
+                setClientName(s.clientName);
+                if (s.clientPhone) setClientPhone(s.clientPhone);
+              }}
               className="glass rounded-lg px-3 py-2 text-sm w-full outline-none"
               placeholder="Nom Prénom"
             />

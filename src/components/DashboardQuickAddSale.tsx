@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Plus, ReceiptText } from "lucide-react";
 import { useToast } from "@/components/ToastProvider";
+import ClientNameInput from "@/components/ClientNameInput";
 
 function todayInputValue() {
   return new Date().toISOString().slice(0, 10);
@@ -90,12 +91,16 @@ export default function DashboardQuickAddSale() {
           placeholder="Prix ($)"
           className="glass rounded-lg px-3 py-2 text-sm outline-none"
         />
-        <input
+        <ClientNameInput
           required
           value={clientName}
-          onChange={(e) => setClientName(e.target.value)}
+          onChange={setClientName}
+          onSelect={(s) => {
+            setClientName(s.clientName);
+            if (s.clientPhone) setClientPhone(s.clientPhone);
+          }}
           placeholder="Identité du client"
-          className="glass rounded-lg px-3 py-2 text-sm outline-none"
+          className="glass rounded-lg px-3 py-2 text-sm outline-none w-full"
         />
         <input
           required

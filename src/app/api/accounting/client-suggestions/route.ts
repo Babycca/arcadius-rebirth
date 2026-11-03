@@ -1,0 +1,47 @@
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+
+// Suggestions de clients déjà connus (nom + téléphone), tirées de TOUTES les
+// ventes — en cours, archivées, et importées — pour éviter de retaper un
+// client qui revient. Accessible à tout agent qui peut saisir une vente
+// (pas réservé à la recherche admin) ; léger, pas de détails de semaine/prix.
+export async function GET(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) return NextResponse.json({ error: "Non connecté" }, { status: 401 });
+
+  const q = (req.nextUrl.searchParams.get("q") ?? "").trim();
+  if (q.length < 3) return NextResponse.json([]);
+
+  const [sales, legacySales] = await Promise.all([
+    prisma.sale.findMany({
+      where: { OR: [{ clientName: { contains: q, mode: "insensitive" } }, { clientPhone: { contains: q } }] },
+      select: { clientName: true, clientPhone: true },
+      orderBy: { date: "desc" },
+      take: 30,
+    }),
+    prisma.legacySale.findMany({
+      where: {
+        OR: [{ clientName: { contains: q, mode: "insensitive" } }, { clientPhone: { contains: q } }],
+      },
+      select: { clientName: true, clientPhone: true },
+      orderBy: { date: "desc" },
+      take: 30,
+    }),
+  ]);
+
+  const seen = new Set<string>();
+  const results: { clientName: string; clientPhone: string | null }[] = [];
+  for (const s of [...sales, ...legacySales]) {
+    const name = s.clientName?.trim();
+    if (!name) continue;
+    const key = `${name.toLowerCase()}|${s.clientPhone ?? ""}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    results.push({ clientName: name, clientPhone: s.clientPhone ?? null });
+    if (results.length >= 6) break;
+  }
+
+  return NextResponse.json(results);
+}
