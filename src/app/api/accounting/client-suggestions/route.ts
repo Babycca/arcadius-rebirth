@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { titleCase } from "@/lib/text-case";
 
 // Suggestions de clients déjà connus (nom + téléphone), tirées de TOUTES les
 // ventes — en cours, archivées, et importées — pour éviter de retaper un
@@ -45,10 +46,11 @@ export async function GET(req: NextRequest) {
   const seen = new Set<string>();
   const results: { clientName: string; clientPhone: string }[] = [];
   for (const s of [...sales, ...legacySales]) {
-    const name = s.clientName?.trim();
-    if (!name) continue;
+    const rawName = s.clientName?.trim();
+    if (!rawName) continue;
     const clientPhone = realPhone(s.clientPhone);
     if (!clientPhone) continue;
+    const name = titleCase(rawName);
     const key = `${name.toLowerCase()}|${clientPhone}`;
     if (seen.has(key)) continue;
     seen.add(key);
