@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Archive, ChevronRight, Trash2, Upload, FileClock, Search } from "lucide-react";
+import { Archive, ChevronRight, Trash2, Upload, FileClock } from "lucide-react";
 import { PageShell, PageHeader } from "@/components/PageShell";
 import { useCanEdit } from "@/lib/use-can-edit";
 import { usePermissions } from "@/lib/use-permissions";
@@ -79,22 +79,13 @@ export default function ComptabiliteArchivePage() {
           <p className="text-sm text-[rgb(var(--muted))] mt-1.5">Semaines clôturées — historique conservé</p>
         </div>
         {canViewArchive && (
-          <div className="flex items-center gap-2">
-            <Link
-              href="/comptabilite/archive/recherche"
-              className="flex items-center gap-2 text-sm rounded-xl px-4 py-2.5 glass hover:border-[rgb(var(--brand-500)/0.4)] transition-colors"
-            >
-              <Search size={14} />
-              Rechercher
-            </Link>
-            <Link
-              href="/comptabilite/archive/import"
-              className="flex items-center gap-2 text-sm rounded-xl px-4 py-2.5 glass hover:border-[rgb(var(--brand-500)/0.4)] transition-colors"
-            >
-              <Upload size={14} />
-              Importer une ancienne archive
-            </Link>
-          </div>
+          <Link
+            href="/comptabilite/archive/import"
+            className="flex items-center gap-2 text-sm rounded-xl px-4 py-2.5 glass hover:border-[rgb(var(--brand-500)/0.4)] transition-colors"
+          >
+            <Upload size={14} />
+            Importer une ancienne archive
+          </Link>
         )}
       </div>
 
