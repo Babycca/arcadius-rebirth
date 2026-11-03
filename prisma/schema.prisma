@@ -299,6 +299,16 @@ model WeeklyReset {
   lotEmploye  String?
 }
 
+// Un admin a vérifié un "trou" dans la numérotation des habitations (voir
+// /administration/numeros-habitation) et confirmé que ce n'est pas une
+// vente oubliée — ce numéro ne doit plus être signalé.
+model HouseNumberGapAck {
+  id             String   @id @default(cuid())
+  houseNumber    Int      @unique
+  acknowledgedBy String
+  createdAt      DateTime @default(now())
+}
+
 // Choix admin, par agent et par semaine, d'appliquer ou non une prime —
 // soit la prime par défaut du grade (amount = null), soit un montant
 // personnalisé (amount renseigné), utile pour les grades dont la prime de
