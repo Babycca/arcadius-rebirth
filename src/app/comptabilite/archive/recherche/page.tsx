@@ -50,7 +50,7 @@ function destinationFor(weekId: string, agentId: string, isFormallyArchived: boo
 
 export default function AccountingSearchPage() {
   const { has } = usePermissions();
-  const canSearch = has("archiveComptabilite");
+  const canSearch = has("rechercheComptabilite");
   const [q, setQ] = useState("");
   const [sales, setSales] = useState<SaleResult[] | null>(null);
   const [garages, setGarages] = useState<GarageResult[] | null>(null);

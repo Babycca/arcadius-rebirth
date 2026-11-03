@@ -14,6 +14,7 @@ export const PERMISSION_DEFS = [
 
   // Comptabilité
   { key: "archiveComptabilite", label: "Voir l'archive Comptabilité", group: "Comptabilité" },
+  { key: "rechercheComptabilite", label: "Rechercher dans la comptabilité/les archives", group: "Comptabilité" },
   { key: "archiverCompta", label: "Archiver la comptabilité (clôturer la semaine)", group: "Comptabilité" },
   { key: "archiveSupprimer", label: "Supprimer une semaine archivée", group: "Comptabilité" },
   { key: "depenses", label: "Gérer les dépenses d'entreprise (ajouter/modifier/supprimer)", group: "Comptabilité" },

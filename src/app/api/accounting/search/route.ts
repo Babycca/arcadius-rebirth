@@ -7,13 +7,13 @@ import { HIDDEN_FROM_AGENT_LISTS_WHERE } from "@/lib/agent-filters";
 
 // Recherche par nom de client ou numéro d'habitation à travers TOUTES les
 // ventes/garages (archivés ou non) ET les anciennes archives importées
-// (LegacySale, voir /comptabilite/archive/import) — réservée à ceux qui ont
-// accès à l'archive, puisque son intérêt principal est de retrouver une
-// vieille vente sans rouvrir chaque semaine archivée une par une.
+// (LegacySale, voir /comptabilite/archive/import) — permission dédiée
+// ("rechercheComptabilite"), déléguable indépendamment de l'accès à
+// l'archive elle-même.
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
   const user = session?.user as { id?: string; role?: string } | undefined;
-  if (!session?.user || !(await hasServerPermission(user?.id, user?.role, "archiveComptabilite")))
+  if (!session?.user || !(await hasServerPermission(user?.id, user?.role, "rechercheComptabilite")))
     return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
 
   const q = (req.nextUrl.searchParams.get("q") ?? "").trim();
