@@ -53,10 +53,20 @@ export default function DashboardQuickAddSale() {
 
   return (
     <form onSubmit={handleSubmit} noValidate className="card-hover glass-strong rounded-xl p-5 border border-transparent">
-      <h2 className="font-medium flex items-center gap-2 mb-4">
-        <ReceiptText size={15} className="text-[rgb(var(--brand-400))]" />
-        Ajouter une vente
-      </h2>
+      <div className="flex items-center justify-between gap-3 mb-4">
+        <h2 className="font-medium flex items-center gap-2">
+          <ReceiptText size={15} className="text-[rgb(var(--brand-400))]" />
+          Ajouter une vente
+        </h2>
+        <button
+          type="submit"
+          disabled={saving}
+          className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold text-white bg-gradient-to-r from-[rgb(var(--brand-500))] to-[rgb(var(--brand-600))] hover:brightness-110 transition-all disabled:opacity-60 shrink-0"
+        >
+          <Plus size={13} />
+          {saving ? "…" : "Ajouter"}
+        </button>
+      </div>
       <div className="grid grid-cols-2 gap-3">
         <input
           type="date"
@@ -94,14 +104,6 @@ export default function DashboardQuickAddSale() {
           className="glass rounded-lg px-3 py-2 text-sm outline-none"
         />
       </div>
-      <button
-        type="submit"
-        disabled={saving}
-        className="mt-4 flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-semibold text-white bg-gradient-to-r from-[rgb(var(--brand-500))] to-[rgb(var(--brand-600))] hover:brightness-110 transition-all disabled:opacity-60"
-      >
-        <Plus size={14} />
-        {saving ? "Enregistrement…" : "Ajouter la vente"}
-      </button>
     </form>
   );
 }
