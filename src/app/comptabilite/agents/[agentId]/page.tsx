@@ -113,10 +113,10 @@ export default function AgentWeekDetailPage({
   const total = sales.reduce((s, x) => s + x.priceAmount, 0);
 
   function duplicateSale(sale: Sale) {
-    setHouseNumber(sale.houseNumber);
+    setHouseNumber("");
     setClientName(sale.clientName);
     setClientPhone(sale.clientPhone ?? "");
-    setPriceAmount("");
+    setPriceAmount(String(sale.priceAmount));
     setDate(todayInputValue());
     setEditingId(null);
     setAdding(true);
@@ -485,7 +485,7 @@ export default function AgentWeekDetailPage({
                           <ReassignSaleButton saleId={s.id} currentAgentId={s.agentId} onReassigned={load} />
                         )}
                         {canAjouter && (
-                          <Tooltip label="Dupliquer (même client, même habitation)">
+                          <Tooltip label="Dupliquer (même client, même prix)">
                             <button
                               onClick={() => duplicateSale(s)}
                               className="text-[rgb(var(--muted))] hover:text-[rgb(var(--brand-400))] p-1.5"

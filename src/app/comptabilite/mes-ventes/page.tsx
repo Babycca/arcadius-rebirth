@@ -252,10 +252,10 @@ export default function MesVentesPage() {
   // ne reste plus qu'à ajuster le prix et valider, pour les ventes répétées
   // (même client qui rachète/revend plusieurs biens).
   function duplicateSale(sale: Sale) {
-    setHouseNumber(sale.houseNumber);
+    setHouseNumber("");
     setClientName(sale.clientName);
     setClientPhone(sale.clientPhone ?? "");
-    setPriceAmount("");
+    setPriceAmount(String(sale.priceAmount));
     setDate(todayInputValue());
     setEditingId(null);
     document.getElementById("ajouter-une-vente")?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -505,7 +505,7 @@ export default function MesVentesPage() {
                       {has("ventesTransferer") && (
                         <ReassignSaleButton saleId={s.id} currentAgentId={s.agentId} onReassigned={load} />
                       )}
-                      <Tooltip label="Dupliquer (même client, même habitation)">
+                      <Tooltip label="Dupliquer (même client, même prix)">
                         <button
                           onClick={() => duplicateSale(s)}
                           className="text-[rgb(var(--muted))] hover:text-[rgb(var(--brand-400))] p-1.5"
