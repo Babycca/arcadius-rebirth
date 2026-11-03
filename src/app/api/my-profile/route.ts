@@ -32,7 +32,14 @@ export async function GET() {
 
   const [sales, bonus] = await Promise.all([
     prisma.sale.findMany({ where: { agentId: userId, weekId: { notIn: archivedWeekIds } } }),
-    prisma.agentWeekBonus.findFirst({ where: { agentId: userId, weekId: { notIn: archivedWeekIds } } }),
+    // orderBy id desc : plusieurs lignes de prime peuvent coexister tant que
+    // rien n'est archivé (une semaine fusionnée avec une autre, voir
+    // lib/accounting/week.ts) — on veut toujours la plus récente, pas celle
+    // que Postgres renvoie en premier par défaut.
+    prisma.agentWeekBonus.findFirst({
+      where: { agentId: userId, weekId: { notIn: archivedWeekIds } },
+      orderBy: { id: "desc" },
+    }),
   ]);
   const rule = rules.find((r) => r.grade === agent.grade) ?? null;
   const payroll = computeAgentPayroll(sales, rule, bonus ? { enabled: bonus.enabled, amount: bonus.amount } : null);

@@ -36,7 +36,11 @@ export async function GET(req: NextRequest) {
   const [agents, rules, bonuses, archiveRecord, liveWeekStart, absencesToday] = await Promise.all([
     prisma.agent.findMany({ where: HIDDEN_FROM_AGENT_LISTS_WHERE, orderBy: { order: "asc" } }),
     prisma.commissionRule.findMany(),
-    prisma.agentWeekBonus.findMany({ where: dataWhere }),
+    // orderBy id asc : s'il existe plusieurs lignes de prime pour un même
+    // agent (semaines fusionnées tant que rien n'est archivé), la dernière
+    // de la liste — donc la plus récente — doit gagner dans le map juste en
+    // dessous.
+    prisma.agentWeekBonus.findMany({ where: dataWhere, orderBy: { id: "asc" } }),
     requestedWeekId ? prisma.weeklyReset.findUnique({ where: { weekId: requestedWeekId } }) : null,
     requestedWeekId ? null : getActiveWeekStart(),
     // Pertinent uniquement pour la semaine en cours (une absence est un

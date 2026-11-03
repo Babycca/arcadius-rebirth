@@ -53,7 +53,7 @@ export default async function DashboardPage() {
       }
       const [rule, bonus] = await Promise.all([
         prisma.commissionRule.findUnique({ where: { grade: me.grade } }),
-        prisma.agentWeekBonus.findFirst({ where: { agentId: userId, ...weekWhere } }),
+        prisma.agentWeekBonus.findFirst({ where: { agentId: userId, ...weekWhere }, orderBy: { id: "desc" } }),
       ]);
       mySalary = computeAgentPayroll(
         mySales,
