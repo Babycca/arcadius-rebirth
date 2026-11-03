@@ -48,6 +48,10 @@ export default function DepensesPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!reason.trim() || !amount) {
+      setError("La raison et le montant sont requis.");
+      return;
+    }
     setSaving(true);
     setError(null);
     const res = await fetch("/api/accounting/expenses", {
@@ -126,7 +130,7 @@ export default function DepensesPage() {
         subtitle={`Semaine en cours — ${expenses.length} dépense${expenses.length > 1 ? "s" : ""}, $${total.toLocaleString("fr-FR")}`}
       />
 
-      <form onSubmit={handleSubmit} className="card-hover glass-strong rounded-xl p-5 mb-6 max-w-4xl mx-auto border border-transparent">
+      <form onSubmit={handleSubmit} noValidate className="card-hover glass-strong rounded-xl p-5 mb-6 max-w-4xl mx-auto border border-transparent">
         <h2 className="text-sm font-medium mb-4 flex items-center gap-2.5">
           <span className="w-8 h-8 rounded-lg bg-[rgb(var(--danger)/0.14)] flex items-center justify-center">
             <ReceiptText size={14} className="text-[rgb(var(--danger))]" />

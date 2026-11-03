@@ -125,6 +125,10 @@ export default function AgentWeekDetailPage({
 
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
+    if (!houseNumber.trim() || !priceAmount || !clientName.trim()) {
+      setError("Numéro d'habitation, prix et client sont requis.");
+      return;
+    }
     setSaving(true);
     setError(null);
     const res = await fetch(`/api/accounting/agents/${agentId}/sales`, {
@@ -286,7 +290,7 @@ export default function AgentWeekDetailPage({
               Ajouter une vente pour cet agent
             </button>
           ) : (
-            <form id="ajouter-une-vente-agent" onSubmit={handleAdd} className="card-hover glass-strong rounded-xl p-5 border border-transparent">
+            <form id="ajouter-une-vente-agent" onSubmit={handleAdd} noValidate className="card-hover glass-strong rounded-xl p-5 border border-transparent">
               {error && (
                 <div className="rounded-lg bg-[rgb(var(--danger)/0.12)] text-[rgb(var(--danger))] text-xs px-3 py-2 mb-3">
                   {error}

@@ -90,6 +90,10 @@ export default function AdministrationPage() {
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
+    if (!firstName.trim() || !lastName.trim()) {
+      setError("Prénom et nom sont requis.");
+      return;
+    }
     setCreating(true);
     setError(null);
     const res = await fetch("/api/agents", {
@@ -365,7 +369,7 @@ export default function AdministrationPage() {
 
       <div className="flex flex-col lg:flex-row gap-6">
         {has("agentsCreer") && (
-        <form onSubmit={handleCreate} className="card-hover glass-strong rounded-xl p-5 flex-1 min-w-0 max-w-lg lg:max-w-none border border-transparent">
+        <form onSubmit={handleCreate} noValidate className="card-hover glass-strong rounded-xl p-5 flex-1 min-w-0 max-w-lg lg:max-w-none border border-transparent">
           <h2 className="text-sm font-medium mb-4">Créer un agent</h2>
           {error && (
             <div className="rounded-lg bg-[rgb(var(--danger)/0.12)] text-[rgb(var(--danger))] text-xs px-3 py-2 mb-3">

@@ -14,6 +14,10 @@ export default function LoginPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!username.trim() || !password) {
+      setError("Identifiant et mot de passe sont requis.");
+      return;
+    }
     setLoading(true);
     setError(null);
 
@@ -66,7 +70,7 @@ export default function LoginPage() {
             <p className="text-sm text-[rgb(var(--muted))] mt-1.5">Connexion agent</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
             {error && (
               <div className="rounded-lg bg-[rgb(var(--danger)/0.12)] text-[rgb(var(--danger))] text-xs px-3 py-2">
                 {error}

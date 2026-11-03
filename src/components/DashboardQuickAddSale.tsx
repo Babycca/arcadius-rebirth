@@ -21,6 +21,10 @@ export default function DashboardQuickAddSale() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!houseNumber.trim() || !priceAmount || !clientName.trim()) {
+      toast("Numéro d'habitation, prix et client sont requis.", "error");
+      return;
+    }
     setSaving(true);
     const res = await fetch("/api/accounting/sales", {
       method: "POST",
@@ -48,7 +52,7 @@ export default function DashboardQuickAddSale() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="card-hover glass-strong rounded-xl p-5 border border-transparent">
+    <form onSubmit={handleSubmit} noValidate className="card-hover glass-strong rounded-xl p-5 border border-transparent">
       <h2 className="font-medium flex items-center gap-2 mb-4">
         <ReceiptText size={15} className="text-[rgb(var(--brand-400))]" />
         Ajouter une vente

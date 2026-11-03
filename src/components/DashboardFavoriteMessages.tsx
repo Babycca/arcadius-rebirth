@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Star, Copy, Check } from "lucide-react";
+import { Star, Copy, Check, ChevronDown } from "lucide-react";
+import { renderDiscordText } from "@/lib/discord-markdown";
 import { copyToClipboard } from "@/lib/clipboard";
 import { useToast } from "@/components/ToastProvider";
 
@@ -10,18 +11,19 @@ type FavoriteMessage = { id: string; content: string; groupName: string };
 // Aperçu en texte brut (pas de rendu Discord complet ici : sur un long
 // modèle avec titres/spoilers/séparateurs, ça rend n'importe quoi dans une
 // petite carte) — tronqué, mais c'est toujours le contenu complet qui est
-// copié.
+// copié. Le rendu complet reste disponible en dépliant via le chevron.
 function previewText(content: string): string {
-  const flat = content
+  const firstLine = content.split("\n").find((l) => l.trim() !== "") ?? "";
+  const flat = firstLine
     .replace(/\|\|([\s\S]+?)\|\|/g, "$1")
     .replace(/[*_~`#>-]/g, "")
-    .replace(/\s+/g, " ")
     .trim();
-  return flat.length > 110 ? `${flat.slice(0, 110)}…` : flat;
+  return flat.length > 90 ? `${flat.slice(0, 90)}…` : flat;
 }
 
 export default function DashboardFavoriteMessages({ items }: { items: FavoriteMessage[] }) {
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [expandedIds, setExpandedIds] = useState<string[]>([]);
   const toast = useToast();
 
   async function copy(id: string, content: string) {
@@ -32,6 +34,10 @@ export default function DashboardFavoriteMessages({ items }: { items: FavoriteMe
     } else {
       toast("Impossible de copier (presse-papiers refusé par le navigateur).", "error");
     }
+  }
+
+  function toggleExpanded(id: string) {
+    setExpandedIds((ids) => (ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]));
   }
 
   return (
@@ -46,27 +52,43 @@ export default function DashboardFavoriteMessages({ items }: { items: FavoriteMe
         </p>
       ) : (
         <div className="flex flex-col gap-1">
-          {items.map((it) => (
-            <div
-              key={it.id}
-              className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg hover:bg-white/[0.04] transition-colors"
-            >
-              <div className="min-w-0">
-                <p className="text-sm truncate">{previewText(it.content)}</p>
-                <p className="text-xs text-[rgb(var(--muted))] mt-0.5">{it.groupName}</p>
+          {items.map((it) => {
+            const open = expandedIds.includes(it.id);
+            return (
+              <div key={it.id} className="rounded-lg hover:bg-white/[0.04] transition-colors">
+                <div className="flex items-center justify-between gap-3 px-3 py-2.5">
+                  <button
+                    onClick={() => toggleExpanded(it.id)}
+                    className="min-w-0 flex-1 text-left"
+                  >
+                    <p className="text-sm truncate">{previewText(it.content)}</p>
+                    <p className="text-xs text-[rgb(var(--muted))] mt-0.5">{it.groupName}</p>
+                  </button>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <button
+                      onClick={() => toggleExpanded(it.id)}
+                      className="text-[rgb(var(--muted))] hover:text-[rgb(var(--foreground))] p-1.5 rounded-lg hover:bg-white/[0.06] transition-colors"
+                    >
+                      <ChevronDown size={14} className={`transition-transform ${open ? "rotate-180" : ""}`} />
+                    </button>
+                    <button
+                      onClick={() => copy(it.id, it.content)}
+                      className={`p-1.5 rounded-lg transition-colors ${
+                        copiedId === it.id
+                          ? "text-[rgb(var(--success))]"
+                          : "text-[rgb(var(--muted))] hover:text-[rgb(var(--brand-400))] hover:bg-white/[0.06]"
+                      }`}
+                    >
+                      {copiedId === it.id ? <Check size={14} /> : <Copy size={14} />}
+                    </button>
+                  </div>
+                </div>
+                {open && (
+                  <div className="px-3 pb-3 text-sm leading-relaxed">{renderDiscordText(it.content)}</div>
+                )}
               </div>
-              <button
-                onClick={() => copy(it.id, it.content)}
-                className={`p-1.5 rounded-lg shrink-0 transition-colors ${
-                  copiedId === it.id
-                    ? "text-[rgb(var(--success))]"
-                    : "text-[rgb(var(--muted))] hover:text-[rgb(var(--brand-400))] hover:bg-white/[0.06]"
-                }`}
-              >
-                {copiedId === it.id ? <Check size={14} /> : <Copy size={14} />}
-              </button>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

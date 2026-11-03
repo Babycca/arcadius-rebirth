@@ -17,6 +17,14 @@ export default function ChangePasswordModal({ onClose }: { onClose: () => void }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!newPassword || !confirm) {
+      setError("Les deux champs mot de passe sont requis.");
+      return;
+    }
+    if (newPassword.length < 6) {
+      setError("Le nouveau mot de passe doit faire au moins 6 caractères.");
+      return;
+    }
     if (newPassword !== confirm) {
       setError("Les deux mots de passe ne correspondent pas.");
       return;
@@ -62,7 +70,7 @@ export default function ChangePasswordModal({ onClose }: { onClose: () => void }
             </button>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+          <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-3">
             {mustChangePassword && (
               <p className="text-xs text-[rgb(var(--muted))]">
                 Ton mot de passe a été généré par un administrateur — choisis-en un nouveau pour continuer.

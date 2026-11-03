@@ -63,6 +63,10 @@ function GaragesPanel() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!houseNumber.trim() || !priceAmount) {
+      setError("Numéro d'habitation et prix sont requis.");
+      return;
+    }
     setSaving(true);
     setError(null);
     const res = await fetch("/api/accounting/garage-sales", {
@@ -112,7 +116,7 @@ function GaragesPanel() {
               {error}
             </div>
           )}
-          <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-4 gap-3 mb-4">
+          <form onSubmit={handleSubmit} noValidate className="grid grid-cols-1 sm:grid-cols-4 gap-3 mb-4">
             <GradeSelect value={type} grades={GARAGE_TYPES} onChange={setType} />
             <input
               value={name}
@@ -219,6 +223,10 @@ export default function MesVentesPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!houseNumber.trim() || !priceAmount || !clientName.trim()) {
+      setError("Numéro d'habitation, prix et client sont requis.");
+      return;
+    }
     setSaving(true);
     setError(null);
     const res = await fetch("/api/accounting/sales", {
@@ -313,7 +321,7 @@ export default function MesVentesPage() {
         subtitle={`Semaine en cours — ${sales.length} vente${sales.length > 1 ? "s" : ""}, $${totalWeek.toLocaleString("fr-FR")}`}
       />
 
-      <form id="ajouter-une-vente" onSubmit={handleSubmit} className="card-hover glass-strong rounded-xl p-5 mb-6 max-w-6xl mx-auto border border-transparent">
+      <form id="ajouter-une-vente" onSubmit={handleSubmit} noValidate className="card-hover glass-strong rounded-xl p-5 mb-6 max-w-6xl mx-auto border border-transparent">
         <h2 className="text-sm font-medium mb-4 flex items-center gap-2.5">
           <span className="w-8 h-8 rounded-lg bg-[rgb(var(--brand-500)/0.14)] flex items-center justify-center">
             <ReceiptText size={14} className="text-[rgb(var(--brand-400))]" />
