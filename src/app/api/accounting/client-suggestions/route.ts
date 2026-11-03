@@ -42,7 +42,10 @@ export async function GET(req: NextRequest) {
   }
 
   // Pas de vrai numéro = pas de suggestion du tout (une ligne "Nom — -" ne
-  // sert à rien, autant laisser taper le nom normalement).
+  // sert à rien, autant laisser taper le nom normalement). Déduplication par
+  // numéro seul (pas nom+numéro) : un même client parfois tapé "Nom Prénom"
+  // puis "Prénom Nom" ne doit ressortir qu'une fois — on garde la saisie la
+  // plus récente (la liste est déjà triée par date décroissante).
   const seen = new Set<string>();
   const results: { clientName: string; clientPhone: string }[] = [];
   for (const s of [...sales, ...legacySales]) {
@@ -50,11 +53,9 @@ export async function GET(req: NextRequest) {
     if (!rawName) continue;
     const clientPhone = realPhone(s.clientPhone);
     if (!clientPhone) continue;
-    const name = titleCase(rawName);
-    const key = `${name.toLowerCase()}|${clientPhone}`;
-    if (seen.has(key)) continue;
-    seen.add(key);
-    results.push({ clientName: name, clientPhone });
+    if (seen.has(clientPhone)) continue;
+    seen.add(clientPhone);
+    results.push({ clientName: titleCase(rawName), clientPhone });
     if (results.length >= 6) break;
   }
 
