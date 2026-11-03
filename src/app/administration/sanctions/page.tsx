@@ -183,7 +183,7 @@ export default function SanctionsPage() {
         subtitle={`${sanctions.length} sanction${sanctions.length > 1 ? "s" : ""} enregistrée${sanctions.length > 1 ? "s" : ""}`}
       />
 
-      <div className="flex flex-col lg:flex-row gap-5 max-w-6xl">
+      <div className="flex flex-col lg:flex-row gap-5 max-w-6xl mx-auto">
         <div className="card-hover glass-strong rounded-xl overflow-hidden border border-transparent lg:w-72 shrink-0 h-fit">
           <p className="text-xs text-[rgb(var(--muted))] px-4 py-3 border-b border-white/[0.08]">Agents</p>
           {agents.map((a) => {

@@ -261,7 +261,7 @@ export default function AbsencesPage() {
       </Link>
       <PageHeader title="Suivi des absences" subtitle={`${absences.length} absence${absences.length > 1 ? "s" : ""} enregistrée${absences.length > 1 ? "s" : ""}`} />
 
-      <form onSubmit={handleSubmit} className="card-hover glass-strong rounded-xl p-5 mb-6 max-w-4xl border border-transparent">
+      <form onSubmit={handleSubmit} className="card-hover glass-strong rounded-xl p-5 mb-6 max-w-4xl mx-auto border border-transparent">
         <h2 className="text-sm font-medium mb-4 flex items-center gap-2.5">
           <span className="w-8 h-8 rounded-lg bg-[rgb(var(--brand-500)/0.14)] flex items-center justify-center">
             <CalendarOff size={14} className="text-[rgb(var(--brand-400))]" />
@@ -318,7 +318,7 @@ export default function AbsencesPage() {
       </form>
 
       {!loading && (
-        <div className="max-w-4xl">
+        <div className="max-w-4xl mx-auto">
           <Section title="En cours" rows={current} emptyLabel="Personne n'est absent aujourd'hui." />
           <Section title="À venir" rows={upcoming} emptyLabel="Aucune absence à venir." />
           <Section title="Passées" rows={past} emptyLabel="Aucune absence passée." />
