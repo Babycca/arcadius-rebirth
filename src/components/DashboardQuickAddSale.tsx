@@ -21,8 +21,8 @@ export default function DashboardQuickAddSale() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!houseNumber.trim() || !priceAmount || !clientName.trim()) {
-      toast("Numéro d'habitation, prix et client sont requis.", "error");
+    if (!houseNumber.trim() || !priceAmount || !clientName.trim() || !clientPhone.trim()) {
+      toast("Numéro d'habitation, prix, client et téléphone sont requis.", "error");
       return;
     }
     setSaving(true);
@@ -34,7 +34,7 @@ export default function DashboardQuickAddSale() {
         houseNumber,
         priceAmount: Number(priceAmount),
         clientName,
-        clientPhone: clientPhone || undefined,
+        clientPhone,
       }),
     });
     setSaving(false);
@@ -98,9 +98,10 @@ export default function DashboardQuickAddSale() {
           className="glass rounded-lg px-3 py-2 text-sm outline-none"
         />
         <input
+          required
           value={clientPhone}
           onChange={(e) => setClientPhone(e.target.value)}
-          placeholder="Téléphone (facultatif)"
+          placeholder="Téléphone"
           className="glass rounded-lg px-3 py-2 text-sm outline-none"
         />
       </div>

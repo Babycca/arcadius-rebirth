@@ -223,8 +223,8 @@ export default function MesVentesPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!houseNumber.trim() || !priceAmount || !clientName.trim()) {
-      setError("Numéro d'habitation, prix et client sont requis.");
+    if (!houseNumber.trim() || !priceAmount || !clientName.trim() || !clientPhone.trim()) {
+      setError("Numéro d'habitation, prix, client et téléphone sont requis.");
       return;
     }
     setSaving(true);
@@ -237,7 +237,7 @@ export default function MesVentesPage() {
         houseNumber,
         priceAmount: Number(priceAmount),
         clientName,
-        clientPhone: clientPhone || undefined,
+        clientPhone,
       }),
     });
     setSaving(false);
@@ -377,9 +377,10 @@ export default function MesVentesPage() {
           </div>
           <div className="sm:col-span-2">
             <label className="text-xs text-[rgb(var(--muted))] mb-1 block">
-              Téléphone du client (facultatif)
+              Téléphone du client *
             </label>
             <input
+              required
               value={clientPhone}
               onChange={(e) => setClientPhone(e.target.value)}
               className="glass rounded-lg px-3 py-2 text-sm w-full outline-none"

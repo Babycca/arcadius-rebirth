@@ -125,8 +125,8 @@ export default function AgentWeekDetailPage({
 
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
-    if (!houseNumber.trim() || !priceAmount || !clientName.trim()) {
-      setError("Numéro d'habitation, prix et client sont requis.");
+    if (!houseNumber.trim() || !priceAmount || !clientName.trim() || !clientPhone.trim()) {
+      setError("Numéro d'habitation, prix, client et téléphone sont requis.");
       return;
     }
     setSaving(true);
@@ -134,7 +134,7 @@ export default function AgentWeekDetailPage({
     const res = await fetch(`/api/accounting/agents/${agentId}/sales`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ date, houseNumber, priceAmount: Number(priceAmount), clientName, clientPhone: clientPhone || undefined }),
+      body: JSON.stringify({ date, houseNumber, priceAmount: Number(priceAmount), clientName, clientPhone }),
     });
     setSaving(false);
     if (!res.ok) {
@@ -339,8 +339,9 @@ export default function AgentWeekDetailPage({
                   />
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="text-xs text-[rgb(var(--muted))] mb-1 block">Téléphone du client (facultatif)</label>
+                  <label className="text-xs text-[rgb(var(--muted))] mb-1 block">Téléphone du client *</label>
                   <input
+                    required
                     value={clientPhone}
                     onChange={(e) => setClientPhone(e.target.value)}
                     className="glass rounded-lg px-3 py-2 text-sm w-full outline-none"

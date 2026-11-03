@@ -44,8 +44,8 @@ export async function POST(req: NextRequest) {
   const clientPhone = body?.clientPhone?.trim() || null;
   const date = body?.date ? new Date(body.date) : new Date();
 
-  if (!houseNumber || !clientName || !Number.isFinite(priceAmount) || priceAmount <= 0) {
-    return NextResponse.json({ error: "Numéro d'habitation, client et prix sont requis." }, { status: 400 });
+  if (!houseNumber || !clientName || !clientPhone || !Number.isFinite(priceAmount) || priceAmount <= 0) {
+    return NextResponse.json({ error: "Numéro d'habitation, client, téléphone et prix sont requis." }, { status: 400 });
   }
 
   const weekId = await getActiveWeekId();
