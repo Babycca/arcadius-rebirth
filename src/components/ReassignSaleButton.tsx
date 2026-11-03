@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { ArrowLeftRight } from "lucide-react";
+import Tooltip from "@/components/Tooltip";
 
 type AgentOption = { id: string; firstName: string; lastName: string; grade: string; active: boolean };
 
@@ -60,16 +61,17 @@ export default function ReassignSaleButton({
 
   return (
     <div className="relative inline-flex">
-      <button
-        ref={buttonRef}
-        type="button"
-        disabled={saving}
-        onClick={() => (open ? setOpen(false) : openMenu())}
-        className="text-[rgb(var(--muted))] hover:text-[rgb(var(--brand-400))] p-1.5 disabled:opacity-50"
-        title="Transférer à un autre agent"
-      >
-        <ArrowLeftRight size={13} />
-      </button>
+      <Tooltip label="Transférer à un autre agent">
+        <button
+          ref={buttonRef}
+          type="button"
+          disabled={saving}
+          onClick={() => (open ? setOpen(false) : openMenu())}
+          className="text-[rgb(var(--muted))] hover:text-[rgb(var(--brand-400))] p-1.5 disabled:opacity-50"
+        >
+          <ArrowLeftRight size={13} />
+        </button>
+      </Tooltip>
       {open &&
         createPortal(
           <>

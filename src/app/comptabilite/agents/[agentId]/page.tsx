@@ -6,6 +6,7 @@ import { PageShell } from "@/components/PageShell";
 import UserAvatar from "@/components/UserAvatar";
 import ReassignSaleButton from "@/components/ReassignSaleButton";
 import GradeSelect from "@/components/GradeSelect";
+import Tooltip from "@/components/Tooltip";
 import { usePermissions } from "@/lib/use-permissions";
 import { useDialog } from "@/components/DialogProvider";
 import { GARAGE_TYPES } from "@/lib/accounting/garage-types";
@@ -484,30 +485,33 @@ export default function AgentWeekDetailPage({
                           <ReassignSaleButton saleId={s.id} currentAgentId={s.agentId} onReassigned={load} />
                         )}
                         {canAjouter && (
-                          <button
-                            onClick={() => duplicateSale(s)}
-                            className="text-[rgb(var(--muted))] hover:text-[rgb(var(--brand-400))] p-1.5"
-                            title="Dupliquer (même client, même habitation)"
-                          >
-                            <Copy size={13} />
-                          </button>
+                          <Tooltip label="Dupliquer (même client, même habitation)">
+                            <button
+                              onClick={() => duplicateSale(s)}
+                              className="text-[rgb(var(--muted))] hover:text-[rgb(var(--brand-400))] p-1.5"
+                            >
+                              <Copy size={13} />
+                            </button>
+                          </Tooltip>
                         )}
                         {canModifier && (
                           <>
-                            <button
-                              onClick={() => startEdit(s)}
-                              className="text-[rgb(var(--muted))] hover:text-[rgb(var(--brand-400))] p-1.5"
-                              title="Modifier"
-                            >
-                              <Pencil size={13} />
-                            </button>
-                            <button
-                              onClick={() => deleteSale(s.id)}
-                              className="text-[rgb(var(--muted))] hover:text-[rgb(var(--danger))] p-1.5"
-                              title="Supprimer"
-                            >
-                              <Trash2 size={13} />
-                            </button>
+                            <Tooltip label="Modifier">
+                              <button
+                                onClick={() => startEdit(s)}
+                                className="text-[rgb(var(--muted))] hover:text-[rgb(var(--brand-400))] p-1.5"
+                              >
+                                <Pencil size={13} />
+                              </button>
+                            </Tooltip>
+                            <Tooltip label="Supprimer">
+                              <button
+                                onClick={() => deleteSale(s.id)}
+                                className="text-[rgb(var(--muted))] hover:text-[rgb(var(--danger))] p-1.5"
+                              >
+                                <Trash2 size={13} />
+                              </button>
+                            </Tooltip>
                           </>
                         )}
                       </div>
@@ -605,20 +609,22 @@ export default function AgentWeekDetailPage({
                     {canModifier && (
                       <td className="px-4 py-2 text-right">
                         <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button
-                            onClick={() => startEditGarage(g)}
-                            className="text-[rgb(var(--muted))] hover:text-[rgb(var(--brand-400))] p-1.5"
-                            title="Modifier"
-                          >
-                            <Pencil size={13} />
-                          </button>
-                          <button
-                            onClick={() => deleteGarage(g.id)}
-                            className="text-[rgb(var(--muted))] hover:text-[rgb(var(--danger))] p-1.5"
-                            title="Supprimer"
-                          >
-                            <Trash2 size={13} />
-                          </button>
+                          <Tooltip label="Modifier">
+                            <button
+                              onClick={() => startEditGarage(g)}
+                              className="text-[rgb(var(--muted))] hover:text-[rgb(var(--brand-400))] p-1.5"
+                            >
+                              <Pencil size={13} />
+                            </button>
+                          </Tooltip>
+                          <Tooltip label="Supprimer">
+                            <button
+                              onClick={() => deleteGarage(g.id)}
+                              className="text-[rgb(var(--muted))] hover:text-[rgb(var(--danger))] p-1.5"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          </Tooltip>
                         </div>
                       </td>
                     )}

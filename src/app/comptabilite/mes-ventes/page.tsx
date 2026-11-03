@@ -6,6 +6,7 @@ import { PageShell, PageHeader } from "@/components/PageShell";
 import { useDialog } from "@/components/DialogProvider";
 import GradeSelect from "@/components/GradeSelect";
 import ReassignSaleButton from "@/components/ReassignSaleButton";
+import Tooltip from "@/components/Tooltip";
 import { usePermissions } from "@/lib/use-permissions";
 import { GARAGE_TYPES } from "@/lib/accounting/garage-types";
 
@@ -164,13 +165,14 @@ function GaragesPanel() {
                     <span className="font-medium text-[rgb(var(--brand-400))]">
                       ${g.priceAmount.toLocaleString("fr-FR")}
                     </span>
-                    <button
-                      onClick={() => deleteGarage(g.id)}
-                      className="text-[rgb(var(--muted))] hover:text-[rgb(var(--danger))] p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                      title="Supprimer"
-                    >
-                      <Trash2 size={13} />
-                    </button>
+                    <Tooltip label="Supprimer">
+                      <button
+                        onClick={() => deleteGarage(g.id)}
+                        className="text-[rgb(var(--muted))] hover:text-[rgb(var(--danger))] p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </Tooltip>
                   </div>
                 </div>
               ))}
@@ -503,27 +505,30 @@ export default function MesVentesPage() {
                       {has("ventesTransferer") && (
                         <ReassignSaleButton saleId={s.id} currentAgentId={s.agentId} onReassigned={load} />
                       )}
-                      <button
-                        onClick={() => duplicateSale(s)}
-                        className="text-[rgb(var(--muted))] hover:text-[rgb(var(--brand-400))] p-1.5"
-                        title="Dupliquer (même client, même habitation)"
-                      >
-                        <Copy size={13} />
-                      </button>
-                      <button
-                        onClick={() => startEdit(s)}
-                        className="text-[rgb(var(--muted))] hover:text-[rgb(var(--brand-400))] p-1.5"
-                        title="Modifier"
-                      >
-                        <Pencil size={13} />
-                      </button>
-                      <button
-                        onClick={() => deleteSale(s.id)}
-                        className="text-[rgb(var(--muted))] hover:text-[rgb(var(--danger))] p-1.5"
-                        title="Supprimer"
-                      >
-                        <Trash2 size={13} />
-                      </button>
+                      <Tooltip label="Dupliquer (même client, même habitation)">
+                        <button
+                          onClick={() => duplicateSale(s)}
+                          className="text-[rgb(var(--muted))] hover:text-[rgb(var(--brand-400))] p-1.5"
+                        >
+                          <Copy size={13} />
+                        </button>
+                      </Tooltip>
+                      <Tooltip label="Modifier">
+                        <button
+                          onClick={() => startEdit(s)}
+                          className="text-[rgb(var(--muted))] hover:text-[rgb(var(--brand-400))] p-1.5"
+                        >
+                          <Pencil size={13} />
+                        </button>
+                      </Tooltip>
+                      <Tooltip label="Supprimer">
+                        <button
+                          onClick={() => deleteSale(s.id)}
+                          className="text-[rgb(var(--muted))] hover:text-[rgb(var(--danger))] p-1.5"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </Tooltip>
                     </div>
                   </td>
                 </tr>
