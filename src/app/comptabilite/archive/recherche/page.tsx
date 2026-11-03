@@ -131,6 +131,7 @@ export default function AccountingSearchPage() {
                   </p>
                   <p className="text-xs text-[rgb(var(--muted))]">
                     #{s.houseNumber} — {s.agentName} — {new Date(s.date).toLocaleDateString("fr-FR")} — {s.weekId}
+                    {s.clientPhone ? ` — ${s.clientPhone}` : ""}
                   </p>
                 </div>
                 <span className="text-sm font-medium text-[rgb(var(--brand-400))] shrink-0">
@@ -185,6 +186,7 @@ export default function AccountingSearchPage() {
                     {s.houseNumber ? `#${s.houseNumber} — ` : ""}
                     {s.agentName} — {s.date ? new Date(s.date).toLocaleDateString("fr-FR") : "date inconnue"} —{" "}
                     {s.archiveLabel}
+                    {s.clientPhone ? ` — ${s.clientPhone}` : ""}
                   </p>
                 </div>
                 <span className="text-sm font-medium text-[rgb(var(--brand-400))] shrink-0">
