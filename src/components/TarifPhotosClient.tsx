@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { Plus, Trash2, RefreshCw } from "lucide-react";
 import { useCanEdit } from "@/lib/use-can-edit";
 import { useDialog } from "./DialogProvider";
+import Tooltip from "@/components/Tooltip";
 
 type Photo = { id: string; url: string };
 
@@ -66,20 +67,22 @@ export default function TarifPhotosClient({ initialPhotos }: { initialPhotos: Ph
           <img src={p.url} alt="Grille tarifaire" className="w-full rounded-xl border border-white/[0.08]" />
           {canEdit && (
             <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button
-                onClick={() => startReplace(p.id)}
-                title="Remplacer cette photo"
-                className="glass-strong rounded-lg p-2 text-[rgb(var(--muted))] hover:text-[rgb(var(--brand-400))]"
-              >
-                <RefreshCw size={16} />
-              </button>
-              <button
-                onClick={() => handleDelete(p.id)}
-                title="Supprimer cette photo"
-                className="glass-strong rounded-lg p-2 text-[rgb(var(--muted))] hover:text-[rgb(var(--danger))]"
-              >
-                <Trash2 size={16} />
-              </button>
+              <Tooltip label="Remplacer cette photo">
+                <button
+                  onClick={() => startReplace(p.id)}
+                  className="glass-strong rounded-lg p-2 text-[rgb(var(--muted))] hover:text-[rgb(var(--brand-400))]"
+                >
+                  <RefreshCw size={16} />
+                </button>
+              </Tooltip>
+              <Tooltip label="Supprimer cette photo">
+                <button
+                  onClick={() => handleDelete(p.id)}
+                  className="glass-strong rounded-lg p-2 text-[rgb(var(--muted))] hover:text-[rgb(var(--danger))]"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </Tooltip>
             </div>
           )}
         </div>

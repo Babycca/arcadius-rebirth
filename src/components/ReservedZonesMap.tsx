@@ -5,6 +5,7 @@ import type L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet-draw/dist/leaflet.draw.css";
 import { X } from "lucide-react";
+import Tooltip from "@/components/Tooltip";
 import {
   categoryFor,
   getCategoryTextColor,
@@ -115,14 +116,15 @@ function ZoneFormModal({
               <div className="relative mb-2 inline-block">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={currentPhotoUrl} alt="" className="h-20 w-20 rounded-lg object-cover" />
-                <button
-                  type="button"
-                  onClick={() => setRemovePhoto(true)}
-                  className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-black/80 text-[rgb(var(--danger))]"
-                  title="Retirer la photo"
-                >
-                  <X size={13} />
-                </button>
+                <Tooltip label="Retirer la photo">
+                  <button
+                    type="button"
+                    onClick={() => setRemovePhoto(true)}
+                    className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-black/80 text-[rgb(var(--danger))]"
+                  >
+                    <X size={13} />
+                  </button>
+                </Tooltip>
               </div>
             )}
             <input
@@ -528,31 +530,34 @@ export default function ReservedZonesMap() {
           const isHidden = hidden.includes(cat.id);
           const isActiveForDraw = canEdit && activeCategory === cat.id;
           return (
-            <button
+            <Tooltip
               key={cat.id}
-              type="button"
-              onClick={() => {
-                if (canEdit) {
-                  setActiveCategory(cat.id);
-                  setHidden((h) => (isHidden ? h.filter((id) => id !== cat.id) : h));
-                } else {
-                  setHidden((h) => (isHidden ? h.filter((id) => id !== cat.id) : [...h, cat.id]));
-                }
-              }}
-              onDoubleClick={() => setHidden((h) => (h.includes(cat.id) ? h.filter((id) => id !== cat.id) : [...h, cat.id]))}
-              className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
-                isActiveForDraw ? "ring-2 ring-white/60" : ""
-              }`}
-              style={
-                isHidden
-                  ? { background: "rgba(255,255,255,0.05)", color: "rgb(var(--muted))" }
-                  : { background: cat.color, color: getCategoryTextColor(cat.color) }
-              }
-              title={canEdit ? "Clic = catégorie active pour dessiner, double-clic = masquer" : "Clic pour afficher/masquer"}
+              label={canEdit ? "Clic = catégorie active pour dessiner, double-clic = masquer" : "Clic pour afficher/masquer"}
             >
-              <span>{cat.emoji}</span>
-              {cat.name}
-            </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (canEdit) {
+                    setActiveCategory(cat.id);
+                    setHidden((h) => (isHidden ? h.filter((id) => id !== cat.id) : h));
+                  } else {
+                    setHidden((h) => (isHidden ? h.filter((id) => id !== cat.id) : [...h, cat.id]));
+                  }
+                }}
+                onDoubleClick={() => setHidden((h) => (h.includes(cat.id) ? h.filter((id) => id !== cat.id) : [...h, cat.id]))}
+                className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
+                  isActiveForDraw ? "ring-2 ring-white/60" : ""
+                }`}
+                style={
+                  isHidden
+                    ? { background: "rgba(255,255,255,0.05)", color: "rgb(var(--muted))" }
+                    : { background: cat.color, color: getCategoryTextColor(cat.color) }
+                }
+              >
+                <span>{cat.emoji}</span>
+                {cat.name}
+              </button>
+            </Tooltip>
           );
         })}
       </div>

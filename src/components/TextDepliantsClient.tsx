@@ -9,6 +9,7 @@ import { useCanEdit } from "@/lib/use-can-edit";
 import { renderDiscordText } from "@/lib/discord-markdown";
 import { copyToClipboard } from "@/lib/clipboard";
 import { useToast } from "./ToastProvider";
+import Tooltip from "@/components/Tooltip";
 
 type Item = { id: string; content: string; price: number | null };
 type Group = { id: string; name: string; items: Item[] };
@@ -79,17 +80,18 @@ function ItemRow({
             </span>
           )}
           <div className="flex items-center gap-1 shrink-0">
-            <button
-              onClick={() => onCopy(item.id, item.content)}
-              className={`p-1.5 rounded-lg transition-colors ${
-                copiedId === item.id
-                  ? "text-[rgb(var(--success))]"
-                  : "text-[rgb(var(--muted))] hover:text-[rgb(var(--brand-400))] hover:bg-white/[0.06]"
-              }`}
-              title="Copier"
-            >
-              {copiedId === item.id ? <Check size={14} /> : <Copy size={14} />}
-            </button>
+            <Tooltip label="Copier">
+              <button
+                onClick={() => onCopy(item.id, item.content)}
+                className={`p-1.5 rounded-lg transition-colors ${
+                  copiedId === item.id
+                    ? "text-[rgb(var(--success))]"
+                    : "text-[rgb(var(--muted))] hover:text-[rgb(var(--brand-400))] hover:bg-white/[0.06]"
+                }`}
+              >
+                {copiedId === item.id ? <Check size={14} /> : <Copy size={14} />}
+              </button>
+            </Tooltip>
             {canEdit && (
               <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                 <button

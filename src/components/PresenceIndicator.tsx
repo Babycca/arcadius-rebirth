@@ -56,7 +56,6 @@ export default function PresenceIndicator() {
         type="button"
         onClick={canHover ? undefined : toggle}
         className="relative block"
-        title="Agents en ligne"
       >
         <UserAvatar />
         <span

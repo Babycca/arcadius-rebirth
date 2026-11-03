@@ -1,6 +1,7 @@
 "use client";
 
 import { Download } from "lucide-react";
+import Tooltip from "@/components/Tooltip";
 
 function toCsvField(value: string | number | null): string {
   const s = String(value ?? "");
@@ -34,13 +35,14 @@ export default function CsvExportButton({
   }
 
   return (
-    <button
-      onClick={handleExport}
-      className="flex items-center gap-2 text-sm rounded-xl px-4 py-2.5 glass hover:border-[rgb(var(--brand-500)/0.4)] transition-colors"
-      title="Télécharger en fichier .csv"
-    >
-      <Download size={14} />
-      Exporter CSV
-    </button>
+    <Tooltip label="Télécharger en fichier .csv">
+      <button
+        onClick={handleExport}
+        className="flex items-center gap-2 text-sm rounded-xl px-4 py-2.5 glass hover:border-[rgb(var(--brand-500)/0.4)] transition-colors"
+      >
+        <Download size={14} />
+        Exporter CSV
+      </button>
+    </Tooltip>
   );
 }

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ClipboardCopy, Check } from "lucide-react";
 import { useDialog } from "./DialogProvider";
 import { copyToClipboard } from "@/lib/clipboard";
+import Tooltip from "@/components/Tooltip";
 
 // Copie un tableau de lignes (chaque ligne = tableau de cellules) au format
 // TSV (tabulations) dans le presse-papiers : collé directement dans Google
@@ -30,15 +31,16 @@ export default function TranscriptButton({ rows }: { rows: (string | number | nu
   }
 
   return (
-    <button
-      onClick={handleCopy}
-      className={`flex items-center gap-2 text-sm rounded-xl px-4 py-2.5 glass hover:border-[rgb(var(--brand-500)/0.4)] transition-colors ${
-        copied ? "text-[rgb(var(--success))]" : ""
-      }`}
-      title="Copier, prêt à coller dans Google Sheets"
-    >
-      {copied ? <Check size={14} /> : <ClipboardCopy size={14} />}
-      {copied ? "Copié !" : "Transcript"}
-    </button>
+    <Tooltip label="Copier, prêt à coller dans Google Sheets">
+      <button
+        onClick={handleCopy}
+        className={`flex items-center gap-2 text-sm rounded-xl px-4 py-2.5 glass hover:border-[rgb(var(--brand-500)/0.4)] transition-colors ${
+          copied ? "text-[rgb(var(--success))]" : ""
+        }`}
+      >
+        {copied ? <Check size={14} /> : <ClipboardCopy size={14} />}
+        {copied ? "Copié !" : "Transcript"}
+      </button>
+    </Tooltip>
   );
 }

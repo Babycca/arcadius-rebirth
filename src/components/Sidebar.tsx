@@ -20,6 +20,7 @@ import ChangePasswordModal from "./ChangePasswordModal";
 import { useCanEdit } from "@/lib/use-can-edit";
 import { usePermissions } from "@/lib/use-permissions";
 import { NAV_ITEMS as NAV } from "@/lib/nav-items";
+import Tooltip from "@/components/Tooltip";
 
 type PageVisibilityRow = { href: string; hiddenForAll: boolean; hiddenForAgentIds: string; order: number };
 
@@ -86,20 +87,21 @@ function NavItem({
         <span className="truncate">{label}</span>
       </Link>
       {onTogglePin && (
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            onTogglePin();
-          }}
-          title={pinned ? "Désépingler" : "Épingler"}
-          className={`shrink-0 p-1.5 rounded-lg transition-opacity ${
-            pinned
-              ? "text-[rgb(var(--brand-400))] opacity-100"
-              : "text-[rgb(var(--muted))] opacity-0 group-hover:opacity-100 hover:text-[rgb(var(--brand-400))]"
-          }`}
-        >
-          {pinned ? <Pin size={13} fill="currentColor" /> : <Pin size={13} />}
-        </button>
+        <Tooltip label={pinned ? "Désépingler" : "Épingler"}>
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              onTogglePin();
+            }}
+            className={`shrink-0 p-1.5 rounded-lg transition-opacity ${
+              pinned
+                ? "text-[rgb(var(--brand-400))] opacity-100"
+                : "text-[rgb(var(--muted))] opacity-0 group-hover:opacity-100 hover:text-[rgb(var(--brand-400))]"
+            }`}
+          >
+            {pinned ? <Pin size={13} fill="currentColor" /> : <Pin size={13} />}
+          </button>
+        </Tooltip>
       )}
     </div>
   );
@@ -357,34 +359,37 @@ export function Sidebar() {
             </div>
           </Link>
           {isAdmin && (
-            <button
-              onClick={toggleEditorMode}
-              className={`transition-colors p-1 ${
-                canEdit ? "text-[rgb(var(--brand-400))]" : "text-[rgb(var(--muted))] hover:text-[rgb(var(--foreground))]"
-              }`}
-              title={canEdit ? "Désactiver le mode édition" : "Activer le mode édition"}
-            >
-              <Pencil size={15} />
-            </button>
+            <Tooltip label={canEdit ? "Désactiver le mode édition" : "Activer le mode édition"}>
+              <button
+                onClick={toggleEditorMode}
+                className={`transition-colors p-1 ${
+                  canEdit ? "text-[rgb(var(--brand-400))]" : "text-[rgb(var(--muted))] hover:text-[rgb(var(--foreground))]"
+                }`}
+              >
+                <Pencil size={15} />
+              </button>
+            </Tooltip>
           )}
-          <button
-            onClick={() => setShowPersonalize(true)}
-            className="text-[rgb(var(--muted))] hover:text-[rgb(var(--brand-400))] transition-colors p-1"
-            title="Personnaliser"
-          >
-            <Palette size={15} />
-          </button>
-          <button
-            onClick={() => {
-              fetch("/api/presence/clear", { method: "POST" }).finally(() =>
-                signOut({ callbackUrl: "/login" })
-              );
-            }}
-            className="text-[rgb(var(--muted))] hover:text-[rgb(var(--danger))] transition-colors p-1"
-            title="Déconnexion"
-          >
-            <LogOut size={15} />
-          </button>
+          <Tooltip label="Personnaliser">
+            <button
+              onClick={() => setShowPersonalize(true)}
+              className="text-[rgb(var(--muted))] hover:text-[rgb(var(--brand-400))] transition-colors p-1"
+            >
+              <Palette size={15} />
+            </button>
+          </Tooltip>
+          <Tooltip label="Déconnexion">
+            <button
+              onClick={() => {
+                fetch("/api/presence/clear", { method: "POST" }).finally(() =>
+                  signOut({ callbackUrl: "/login" })
+                );
+              }}
+              className="text-[rgb(var(--muted))] hover:text-[rgb(var(--danger))] transition-colors p-1"
+            >
+              <LogOut size={15} />
+            </button>
+          </Tooltip>
         </div>
       )}
 

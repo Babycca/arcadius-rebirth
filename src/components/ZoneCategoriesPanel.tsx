@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { useDialog } from "@/components/DialogProvider";
+import Tooltip from "@/components/Tooltip";
 
 type Category = { id: string; name: string; color: string; emoji: string };
 
@@ -75,12 +76,13 @@ export default function ZoneCategoriesPanel() {
       <div className="flex flex-col gap-2 mb-4">
         {categories.map((c) => (
           <div key={c.id} className="flex items-center gap-2">
-            <input
-              defaultValue={c.emoji}
-              onBlur={(e) => e.target.value.trim() && updateCategory(c.id, "emoji", e.target.value.trim())}
-              className="text-base shrink-0 w-9 text-center bg-transparent outline-none border-b border-transparent focus:border-white/20 rounded"
-              title="Emoji de la catégorie"
-            />
+            <Tooltip label="Emoji de la catégorie">
+              <input
+                defaultValue={c.emoji}
+                onBlur={(e) => e.target.value.trim() && updateCategory(c.id, "emoji", e.target.value.trim())}
+                className="text-base shrink-0 w-9 text-center bg-transparent outline-none border-b border-transparent focus:border-white/20 rounded"
+              />
+            </Tooltip>
             <input
               defaultValue={c.name}
               onBlur={(e) => e.target.value.trim() && updateCategory(c.id, "name", e.target.value.trim())}

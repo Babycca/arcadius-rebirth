@@ -7,6 +7,7 @@ import { PageShell, PageHeader } from "@/components/PageShell";
 import { useCanEdit } from "@/lib/use-can-edit";
 import { usePermissions } from "@/lib/use-permissions";
 import { useDialog } from "@/components/DialogProvider";
+import Tooltip from "@/components/Tooltip";
 import { weekDateRangeLabel } from "@/lib/accounting/week-client";
 
 type ArchiveRow = {
@@ -110,13 +111,14 @@ export default function ComptabiliteArchivePage() {
               </div>
             </Link>
             {canDeleteArchive && (
-              <button
-                onClick={() => deleteArchive(r.weekId)}
-                className="text-[rgb(var(--muted))] hover:text-[rgb(var(--danger))] p-2 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                title="Supprimer cette archive"
-              >
-                <Trash2 size={15} />
-              </button>
+              <Tooltip label="Supprimer cette archive">
+                <button
+                  onClick={() => deleteArchive(r.weekId)}
+                  className="text-[rgb(var(--muted))] hover:text-[rgb(var(--danger))] p-2 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <Trash2 size={15} />
+                </button>
+              </Tooltip>
             )}
             <Link href={`/comptabilite/archive/${encodeURIComponent(r.weekId)}`}>
               <ChevronRight size={16} className="text-[rgb(var(--muted))]" />
@@ -140,13 +142,14 @@ export default function ComptabiliteArchivePage() {
               </div>
             </Link>
             {canDeleteArchive && (
-              <button
-                onClick={() => deleteLegacyArchive(r.id)}
-                className="text-[rgb(var(--muted))] hover:text-[rgb(var(--danger))] p-2 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                title="Supprimer cette archive"
-              >
-                <Trash2 size={15} />
-              </button>
+              <Tooltip label="Supprimer cette archive">
+                <button
+                  onClick={() => deleteLegacyArchive(r.id)}
+                  className="text-[rgb(var(--muted))] hover:text-[rgb(var(--danger))] p-2 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <Trash2 size={15} />
+                </button>
+              </Tooltip>
             )}
             <Link href={`/comptabilite/archive/legacy/${r.id}`}>
               <ChevronRight size={16} className="text-[rgb(var(--muted))]" />

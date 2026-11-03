@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Plus, Pencil, Trash2, Check, X, ReceiptText } from "lucide-react";
 import { PageShell, PageHeader } from "@/components/PageShell";
 import { useDialog } from "@/components/DialogProvider";
+import Tooltip from "@/components/Tooltip";
 
 type Expense = {
   id: string;
@@ -251,20 +252,22 @@ export default function DepensesPage() {
                   </td>
                   <td className="px-4 py-2.5 text-right">
                     <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button
-                        onClick={() => startEdit(x)}
-                        className="text-[rgb(var(--muted))] hover:text-[rgb(var(--brand-400))] p-1.5"
-                        title="Modifier"
-                      >
-                        <Pencil size={13} />
-                      </button>
-                      <button
-                        onClick={() => deleteExpense(x.id)}
-                        className="text-[rgb(var(--muted))] hover:text-[rgb(var(--danger))] p-1.5"
-                        title="Supprimer"
-                      >
-                        <Trash2 size={13} />
-                      </button>
+                      <Tooltip label="Modifier">
+                        <button
+                          onClick={() => startEdit(x)}
+                          className="text-[rgb(var(--muted))] hover:text-[rgb(var(--brand-400))] p-1.5"
+                        >
+                          <Pencil size={13} />
+                        </button>
+                      </Tooltip>
+                      <Tooltip label="Supprimer">
+                        <button
+                          onClick={() => deleteExpense(x.id)}
+                          className="text-[rgb(var(--muted))] hover:text-[rgb(var(--danger))] p-1.5"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </Tooltip>
                     </div>
                   </td>
                 </tr>

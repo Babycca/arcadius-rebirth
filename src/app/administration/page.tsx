@@ -11,6 +11,7 @@ import { useCanEdit } from "@/lib/use-can-edit";
 import { usePermissions } from "@/lib/use-permissions";
 import { useDialog } from "@/components/DialogProvider";
 import { useToast } from "@/components/ToastProvider";
+import Tooltip from "@/components/Tooltip";
 import { Plus, KeyRound, Trash2, ChevronUp, ChevronDown, UserX, UserCheck, Archive, ScrollText, CalendarOff, ShieldAlert, Search } from "lucide-react";
 import Link from "next/link";
 
@@ -561,18 +562,19 @@ export default function AdministrationPage() {
                       <span className="text-xs text-[rgb(var(--muted))]">—</span>
                     )
                   ) : isSuperAdmin ? (
-                    <button
-                      onClick={() => toggleRole(a.id, a.role)}
-                      disabled={a.id === sessionUser?.id}
-                      className={`flex items-center gap-2 text-xs rounded-full px-2.5 py-1 transition-colors disabled:opacity-40 ${
-                        a.role === "ADMIN"
-                          ? "bg-[rgb(var(--brand-500)/0.18)] text-[rgb(var(--brand-400))]"
-                          : "glass text-[rgb(var(--muted))]"
-                      }`}
-                      title={a.id === sessionUser?.id ? "Tu ne peux pas changer ton propre rôle" : "Changer le rôle"}
-                    >
-                      {a.role === "ADMIN" ? "Admin" : "Agent"}
-                    </button>
+                    <Tooltip label={a.id === sessionUser?.id ? "Tu ne peux pas changer ton propre rôle" : "Changer le rôle"}>
+                      <button
+                        onClick={() => toggleRole(a.id, a.role)}
+                        disabled={a.id === sessionUser?.id}
+                        className={`flex items-center gap-2 text-xs rounded-full px-2.5 py-1 transition-colors disabled:opacity-40 ${
+                          a.role === "ADMIN"
+                            ? "bg-[rgb(var(--brand-500)/0.18)] text-[rgb(var(--brand-400))]"
+                            : "glass text-[rgb(var(--muted))]"
+                        }`}
+                      >
+                        {a.role === "ADMIN" ? "Admin" : "Agent"}
+                      </button>
+                    </Tooltip>
                   ) : (
                     <span className="text-xs text-[rgb(var(--muted))]">{a.role}</span>
                   )}
@@ -580,22 +582,24 @@ export default function AdministrationPage() {
                 <td className="px-4 py-2.5 text-right">
                   <div className="flex items-center justify-end gap-1">
                     {has("agentsMotDePasse") && (
-                      <button
-                        onClick={() => resetPassword(a.id)}
-                        title="Régénérer un mot de passe"
-                        className="text-[rgb(var(--muted))] hover:text-[rgb(var(--brand-400))] p-1.5"
-                      >
-                        <KeyRound size={14} />
-                      </button>
+                      <Tooltip label="Régénérer un mot de passe">
+                        <button
+                          onClick={() => resetPassword(a.id)}
+                          className="text-[rgb(var(--muted))] hover:text-[rgb(var(--brand-400))] p-1.5"
+                        >
+                          <KeyRound size={14} />
+                        </button>
+                      </Tooltip>
                     )}
                     {has("agentsSupprimer") && a.role !== "SUPER_ADMIN" && a.id !== sessionUser?.id && (
-                      <button
-                        onClick={() => toggleActive(a)}
-                        title="Désactiver ce compte (démission)"
-                        className="text-[rgb(var(--muted))] hover:text-[rgb(var(--danger))] p-1.5"
-                      >
-                        <UserX size={14} />
-                      </button>
+                      <Tooltip label="Désactiver ce compte (démission)">
+                        <button
+                          onClick={() => toggleActive(a)}
+                          className="text-[rgb(var(--muted))] hover:text-[rgb(var(--danger))] p-1.5"
+                        >
+                          <UserX size={14} />
+                        </button>
+                      </Tooltip>
                     )}
                   </div>
                 </td>

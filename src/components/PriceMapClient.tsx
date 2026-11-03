@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { Tag, X, Trash2, Plus, Image as ImageIcon } from "lucide-react";
 import { useDialog } from "./DialogProvider";
 import { useCanEdit } from "@/lib/use-can-edit";
+import Tooltip from "@/components/Tooltip";
 
 type PinImage = { id: string; url: string };
 
@@ -273,13 +274,14 @@ export default function PriceMapClient({
               >
                 {saving ? "Enregistrement…" : "Enregistrer"}
               </button>
-              <button
-                onClick={deletePin}
-                title="Supprimer ce point"
-                className="rounded-xl px-3 text-[rgb(var(--danger))] hover:bg-[rgb(var(--danger)/0.1)] glass"
-              >
-                <Trash2 size={15} />
-              </button>
+              <Tooltip label="Supprimer ce point">
+                <button
+                  onClick={deletePin}
+                  className="rounded-xl px-3 text-[rgb(var(--danger))] hover:bg-[rgb(var(--danger)/0.1)] glass"
+                >
+                  <Trash2 size={15} />
+                </button>
+              </Tooltip>
             </div>
           </div>
         </div>
