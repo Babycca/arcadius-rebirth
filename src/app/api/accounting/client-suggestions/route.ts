@@ -40,13 +40,16 @@ export async function GET(req: NextRequest) {
     return digits.length >= 5 ? raw.trim() : null;
   }
 
+  // Pas de vrai numéro = pas de suggestion du tout (une ligne "Nom — -" ne
+  // sert à rien, autant laisser taper le nom normalement).
   const seen = new Set<string>();
-  const results: { clientName: string; clientPhone: string | null }[] = [];
+  const results: { clientName: string; clientPhone: string }[] = [];
   for (const s of [...sales, ...legacySales]) {
     const name = s.clientName?.trim();
     if (!name) continue;
     const clientPhone = realPhone(s.clientPhone);
-    const key = `${name.toLowerCase()}|${clientPhone ?? ""}`;
+    if (!clientPhone) continue;
+    const key = `${name.toLowerCase()}|${clientPhone}`;
     if (seen.has(key)) continue;
     seen.add(key);
     results.push({ clientName: name, clientPhone });
