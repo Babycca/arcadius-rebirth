@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Pencil } from "lucide-react";
-import UserAvatar from "./UserAvatar";
+import PresenceIndicator from "./PresenceIndicator";
 import TextDepliantsClient from "./TextDepliantsClient";
 import { PERSONAL_SECTION } from "@/lib/text-group-access";
 import Tooltip from "@/components/Tooltip";
@@ -37,7 +37,7 @@ export default function MesMessagesPrefaitsClient({ initialGroups }: { initialGr
             toi seul(e)
           </p>
         </div>
-        <UserAvatar />
+        <PresenceIndicator />
       </div>
 
       <TextDepliantsClient section={PERSONAL_SECTION} initialGroups={initialGroups} editableOverride={editOn} />

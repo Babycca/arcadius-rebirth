@@ -3,7 +3,7 @@
 import { use, useEffect, useState } from "react";
 import { Plus, Pencil, Trash2, Copy, Check, X } from "lucide-react";
 import { PageShell } from "@/components/PageShell";
-import UserAvatar from "@/components/UserAvatar";
+import PresenceIndicator from "@/components/PresenceIndicator";
 import ReassignSaleButton from "@/components/ReassignSaleButton";
 import GradeSelect from "@/components/GradeSelect";
 import Tooltip from "@/components/Tooltip";
@@ -238,7 +238,7 @@ export default function AgentWeekDetailPage({
   return (
     <PageShell>
       <div className="flex justify-end mb-2">
-        <UserAvatar />
+        <PresenceIndicator />
       </div>
       <div className="flex flex-col items-center text-center mb-10">
         <span className="relative w-28 h-28 rounded-full bg-[rgb(var(--brand-500)/0.18)] text-[rgb(var(--brand-400))] flex items-center justify-center text-3xl font-medium overflow-hidden shrink-0 mb-4 ring-4 ring-[rgb(var(--brand-500)/0.25)] shadow-[0_0_40px_rgb(var(--brand-glow)/0.25)]">
