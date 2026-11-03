@@ -22,6 +22,7 @@ export async function GET() {
         role: true,
         accentColor: true,
         avatarUrl: true,
+        clientSuggestionsDisabled: true,
       },
     }),
     getArchivedWeekIds(),
@@ -55,6 +56,9 @@ export async function PATCH(req: NextRequest) {
   const body = await req.json().catch(() => null);
   const data: Record<string, unknown> = {};
   if (typeof body?.phone === "string") data.phone = body.phone || null;
+  if (typeof body?.clientSuggestionsDisabled === "boolean") {
+    data.clientSuggestionsDisabled = body.clientSuggestionsDisabled;
+  }
 
   const agent = await prisma.agent.update({ where: { id: userId }, data });
   return NextResponse.json(agent);

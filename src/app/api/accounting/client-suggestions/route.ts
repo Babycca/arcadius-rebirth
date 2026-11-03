@@ -10,16 +10,21 @@ import { titleCase } from "@/lib/text-case";
 // (pas réservé à la recherche admin) ; léger, pas de détails de semaine/prix.
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
-  if (!session?.user) return NextResponse.json({ error: "Non connecté" }, { status: 401 });
+  const userId = (session?.user as { id?: string } | undefined)?.id;
+  if (!session?.user || !userId) return NextResponse.json({ error: "Non connecté" }, { status: 401 });
 
   const q = (req.nextUrl.searchParams.get("q") ?? "").trim();
   if (q.length < 3) return NextResponse.json([]);
 
   // Interrupteur global (Administration) — off par défaut tant qu'un admin
   // n'a rien réglé reviendrait à activé, donc on ne coupe que sur "false"
-  // explicite.
-  const toggle = await prisma.appSetting.findUnique({ where: { key: "client-suggestions-enabled" } });
-  if (toggle?.value === "false") return NextResponse.json([]);
+  // explicite. + préférence personnelle (Mon profil) : chacun peut aussi la
+  // désactiver juste pour lui, sans toucher aux autres.
+  const [toggle, me] = await Promise.all([
+    prisma.appSetting.findUnique({ where: { key: "client-suggestions-enabled" } }),
+    prisma.agent.findUnique({ where: { id: userId }, select: { clientSuggestionsDisabled: true } }),
+  ]);
+  if (toggle?.value === "false" || me?.clientSuggestionsDisabled) return NextResponse.json([]);
 
   const [sales, legacySales] = await Promise.all([
     prisma.sale.findMany({

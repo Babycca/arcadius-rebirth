@@ -41,6 +41,9 @@ model Agent {
   // et en raccourcis sur le tableau de bord.
   pinnedPages         String   @default("[]")
   favoriteMessageIds  String   @default("[]")
+  // Préférence personnelle : désactive les suggestions client (nom/téléphone
+  // en tapant une vente) pour ce compte seulement, sans toucher aux autres.
+  clientSuggestionsDisabled Boolean @default(false)
 
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
