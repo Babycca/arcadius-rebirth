@@ -301,7 +301,7 @@ export default function AdministrationPage() {
       <PageHeader title="Administration" subtitle={`${agents.length} comptes agents`} />
       <EditorModeBanner />
 
-      <div className="flex gap-3 mb-6 flex-wrap">
+      <div className="flex gap-3 mb-6 flex-wrap max-w-6xl mx-auto">
         <Link
           href="/administration/journal"
           className="inline-flex items-center gap-2 text-sm rounded-xl px-4 py-2.5 glass hover:border-[rgb(var(--brand-500)/0.4)] transition-colors"
