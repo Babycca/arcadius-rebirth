@@ -332,6 +332,13 @@ export default function AdministrationPage() {
           <Search size={14} />
           Recherche Comptabilité
         </Link>
+        <Link
+          href="/administration/corbeille"
+          className="inline-flex items-center gap-2 text-sm rounded-xl px-4 py-2.5 glass hover:border-[rgb(var(--brand-500)/0.4)] transition-colors"
+        >
+          <Trash2 size={14} />
+          Corbeille
+        </Link>
       </div>
 
       <HouseNumberGapsAlert />

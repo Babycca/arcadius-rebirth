@@ -250,6 +250,23 @@ model Sale {
   @@index([weekId])
 }
 
+// Corbeille : une vente supprimée atterrit ici (au lieu d'être perdue pour
+// de bon) le temps d'une restauration éventuelle. Elle n'est vraiment
+// effacée que quand l'admin vide la corbeille explicitement.
+model DeletedSale {
+  id            String   @id @default(cuid())
+  agentId       String
+  date          DateTime
+  houseNumber   String
+  priceAmount   Float
+  clientName    String
+  clientPhone   String?
+  weekId        String
+  companyProfit Float
+  deletedBy     String
+  deletedAt     DateTime @default(now())
+}
+
 // Garage (Bateaux/Aéronefs/Hélicoptères) lié à un bien — suivi à part des
 // ventes : visible dans la comptabilité de l'agent qui l'a posé, mais ne
 // compte jamais dans son chiffre d'affaires ni dans le calcul du salaire.

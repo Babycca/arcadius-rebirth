@@ -83,7 +83,24 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
     return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
   }
 
-  await prisma.sale.delete({ where: { id } });
+  // Direction la corbeille plutôt qu'une suppression définitive — voir
+  // /administration/corbeille pour restaurer ou vider pour de bon.
+  await prisma.$transaction([
+    prisma.deletedSale.create({
+      data: {
+        agentId: sale.agentId,
+        date: sale.date,
+        houseNumber: sale.houseNumber,
+        priceAmount: sale.priceAmount,
+        clientName: sale.clientName,
+        clientPhone: sale.clientPhone,
+        weekId: sale.weekId,
+        companyProfit: sale.companyProfit,
+        deletedBy: user.id,
+      },
+    }),
+    prisma.sale.delete({ where: { id } }),
+  ]);
 
   const actorName = user.name ?? "Agent";
   await logActivity({
@@ -92,7 +109,7 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
     action: "DELETE",
     entityType: "Sale",
     entityId: id,
-    summary: `${actorName} a supprimé une vente — habitation #${sale.houseNumber}, ${sale.clientName}, $${sale.priceAmount.toLocaleString("fr-FR")}`,
+    summary: `${actorName} a supprimé une vente (envoyée en corbeille) — habitation #${sale.houseNumber}, ${sale.clientName}, $${sale.priceAmount.toLocaleString("fr-FR")}`,
   });
 
   return NextResponse.json({ ok: true });
