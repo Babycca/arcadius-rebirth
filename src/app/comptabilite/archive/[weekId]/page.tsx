@@ -282,7 +282,7 @@ export default function ComptabiliteArchiveDetailPage({ params }: { params: Prom
 
   const exportRows: (string | number | null)[][] = [
     ["Agent", "Téléphone", "Grade", "%", "Nb facture", "CA", "Prime", "Salaire"],
-    ...agents.map((a) => [a.name, a.phone ?? "", a.grade, a.commissionRate, a.invoiceCount, a.totalSales, a.bonusAmount, a.salary]),
+    ...agents.map((a) => [a.name, a.phone ?? "", a.grade, a.commissionRate, a.salesCount, a.totalSales, a.bonusAmount, a.salary]),
     [],
     ["Détail des ventes"],
     ["Agent", "Date", "Habitation", "Client", "Téléphone", "Prix"],
@@ -454,7 +454,7 @@ export default function ComptabiliteArchiveDetailPage({ params }: { params: Prom
                     <td className="px-4 py-3 text-[rgb(var(--muted))]">{a.phone || "—"}</td>
                     <td className="px-4 py-3 text-[rgb(var(--muted))]">{a.grade}</td>
                     <td className="px-4 py-3 text-[rgb(var(--muted))]">{a.commissionRate}%</td>
-                    <td className="px-4 py-3">{a.invoiceCount}</td>
+                    <td className="px-4 py-3">{a.salesCount}</td>
                     <td className="px-4 py-3">${a.totalSales.toLocaleString("fr-FR")}</td>
                     <td className="px-4 py-3">${a.bonusAmount.toLocaleString("fr-FR")}</td>
                     <td className="px-4 py-3 text-right font-medium text-[rgb(var(--brand-400))]">
