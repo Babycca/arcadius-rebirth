@@ -12,6 +12,7 @@ import { usePermissions } from "@/lib/use-permissions";
 import { useDialog } from "@/components/DialogProvider";
 import { useToast } from "@/components/ToastProvider";
 import Tooltip from "@/components/Tooltip";
+import HouseNumberGapsAlert from "@/components/HouseNumberGapsAlert";
 import { Plus, KeyRound, Trash2, ChevronUp, ChevronDown, UserX, UserCheck, Archive, ScrollText, CalendarOff, ShieldAlert, Search } from "lucide-react";
 import Link from "next/link";
 
@@ -332,6 +333,8 @@ export default function AdministrationPage() {
           Recherche Comptabilité
         </Link>
       </div>
+
+      <HouseNumberGapsAlert />
 
       <div className="max-w-6xl mx-auto">
       {newCreds && (
