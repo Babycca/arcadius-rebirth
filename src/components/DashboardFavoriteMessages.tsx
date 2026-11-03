@@ -2,11 +2,23 @@
 
 import { useState } from "react";
 import { Star, Copy, Check } from "lucide-react";
-import { renderDiscordText } from "@/lib/discord-markdown";
 import { copyToClipboard } from "@/lib/clipboard";
 import { useToast } from "@/components/ToastProvider";
 
 type FavoriteMessage = { id: string; content: string; groupName: string };
+
+// Aperçu en texte brut (pas de rendu Discord complet ici : sur un long
+// modèle avec titres/spoilers/séparateurs, ça rend n'importe quoi dans une
+// petite carte) — tronqué, mais c'est toujours le contenu complet qui est
+// copié.
+function previewText(content: string): string {
+  const flat = content
+    .replace(/\|\|([\s\S]+?)\|\|/g, "$1")
+    .replace(/[*_~`#>-]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  return flat.length > 110 ? `${flat.slice(0, 110)}…` : flat;
+}
 
 export default function DashboardFavoriteMessages({ items }: { items: FavoriteMessage[] }) {
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -37,10 +49,10 @@ export default function DashboardFavoriteMessages({ items }: { items: FavoriteMe
           {items.map((it) => (
             <div
               key={it.id}
-              className="flex items-start justify-between gap-3 px-3 py-2.5 rounded-lg hover:bg-white/[0.04] transition-colors"
+              className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg hover:bg-white/[0.04] transition-colors"
             >
               <div className="min-w-0">
-                <p className="text-sm leading-relaxed">{renderDiscordText(it.content)}</p>
+                <p className="text-sm truncate">{previewText(it.content)}</p>
                 <p className="text-xs text-[rgb(var(--muted))] mt-0.5">{it.groupName}</p>
               </div>
               <button
