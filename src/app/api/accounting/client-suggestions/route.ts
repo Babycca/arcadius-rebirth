@@ -31,15 +31,25 @@ export async function GET(req: NextRequest) {
     }),
   ]);
 
+  // Beaucoup d'anciennes ventes ont un téléphone vide ou un espace réservé
+  // ("-", "x", "/"...) plutôt qu'un vrai numéro — on ne propose jamais ça
+  // comme suggestion, ça ne vaut pas mieux que de taper soi-même.
+  function realPhone(raw: string | null): string | null {
+    if (!raw) return null;
+    const digits = raw.replace(/\D/g, "");
+    return digits.length >= 5 ? raw.trim() : null;
+  }
+
   const seen = new Set<string>();
   const results: { clientName: string; clientPhone: string | null }[] = [];
   for (const s of [...sales, ...legacySales]) {
     const name = s.clientName?.trim();
     if (!name) continue;
-    const key = `${name.toLowerCase()}|${s.clientPhone ?? ""}`;
+    const clientPhone = realPhone(s.clientPhone);
+    const key = `${name.toLowerCase()}|${clientPhone ?? ""}`;
     if (seen.has(key)) continue;
     seen.add(key);
-    results.push({ clientName: name, clientPhone: s.clientPhone ?? null });
+    results.push({ clientName: name, clientPhone });
     if (results.length >= 6) break;
   }
 

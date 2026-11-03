@@ -26,9 +26,16 @@ export default function ClientNameInput({
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Évite qu'une sélection (qui change `value`) ne redéclenche une recherche
+  // et ne rouvre le déroulant juste après avoir cliqué une suggestion.
+  const suppressNextRef = useRef(false);
 
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (suppressNextRef.current) {
+      suppressNextRef.current = false;
+      return;
+    }
     if (value.trim().length < 3) {
       setSuggestions([]);
       return;
@@ -76,8 +83,10 @@ export default function ClientNameInput({
               key={`${s.clientName}-${s.clientPhone}-${i}`}
               type="button"
               onClick={() => {
+                suppressNextRef.current = true;
                 onSelect(s);
                 setOpen(false);
+                setSuggestions([]);
               }}
               className="block w-full text-left px-3 py-2 text-sm hover:bg-white/[0.06] transition-colors truncate"
             >
