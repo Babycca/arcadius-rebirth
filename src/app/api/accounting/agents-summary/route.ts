@@ -66,6 +66,20 @@ export async function GET(req: NextRequest) {
   const archivedAt = archiveRecord?.createdAt ?? null;
 
   const rulesByGrade = Object.fromEntries(rules.map((r) => [r.grade, r]));
+  // Archive : si une copie figée existe, on l'utilise à la place des grades,
+  // règles et primes actuels.
+  type SnapEntry = { grade: string; commissionRate: number; bonusAmount: number; bonus: { enabled: boolean; amount: number | null } | null };
+  let snapshot: Record<string, SnapEntry> | null = null;
+  if (requestedWeekId) {
+    const snapRow = await prisma.appSetting.findUnique({ where: { key: `archive-snapshot:${requestedWeekId}` } });
+    if (snapRow) {
+      try {
+        snapshot = JSON.parse(snapRow.value);
+      } catch {
+        snapshot = null;
+      }
+    }
+  }
   const bonusByAgentId = Object.fromEntries(bonuses.map((b) => [b.agentId, { enabled: b.enabled, amount: b.amount }]));
 
   const summaryAll = await Promise.all(
@@ -74,14 +88,16 @@ export async function GET(req: NextRequest) {
         prisma.sale.findMany({ where: { agentId: agent.id, ...dataWhere } }),
         prisma.garageSale.findMany({ where: { agentId: agent.id, ...dataWhere } }),
       ]);
-      const rule = rulesByGrade[agent.grade] ?? null;
-      const bonusOverride = bonusByAgentId[agent.id] ?? null;
+      const snap = snapshot?.[agent.id] ?? null;
+      const grade = snap ? snap.grade : agent.grade;
+      const rule = snap ? { commissionRate: snap.commissionRate, bonusAmount: snap.bonusAmount } : rulesByGrade[agent.grade] ?? null;
+      const bonusOverride = snap ? snap.bonus : bonusByAgentId[agent.id] ?? null;
       const payroll = computeAgentPayroll(sales, rule, bonusOverride, garageSales);
       return {
         id: agent.id,
         name: `${agent.firstName} ${agent.lastName}`,
         avatarUrl: agent.avatarUrl,
-        grade: agent.grade,
+        grade,
         phone: agent.phone,
         active: agent.active,
         isAbsentToday: absentAgentIds.has(agent.id),

@@ -50,7 +50,33 @@ export async function POST() {
     else seenAgentIds.add(b.agentId);
   }
 
+  // Copie figée des grades, taux et primes au moment du clic : l'archive ne
+  // bougera plus même si on modifie ensuite un grade, une règle ou une prime.
+  const [snapAgents, snapRules] = await Promise.all([
+    prisma.agent.findMany({ select: { id: true, grade: true } }),
+    prisma.commissionRule.findMany(),
+  ]);
+  const snapRulesByGrade = Object.fromEntries(snapRules.map((r) => [r.grade, r]));
+  const snapBonusByAgent: Record<string, { enabled: boolean; amount: number | null }> = {};
+  for (const b of unarchivedBonuses) snapBonusByAgent[b.agentId] = { enabled: b.enabled, amount: b.amount };
+  const snapshot: Record<string, { grade: string; commissionRate: number; bonusAmount: number; bonus: { enabled: boolean; amount: number | null } | null }> = {};
+  for (const a of snapAgents) {
+    const r = snapRulesByGrade[a.grade];
+    snapshot[a.id] = {
+      grade: a.grade,
+      commissionRate: r?.commissionRate ?? 0,
+      bonusAmount: r?.bonusAmount ?? 0,
+      bonus: snapBonusByAgent[a.id] ?? null,
+    };
+  }
+  const snapshotKey = `archive-snapshot:${title}`;
+
   await prisma.$transaction([
+    prisma.appSetting.upsert({
+      where: { key: snapshotKey },
+      update: { value: JSON.stringify(snapshot) },
+      create: { key: snapshotKey, value: JSON.stringify(snapshot) },
+    }),
     prisma.sale.updateMany({ where: unarchivedWhere, data: { weekId: title } }),
     prisma.garageSale.updateMany({ where: unarchivedWhere, data: { weekId: title } }),
     prisma.expense.updateMany({ where: unarchivedWhere, data: { weekId: title } }),
