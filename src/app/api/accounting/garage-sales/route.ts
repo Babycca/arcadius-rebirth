@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getActiveWeekId, getArchivedWeekIds } from "@/lib/accounting/week";
+import { getActiveWeekId, getArchivedWeekIds, getNewRecordWeekId } from "@/lib/accounting/week";
 import { sortByHouseNumberDesc } from "@/lib/accounting/sort-sales";
 import { GARAGE_TYPES } from "@/lib/accounting/garage-types";
 import { logActivity } from "@/lib/audit-log";
@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const weekId = await getActiveWeekId();
+    const weekId = await getNewRecordWeekId();
     const garageSale = await prisma.garageSale.create({
       data: { agentId: userId, type, name, houseNumber, priceAmount, date, weekId },
     });

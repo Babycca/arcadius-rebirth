@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getActiveWeekId, getArchivedWeekIds } from "@/lib/accounting/week";
+import { getActiveWeekId, getArchivedWeekIds, getNewRecordWeekId } from "@/lib/accounting/week";
 import { sortByHouseNumberDesc } from "@/lib/accounting/sort-sales";
 import { titleCase } from "@/lib/text-case";
 import { logActivity } from "@/lib/audit-log";
@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Numéro d'habitation, client, téléphone et prix sont requis." }, { status: 400 });
   }
 
-  const weekId = await getActiveWeekId();
+  const weekId = await getNewRecordWeekId();
   const sale = await prisma.sale.create({
     data: {
       agentId: userId,

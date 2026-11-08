@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { hasServerPermission } from "@/lib/permissions-server";
-import { getActiveWeekId, getArchivedWeekIds } from "@/lib/accounting/week";
+import { getActiveWeekId, getArchivedWeekIds, getNewRecordWeekId } from "@/lib/accounting/week";
 import { logActivity } from "@/lib/audit-log";
 
 
@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "La raison et le montant sont requis." }, { status: 400 });
   }
 
-  const weekId = await getActiveWeekId();
+  const weekId = await getNewRecordWeekId();
   const expense = await prisma.expense.create({
     data: { reason, amount, weekId, createdBy: user!.id },
   });

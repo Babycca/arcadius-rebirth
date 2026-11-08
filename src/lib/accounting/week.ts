@@ -11,6 +11,14 @@ import { prisma } from "@/lib/prisma";
 export async function getActiveWeekId(): Promise<string> {
   return currentWeekId();
 }
+// Étiquette INTERNE posée sur toute nouvelle vente / garage / dépense /
+// prime. Ce n'est jamais un nom d'archive, donc une nouvelle entrée ne peut
+// jamais atterrir dans une archive, même si on archive avant lundi. Le vrai
+// nom (ex: "2026-S45") n'est donné qu'au clic sur "Archiver".
+export const OPEN_WEEK_ID = "en-cours";
+export async function getNewRecordWeekId(): Promise<string> {
+  return OPEN_WEEK_ID;
+}
 export async function getActiveWeekStart(): Promise<Date> {
   return startOfIsoWeek(new Date());
 }
