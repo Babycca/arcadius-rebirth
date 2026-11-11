@@ -245,19 +245,27 @@ export default function SanctionsPage() {
               </div>
             )}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
-              <LabeledSelect
-                value={agentId}
-                onChange={(v) => {
-                  setAgentId(v);
-                  setSelectedAgentId(v);
-                }}
-                options={agents.map((a) => ({ value: a.id, label: `${a.firstName} ${a.lastName}` }))}
-              />
-              <LabeledSelect
-                value={type}
-                onChange={setType}
-                options={SANCTION_TYPES.map((t) => ({ value: t, label: t }))}
-              />
+              <div>
+                <label className="text-xs text-[rgb(var(--muted))] mb-1 block">Agent</label>
+                <LabeledSelect
+                  fullWidth
+                  value={agentId}
+                  onChange={(v) => {
+                    setAgentId(v);
+                    setSelectedAgentId(v);
+                  }}
+                  options={agents.map((a) => ({ value: a.id, label: `${a.firstName} ${a.lastName}` }))}
+                />
+              </div>
+              <div>
+                <label className="text-xs text-[rgb(var(--muted))] mb-1 block">Type</label>
+                <LabeledSelect
+                  fullWidth
+                  value={type}
+                  onChange={setType}
+                  options={SANCTION_TYPES.map((t) => ({ value: t, label: t }))}
+                />
+              </div>
               <div>
                 <label className="text-xs text-[rgb(var(--muted))] mb-1 block">Date</label>
                 <input

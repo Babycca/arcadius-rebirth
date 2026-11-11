@@ -386,9 +386,16 @@ export default function ComptabiliteArchiveDetailPage({ params }: { params: Prom
           <p className="text-lg font-semibold">${totalSalaries.toLocaleString("fr-FR")}</p>
         </div>
         <div className="glass-strong rounded-xl px-4 py-2.5">
-          <p className="text-xs text-[rgb(var(--muted))]">Dépenses</p>
+          <p className="text-xs text-[rgb(var(--muted))] flex items-center gap-1.5">
+            Dépenses
+            {hasVariation && (
+              <span
+                title="Déjà pris dans le coffre"
+                className="inline-block w-1.5 h-1.5 rounded-full bg-[rgb(var(--success))] shadow-[0_0_6px_rgb(var(--success))] animate-pulse"
+              />
+            )}
+          </p>
           <p className="text-lg font-semibold text-[rgb(var(--danger))]">-${totalExpenses.toLocaleString("fr-FR")}</p>
-          {hasVariation && <p className="text-[10px] text-[rgb(var(--muted))]">Déjà dans le coffre</p>}
         </div>
         <div className="glass-strong rounded-xl px-4 py-2.5">
           <p className="text-xs text-[rgb(var(--muted))]">Bénéfices net</p>

@@ -11,10 +11,13 @@ export default function LabeledSelect({
   value,
   options,
   onChange,
+  fullWidth = false,
 }: {
   value: string;
   options: { value: string; label: string }[];
   onChange: (value: string) => void;
+  // Prend toute la largeur de sa colonne (formulaires alignés en grille).
+  fullWidth?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState({ top: 0, left: 0, width: 0, openUp: false });
@@ -44,7 +47,7 @@ export default function LabeledSelect({
         ref={buttonRef}
         type="button"
         onClick={() => (open ? setOpen(false) : openMenu())}
-        className="glass rounded-lg px-3 py-2 text-sm flex items-center gap-2 min-w-[140px] justify-between"
+        className={`glass rounded-lg px-3 py-2 text-sm flex items-center gap-2 min-w-[140px] justify-between ${fullWidth ? "w-full" : ""}`}
       >
         {current}
         <ChevronDown size={14} className={`text-[rgb(var(--muted))] transition-transform ${open ? "rotate-180" : ""}`} />

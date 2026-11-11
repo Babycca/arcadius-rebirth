@@ -274,11 +274,15 @@ export default function AbsencesPage() {
           </div>
         )}
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-          <LabeledSelect
-            value={agentId}
-            onChange={setAgentId}
-            options={agents.map((a) => ({ value: a.id, label: `${a.firstName} ${a.lastName}` }))}
-          />
+          <div>
+            <label className="text-xs text-[rgb(var(--muted))] mb-1 block">Agent</label>
+            <LabeledSelect
+              fullWidth
+              value={agentId}
+              onChange={setAgentId}
+              options={agents.map((a) => ({ value: a.id, label: `${a.firstName} ${a.lastName}` }))}
+            />
+          </div>
           <div>
             <label className="text-xs text-[rgb(var(--muted))] mb-1 block">Du</label>
             <input

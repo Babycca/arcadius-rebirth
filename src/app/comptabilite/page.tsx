@@ -284,17 +284,27 @@ export default function ComptabilitePage() {
             <Link href="/comptabilite/depenses" className="card-hover glass-strong rounded-xl px-4 py-2.5 border border-transparent hover:border-[rgb(var(--brand-500)/0.4)] transition-colors">
               <p className="text-xs text-[rgb(var(--muted))] flex items-center gap-1.5">
                 <ReceiptText size={12} /> Dépenses
+                {hasVariation && (
+                  <span
+                    title="Déjà pris dans le coffre"
+                    className="inline-block w-1.5 h-1.5 rounded-full bg-[rgb(var(--success))] shadow-[0_0_6px_rgb(var(--success))] animate-pulse"
+                  />
+                )}
               </p>
               <p className="text-lg font-semibold text-[rgb(var(--danger))]">-${totalExpenses.toLocaleString("fr-FR")}</p>
-              {hasVariation && <p className="text-[10px] text-[rgb(var(--muted))]">Déjà dans le coffre</p>}
             </Link>
           ) : (
             <div className="card-hover glass-strong rounded-xl px-4 py-2.5 border border-transparent">
               <p className="text-xs text-[rgb(var(--muted))] flex items-center gap-1.5">
                 <ReceiptText size={12} /> Dépenses
+                {hasVariation && (
+                  <span
+                    title="Déjà pris dans le coffre"
+                    className="inline-block w-1.5 h-1.5 rounded-full bg-[rgb(var(--success))] shadow-[0_0_6px_rgb(var(--success))] animate-pulse"
+                  />
+                )}
               </p>
               <p className="text-lg font-semibold text-[rgb(var(--danger))]">-${totalExpenses.toLocaleString("fr-FR")}</p>
-              {hasVariation && <p className="text-[10px] text-[rgb(var(--muted))]">Déjà dans le coffre</p>}
             </div>
           )}
           <div className="card-hover glass-strong rounded-xl px-4 py-2.5 border border-[rgb(var(--success)/0.25)]">
