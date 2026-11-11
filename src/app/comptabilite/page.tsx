@@ -220,7 +220,12 @@ export default function ComptabilitePage() {
   // vide, pas de variation (0) et aucune erreur.
   const hasVariation = semaineARaw.trim() !== "" && semaineBRaw.trim() !== "";
   const variation = hasVariation ? parseMoneyAmount(semaineBRaw) - parseMoneyAmount(semaineARaw) : 0;
-  const totalProfit = agents.reduce((s, a) => s + a.companyProfit, 0) + variation;
+  // Le coffre contient déjà les bénéfices des factures : on n'ajoute que la
+  // part "relocations" = (B - A) - bénéfices factures, pour ne pas compter
+  // les factures deux fois.
+  const invoiceProfit = agents.reduce((s, a) => s + a.companyProfit, 0);
+  const relocations = hasVariation ? variation - invoiceProfit : 0;
+  const totalProfit = invoiceProfit + relocations;
   const totalSalaries = agents.reduce((s, a) => s + a.salary, 0);
   const netProfit = totalProfit - totalSalaries - totalExpenses - lotEmployeAmount;
   const taxes = netProfit * 0.3;
@@ -324,13 +329,13 @@ export default function ComptabilitePage() {
         <ManualWeekCard settingKey="comptabilite-semaine-a" label="Semaine A" isAdmin={isAdmin} onSaved={setSemaineARaw} />
         <ManualWeekCard settingKey="comptabilite-semaine-b" label="Semaine B" isAdmin={isAdmin} onSaved={setSemaineBRaw} />
         <div className="card-hover glass-strong rounded-xl px-4 py-2.5 border border-transparent">
-          <p className="text-xs text-[rgb(var(--muted))]">Variation (B - A)</p>
+          <p className="text-xs text-[rgb(var(--muted))]">Relocations (B - A - factures)</p>
           <p
             className={`text-lg font-semibold ${
-              !hasVariation ? "" : variation >= 0 ? "text-[rgb(var(--success))]" : "text-[rgb(var(--danger))]"
+              !hasVariation ? "" : relocations >= 0 ? "text-[rgb(var(--success))]" : "text-[rgb(var(--danger))]"
             }`}
           >
-            {hasVariation ? `${variation >= 0 ? "+" : "-"}$${Math.abs(variation).toLocaleString("fr-FR")}` : "—"}
+            {hasVariation ? `${relocations >= 0 ? "+" : "-"}$${Math.abs(relocations).toLocaleString("fr-FR")}` : "—"}
           </p>
         </div>
         <ManualWeekCard
