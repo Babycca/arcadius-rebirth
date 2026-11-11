@@ -110,6 +110,8 @@ export default function ComptabilitePage() {
   const [data, setData] = useState<{ weekId: string; periodStart: string | null; agents: AgentSummary[] } | null>(null);
   const [totalExpenses, setTotalExpenses] = useState(0);
   const [lotEmployeAmount, setLotEmployeAmount] = useState(0);
+  const [semaineARaw, setSemaineARaw] = useState("");
+  const [semaineBRaw, setSemaineBRaw] = useState("");
   const [forbidden, setForbidden] = useState(false);
   const [archiving, setArchiving] = useState(false);
   const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
@@ -138,6 +140,14 @@ export default function ComptabilitePage() {
     fetch("/api/app-settings/comptabilite-lot-employe")
       .then((res) => (res.ok ? res.json() : null))
       .then((d: { value?: string } | null) => setLotEmployeAmount(parseMoneyAmount(d?.value)))
+      .catch(() => {});
+    fetch("/api/app-settings/comptabilite-semaine-a")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((d: { value?: string } | null) => setSemaineARaw(d?.value ?? ""))
+      .catch(() => {});
+    fetch("/api/app-settings/comptabilite-semaine-b")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((d: { value?: string } | null) => setSemaineBRaw(d?.value ?? ""))
       .catch(() => {});
   }
 
@@ -206,7 +216,11 @@ export default function ComptabilitePage() {
 
   const agents = data?.agents ?? [];
   const totalSales = agents.reduce((s, a) => s + a.totalSales, 0);
-  const totalProfit = agents.reduce((s, a) => s + a.companyProfit, 0);
+  // Variation = Semaine B - Semaine A, ajoutée aux bénéfices. Si A ou B est
+  // vide, pas de variation (0) et aucune erreur.
+  const hasVariation = semaineARaw.trim() !== "" && semaineBRaw.trim() !== "";
+  const variation = hasVariation ? parseMoneyAmount(semaineBRaw) - parseMoneyAmount(semaineARaw) : 0;
+  const totalProfit = agents.reduce((s, a) => s + a.companyProfit, 0) + variation;
   const totalSalaries = agents.reduce((s, a) => s + a.salary, 0);
   const netProfit = totalProfit - totalSalaries - totalExpenses - lotEmployeAmount;
   const taxes = netProfit * 0.3;
@@ -307,8 +321,18 @@ export default function ComptabilitePage() {
       </div>
 
       <div className="flex gap-4 mb-5 flex-wrap">
-        <ManualWeekCard settingKey="comptabilite-semaine-a" label="Semaine A" isAdmin={isAdmin} />
-        <ManualWeekCard settingKey="comptabilite-semaine-b" label="Semaine B" isAdmin={isAdmin} />
+        <ManualWeekCard settingKey="comptabilite-semaine-a" label="Semaine A" isAdmin={isAdmin} onSaved={setSemaineARaw} />
+        <ManualWeekCard settingKey="comptabilite-semaine-b" label="Semaine B" isAdmin={isAdmin} onSaved={setSemaineBRaw} />
+        <div className="card-hover glass-strong rounded-xl px-4 py-2.5 border border-transparent">
+          <p className="text-xs text-[rgb(var(--muted))]">Variation (B - A)</p>
+          <p
+            className={`text-lg font-semibold ${
+              !hasVariation ? "" : variation >= 0 ? "text-[rgb(var(--success))]" : "text-[rgb(var(--danger))]"
+            }`}
+          >
+            {hasVariation ? `${variation >= 0 ? "+" : "-"}$${Math.abs(variation).toLocaleString("fr-FR")}` : "—"}
+          </p>
+        </div>
         <ManualWeekCard
           settingKey="comptabilite-lot-employe"
           label="Lot employé"

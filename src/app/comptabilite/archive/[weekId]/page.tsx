@@ -227,6 +227,7 @@ export default function ComptabiliteArchiveDetailPage({ params }: { params: Prom
     { id: string; agentName: string; date: string; houseNumber: string; priceAmount: number; clientName: string; clientPhone: string | null }[]
   >([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [archivedAt, setArchivedAt] = useState<string | null>(null);
   const [forbidden, setForbidden] = useState(false);
   const [expandedIds, setExpandedIds] = useState<string[]>([]);
 
@@ -248,6 +249,12 @@ export default function ComptabiliteArchiveDetailPage({ params }: { params: Prom
     fetch(`/api/accounting/expenses?weekId=${encodeURIComponent(weekId)}`)
       .then((res) => (res.ok ? res.json() : []))
       .then(setExpenses);
+    fetch("/api/accounting/archive")
+      .then((res) => (res.ok ? res.json() : []))
+      .then((rows: { weekId: string; archivedAt: string }[]) =>
+        setArchivedAt(rows.find((r) => r.weekId === weekId)?.archivedAt ?? null)
+      )
+      .catch(() => {});
   }
 
   useEffect(() => {
@@ -273,7 +280,14 @@ export default function ComptabiliteArchiveDetailPage({ params }: { params: Prom
 
   const agents = data?.agents ?? [];
   const totalSales = agents.reduce((s, a) => s + a.totalSales, 0);
-  const totalProfit = agents.reduce((s, a) => s + a.companyProfit, 0);
+  // Variation = Semaine B - Semaine A, ajoutée aux bénéfices (0 si A ou B vide).
+  // Seulement pour les archives faites après l'ajout de cette fonctionnalité :
+  // les anciennes archives gardent leurs chiffres d'origine.
+  const VARIATION_SINCE = new Date("2026-11-11T11:00:00Z");
+  const variationApplies = !!archivedAt && new Date(archivedAt) >= VARIATION_SINCE;
+  const hasVariation = variationApplies && !!data?.semaineA?.trim() && !!data?.semaineB?.trim();
+  const variation = hasVariation ? parseMoneyAmount(data?.semaineB) - parseMoneyAmount(data?.semaineA) : 0;
+  const totalProfit = agents.reduce((s, a) => s + a.companyProfit, 0) + variation;
   const totalSalaries = agents.reduce((s, a) => s + a.salary, 0);
   const totalExpenses = expenses.reduce((s, x) => s + x.amount, 0);
   const lotEmployeAmount = parseMoneyAmount(data?.lotEmploye);
@@ -383,6 +397,16 @@ export default function ComptabiliteArchiveDetailPage({ params }: { params: Prom
           <p className="text-xs text-[rgb(var(--muted))]">Semaine B</p>
           <p className="text-lg font-semibold">
             {data?.semaineB ? `$${parseMoneyAmount(data.semaineB).toLocaleString("fr-FR")}` : "—"}
+          </p>
+        </div>
+        <div className="glass-strong rounded-xl px-4 py-2.5">
+          <p className="text-xs text-[rgb(var(--muted))]">Variation (B - A)</p>
+          <p
+            className={`text-lg font-semibold ${
+              !hasVariation ? "" : variation >= 0 ? "text-[rgb(var(--success))]" : "text-[rgb(var(--danger))]"
+            }`}
+          >
+            {hasVariation ? `${variation >= 0 ? "+" : "-"}$${Math.abs(variation).toLocaleString("fr-FR")}` : "—"}
           </p>
         </div>
         <div className="glass-strong rounded-xl px-4 py-2.5">
