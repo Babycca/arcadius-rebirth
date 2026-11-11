@@ -258,6 +258,12 @@ export default function ComptabilitePage() {
           </div>
           <div className="card-hover glass-strong rounded-xl px-4 py-2.5 border border-transparent">
             <p className="text-xs text-[rgb(var(--muted))] flex items-center gap-1.5">
+              <Receipt size={12} /> Bénéf factures (10%)
+            </p>
+            <p className="text-lg font-semibold">${invoiceProfit.toLocaleString("fr-FR")}</p>
+          </div>
+          <div className="card-hover glass-strong rounded-xl px-4 py-2.5 border border-transparent">
+            <p className="text-xs text-[rgb(var(--muted))] flex items-center gap-1.5">
               <TrendingUp size={12} /> Bénéfices
             </p>
             <p className="text-lg font-semibold text-[rgb(var(--brand-400))]">

@@ -370,6 +370,10 @@ export default function ComptabiliteArchiveDetailPage({ params }: { params: Prom
           <p className="text-lg font-semibold">${totalSales.toLocaleString("fr-FR")}</p>
         </div>
         <div className="glass-strong rounded-xl px-4 py-2.5">
+          <p className="text-xs text-[rgb(var(--muted))]">Bénéf factures (10%)</p>
+          <p className="text-lg font-semibold">${invoiceProfit.toLocaleString("fr-FR")}</p>
+        </div>
+        <div className="glass-strong rounded-xl px-4 py-2.5">
           <p className="text-xs text-[rgb(var(--muted))]">Bénéfices</p>
           <p className="text-lg font-semibold text-[rgb(var(--brand-400))]">${totalProfit.toLocaleString("fr-FR")}</p>
         </div>
