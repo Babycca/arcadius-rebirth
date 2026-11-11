@@ -306,32 +306,10 @@ export default function ComptabilitePage() {
             <p className="text-lg font-semibold text-[rgb(var(--warning))]">${taxes.toLocaleString("fr-FR")}</p>
           </div>
         </div>
-        {(canViewArchive || canArchiveCompta) && (
-          <div className="flex items-center gap-2">
-            {canViewArchive && (
-              <Link
-                href="/comptabilite/archive"
-                className="flex items-center gap-2 text-sm rounded-xl px-4 py-2.5 glass hover:border-[rgb(var(--brand-500)/0.4)] transition-colors"
-              >
-                <Archive size={14} />
-                Archive
-              </Link>
-            )}
-            {canArchiveCompta && (
-              <button
-                onClick={() => setShowArchiveConfirm(true)}
-                disabled={archiving}
-                className="flex items-center gap-2 text-sm rounded-xl px-4 py-2.5 glass hover:border-[rgb(var(--brand-500)/0.4)] transition-colors disabled:opacity-60"
-              >
-                <Archive size={14} />
-                {archiving ? "Archivage…" : "Archiver la comptabilité"}
-              </button>
-            )}
-          </div>
-        )}
       </div>
 
-      <div className="flex gap-4 mb-5 flex-wrap">
+      <div className="flex gap-4 mb-5 flex-wrap items-center justify-between">
+        <div className="flex gap-4 flex-wrap">
         <ManualWeekCard settingKey="comptabilite-semaine-a" label="Semaine A" isAdmin={isAdmin} onSaved={setSemaineARaw} />
         <ManualWeekCard settingKey="comptabilite-semaine-b" label="Semaine B" isAdmin={isAdmin} onSaved={setSemaineBRaw} />
         <div className="card-hover glass-strong rounded-xl px-4 py-2.5 border border-transparent">
@@ -360,6 +338,30 @@ export default function ComptabilitePage() {
           isAdmin={isAdmin}
           onSaved={(v) => setLotEmployeAmount(parseMoneyAmount(v))}
         />
+        </div>
+        {(canViewArchive || canArchiveCompta) && (
+          <div className="flex items-center gap-2 ml-auto">
+            {canViewArchive && (
+              <Link
+                href="/comptabilite/archive"
+                className="flex items-center gap-2 text-sm rounded-xl px-4 py-2.5 glass hover:border-[rgb(var(--brand-500)/0.4)] transition-colors"
+              >
+                <Archive size={14} />
+                Archive
+              </Link>
+            )}
+            {canArchiveCompta && (
+              <button
+                onClick={() => setShowArchiveConfirm(true)}
+                disabled={archiving}
+                className="flex items-center gap-2 text-sm rounded-xl px-4 py-2.5 glass hover:border-[rgb(var(--brand-500)/0.4)] transition-colors disabled:opacity-60"
+              >
+                <Archive size={14} />
+                {archiving ? "Archivage…" : "Archiver la comptabilité"}
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="card-hover glass-strong rounded-xl overflow-hidden border border-transparent">
