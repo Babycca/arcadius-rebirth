@@ -287,7 +287,7 @@ export default function ComptabilitePage() {
                 {hasVariation && (
                   <span
                     title="Déjà pris dans le coffre"
-                    className="inline-block w-1.5 h-1.5 rounded-full bg-[rgb(var(--success))] shadow-[0_0_6px_rgb(var(--success))] animate-pulse"
+                    className="inline-block w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_6px_rgba(255,255,255,0.9)] animate-pulse"
                   />
                 )}
               </p>
@@ -300,7 +300,7 @@ export default function ComptabilitePage() {
                 {hasVariation && (
                   <span
                     title="Déjà pris dans le coffre"
-                    className="inline-block w-1.5 h-1.5 rounded-full bg-[rgb(var(--success))] shadow-[0_0_6px_rgb(var(--success))] animate-pulse"
+                    className="inline-block w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_6px_rgba(255,255,255,0.9)] animate-pulse"
                   />
                 )}
               </p>
