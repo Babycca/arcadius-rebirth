@@ -296,7 +296,11 @@ export default function ComptabiliteArchiveDetailPage({ params }: { params: Prom
   const totalSalaries = agents.reduce((s, a) => s + a.salary, 0);
   const totalExpenses = expenses.reduce((s, x) => s + x.amount, 0);
   const lotEmployeAmount = parseMoneyAmount(data?.lotEmploye);
-  const netProfit = totalProfit - totalSalaries - totalExpenses - lotEmployeAmount;
+  // Les dépenses sortent du compte entreprise : quand A et B sont remplies,
+  // elles sont déjà retirées du coffre (donc de la variation). On ne les
+  // déduit alors pas une deuxième fois, elles restent affichées pour info.
+  const deductedExpenses = hasVariation ? 0 : totalExpenses;
+  const netProfit = totalProfit - totalSalaries - deductedExpenses - lotEmployeAmount;
   const taxes = netProfit * 0.3;
 
   const exportRows: (string | number | null)[][] = [
@@ -384,6 +388,7 @@ export default function ComptabiliteArchiveDetailPage({ params }: { params: Prom
         <div className="glass-strong rounded-xl px-4 py-2.5">
           <p className="text-xs text-[rgb(var(--muted))]">Dépenses</p>
           <p className="text-lg font-semibold text-[rgb(var(--danger))]">-${totalExpenses.toLocaleString("fr-FR")}</p>
+          {hasVariation && <p className="text-[10px] text-[rgb(var(--muted))]">Déjà dans le coffre</p>}
         </div>
         <div className="glass-strong rounded-xl px-4 py-2.5">
           <p className="text-xs text-[rgb(var(--muted))]">Bénéfices net</p>

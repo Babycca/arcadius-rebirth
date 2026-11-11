@@ -227,7 +227,11 @@ export default function ComptabilitePage() {
   const relocations = hasVariation ? variation - invoiceProfit : 0;
   const totalProfit = invoiceProfit + relocations;
   const totalSalaries = agents.reduce((s, a) => s + a.salary, 0);
-  const netProfit = totalProfit - totalSalaries - totalExpenses - lotEmployeAmount;
+  // Les dépenses sortent du compte entreprise : quand A et B sont remplies,
+  // elles sont déjà retirées du coffre (donc de la variation). On ne les
+  // déduit alors pas une deuxième fois, elles restent affichées pour info.
+  const deductedExpenses = hasVariation ? 0 : totalExpenses;
+  const netProfit = totalProfit - totalSalaries - deductedExpenses - lotEmployeAmount;
   const taxes = netProfit * 0.3;
 
   return (
@@ -282,6 +286,7 @@ export default function ComptabilitePage() {
                 <ReceiptText size={12} /> Dépenses
               </p>
               <p className="text-lg font-semibold text-[rgb(var(--danger))]">-${totalExpenses.toLocaleString("fr-FR")}</p>
+              {hasVariation && <p className="text-[10px] text-[rgb(var(--muted))]">Déjà dans le coffre</p>}
             </Link>
           ) : (
             <div className="card-hover glass-strong rounded-xl px-4 py-2.5 border border-transparent">
@@ -289,6 +294,7 @@ export default function ComptabilitePage() {
                 <ReceiptText size={12} /> Dépenses
               </p>
               <p className="text-lg font-semibold text-[rgb(var(--danger))]">-${totalExpenses.toLocaleString("fr-FR")}</p>
+              {hasVariation && <p className="text-[10px] text-[rgb(var(--muted))]">Déjà dans le coffre</p>}
             </div>
           )}
           <div className="card-hover glass-strong rounded-xl px-4 py-2.5 border border-[rgb(var(--success)/0.25)]">
