@@ -228,6 +228,7 @@ export default function ComptabiliteArchiveDetailPage({ params }: { params: Prom
   >([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [archivedAt, setArchivedAt] = useState<string | null>(null);
+  const [bFacturesRaw, setBFacturesRaw] = useState("");
   const [forbidden, setForbidden] = useState(false);
   const [expandedIds, setExpandedIds] = useState<string[]>([]);
 
@@ -249,6 +250,10 @@ export default function ComptabiliteArchiveDetailPage({ params }: { params: Prom
     fetch(`/api/accounting/expenses?weekId=${encodeURIComponent(weekId)}`)
       .then((res) => (res.ok ? res.json() : []))
       .then(setExpenses);
+    fetch(`/api/app-settings/archive-semaine-b-factures:${encodeURIComponent(weekId)}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((d: { value?: string } | null) => setBFacturesRaw(d?.value ?? ""))
+      .catch(() => {});
     fetch("/api/accounting/archive")
       .then((res) => (res.ok ? res.json() : []))
       .then((rows: { weekId: string; archivedAt: string }[]) =>
@@ -291,7 +296,8 @@ export default function ComptabiliteArchiveDetailPage({ params }: { params: Prom
   // part "relocations" = (B - A) - bénéfices factures, pour ne pas compter
   // les factures deux fois.
   const invoiceProfit = agents.reduce((s, a) => s + a.companyProfit, 0);
-  const relocations = hasVariation ? variation - invoiceProfit : 0;
+  const profitInB = bFacturesRaw.trim() !== "" && Number.isFinite(Number(bFacturesRaw)) ? Number(bFacturesRaw) : invoiceProfit;
+  const relocations = hasVariation ? variation - profitInB : 0;
   const totalProfit = invoiceProfit + relocations;
   const totalSalaries = agents.reduce((s, a) => s + a.salary, 0);
   const totalExpenses = expenses.reduce((s, x) => s + x.amount, 0);

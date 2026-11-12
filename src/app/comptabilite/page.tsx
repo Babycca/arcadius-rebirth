@@ -112,6 +112,10 @@ export default function ComptabilitePage() {
   const [lotEmployeAmount, setLotEmployeAmount] = useState(0);
   const [semaineARaw, setSemaineARaw] = useState("");
   const [semaineBRaw, setSemaineBRaw] = useState("");
+  // Bénéf factures (10%) au moment où la Semaine B a été saisie : ce sont les
+  // seules factures déjà présentes dans le coffre. Les factures ajoutées
+  // après comptent en plus, sans faire baisser les relocations.
+  const [bFacturesRaw, setBFacturesRaw] = useState("");
   const [forbidden, setForbidden] = useState(false);
   const [archiving, setArchiving] = useState(false);
   const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
@@ -148,6 +152,10 @@ export default function ComptabilitePage() {
     fetch("/api/app-settings/comptabilite-semaine-b")
       .then((res) => (res.ok ? res.json() : null))
       .then((d: { value?: string } | null) => setSemaineBRaw(d?.value ?? ""))
+      .catch(() => {});
+    fetch("/api/app-settings/comptabilite-semaine-b-factures")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((d: { value?: string } | null) => setBFacturesRaw(d?.value ?? ""))
       .catch(() => {});
   }
 
@@ -190,11 +198,26 @@ export default function ComptabilitePage() {
     setArchiving(true);
     const res = await fetch("/api/accounting/weekly-reset", { method: "POST" });
     setArchiving(false);
+    const body = await res.json().catch(() => null);
     if (!res.ok) {
-      const body = await res.json().catch(() => null);
       toast(body?.error ?? "Impossible d'archiver.", "error");
       return;
     }
+    // Fige, pour cette archive, la part des factures déjà dans le coffre B,
+    // puis repart de zéro pour la nouvelle semaine.
+    if (body?.weekId) {
+      await fetch(`/api/app-settings/archive-semaine-b-factures:${encodeURIComponent(body.weekId)}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ value: String(profitInB) }),
+      }).catch(() => {});
+    }
+    await fetch("/api/app-settings/comptabilite-semaine-b-factures", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ value: "" }),
+    }).catch(() => {});
+    setBFacturesRaw("");
     toast("Semaine archivée.");
     load();
   }
@@ -224,7 +247,10 @@ export default function ComptabilitePage() {
   // part "relocations" = (B - A) - bénéfices factures, pour ne pas compter
   // les factures deux fois.
   const invoiceProfit = agents.reduce((s, a) => s + a.companyProfit, 0);
-  const relocations = hasVariation ? variation - invoiceProfit : 0;
+  // Factures déjà dans le coffre au moment de la saisie de B (si inconnu :
+  // on considère que toutes y sont, comme avant).
+  const profitInB = bFacturesRaw.trim() !== "" && Number.isFinite(Number(bFacturesRaw)) ? Number(bFacturesRaw) : invoiceProfit;
+  const relocations = hasVariation ? variation - profitInB : 0;
   const totalProfit = invoiceProfit + relocations;
   const totalSalaries = agents.reduce((s, a) => s + a.salary, 0);
   // Les dépenses sortent du compte entreprise : quand A et B sont remplies,
@@ -327,7 +353,16 @@ export default function ComptabilitePage() {
       <div className="flex gap-4 mb-5 flex-wrap items-center justify-between">
         <div className="flex gap-4 flex-wrap">
         <ManualWeekCard settingKey="comptabilite-semaine-a" label="Semaine A" isAdmin={isAdmin} onSaved={setSemaineARaw} />
-        <ManualWeekCard settingKey="comptabilite-semaine-b" label="Semaine B" isAdmin={isAdmin} onSaved={setSemaineBRaw} />
+        <ManualWeekCard settingKey="comptabilite-semaine-b" label="Semaine B" isAdmin={isAdmin} onSaved={(v) => {
+            setSemaineBRaw(v);
+            const snap = v.trim() ? String(invoiceProfit) : "";
+            setBFacturesRaw(snap);
+            fetch("/api/app-settings/comptabilite-semaine-b-factures", {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ value: snap }),
+            }).catch(() => {});
+          }} />
         <div className="card-hover glass-strong rounded-xl px-4 py-2.5 border border-transparent">
           <p className="text-xs text-[rgb(var(--muted))]">Variation (B - A)</p>
           <p
