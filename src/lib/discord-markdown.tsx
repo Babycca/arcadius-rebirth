@@ -1,4 +1,5 @@
 "use client";
+import Tooltip from "@/components/Tooltip";
 
 import { useState, type ReactNode } from "react";
 
@@ -33,7 +34,7 @@ function stripTrailingPunctuation(url: string): { url: string; trailing: string 
 
 function Spoiler({ children }: { children: ReactNode }) {
   const [revealed, setRevealed] = useState(false);
-  return (
+  const content = (
     <span
       role="button"
       tabIndex={0}
@@ -41,11 +42,11 @@ function Spoiler({ children }: { children: ReactNode }) {
       className={`rounded px-1 transition ${
         revealed ? "bg-white/10" : "cursor-pointer bg-white/20 text-transparent selection:text-transparent"
       }`}
-      title={revealed ? undefined : "Cliquer pour révéler"}
     >
       {children}
     </span>
   );
+  return revealed ? content : <Tooltip label="Cliquer pour révéler">{content}</Tooltip>;
 }
 
 function renderInline(text: string, keyPrefix: string): ReactNode[] {

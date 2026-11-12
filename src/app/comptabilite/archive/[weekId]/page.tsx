@@ -13,6 +13,7 @@ import TranscriptButton from "@/components/TranscriptButton";
 import CsvExportButton from "@/components/CsvExportButton";
 import { weekDateRangeLabel } from "@/lib/accounting/week-client";
 import { parseMoneyAmount } from "@/lib/accounting/parse-amount";
+import Tooltip from "@/components/Tooltip";
 
 type AgentSummary = {
   id: string;
@@ -395,10 +396,9 @@ export default function ComptabiliteArchiveDetailPage({ params }: { params: Prom
           <p className="text-xs text-[rgb(var(--muted))] flex items-center gap-1.5">
             Dépenses
             {hasVariation && (
-              <span
-                title="Déjà pris dans le coffre"
-                className="inline-block w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_6px_rgba(255,255,255,0.9)] animate-pulse"
-              />
+              <Tooltip label="Déjà pris dans le coffre">
+                <span className="inline-block w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_6px_rgba(255,255,255,0.9)] animate-pulse" />
+              </Tooltip>
             )}
           </p>
           <p className="text-lg font-semibold text-[rgb(var(--danger))]">-${totalExpenses.toLocaleString("fr-FR")}</p>

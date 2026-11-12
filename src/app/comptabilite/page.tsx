@@ -9,6 +9,7 @@ import { usePermissions } from "@/lib/use-permissions";
 import { useToast } from "@/components/ToastProvider";
 import { weekDateRangeLabel } from "@/lib/accounting/week-client";
 import { parseMoneyAmount } from "@/lib/accounting/parse-amount";
+import Tooltip from "@/components/Tooltip";
 
 // "Semaine A" / "Semaine B" : valeurs saisies à la main par un admin, sans
 // calcul automatique (demande explicite — pas de logique métier derrière).
@@ -311,10 +312,9 @@ export default function ComptabilitePage() {
               <p className="text-xs text-[rgb(var(--muted))] flex items-center gap-1.5">
                 <ReceiptText size={12} /> Dépenses
                 {hasVariation && (
-                  <span
-                    title="Déjà pris dans le coffre"
-                    className="inline-block w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_6px_rgba(255,255,255,0.9)] animate-pulse"
-                  />
+                  <Tooltip label="Déjà pris dans le coffre">
+                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_6px_rgba(255,255,255,0.9)] animate-pulse" />
+                  </Tooltip>
                 )}
               </p>
               <p className="text-lg font-semibold text-[rgb(var(--danger))]">-${totalExpenses.toLocaleString("fr-FR")}</p>
@@ -324,10 +324,9 @@ export default function ComptabilitePage() {
               <p className="text-xs text-[rgb(var(--muted))] flex items-center gap-1.5">
                 <ReceiptText size={12} /> Dépenses
                 {hasVariation && (
-                  <span
-                    title="Déjà pris dans le coffre"
-                    className="inline-block w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_6px_rgba(255,255,255,0.9)] animate-pulse"
-                  />
+                  <Tooltip label="Déjà pris dans le coffre">
+                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_6px_rgba(255,255,255,0.9)] animate-pulse" />
+                  </Tooltip>
                 )}
               </p>
               <p className="text-lg font-semibold text-[rgb(var(--danger))]">-${totalExpenses.toLocaleString("fr-FR")}</p>
